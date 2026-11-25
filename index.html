@@ -1,0 +1,1440 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AuraHealth International Hospital & Research Center | World-Class Healthcare</title>
+  <meta name="description" content="AuraHealth International Hospital is a premier multi-specialty healthcare provider and Level-1 Trauma Center. Book specialist appointments, access patient lab records, and emergency services 24/7.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%230284c7'><path d='M12 2L4 5v6.09c0 5.05 3.41 9.76 8 10.91 4.59-1.15 8-5.86 8-10.91V5l-8-3zm1 14h-2v-3H8v-2h3V8h2v3h3v2h-3v3z'/></svg>">
+</head>
+<body>
+
+  <!-- =========================================================================
+       1. Top Emergency Ticker & 24/7 Hotline Bar
+       ========================================================================= -->
+  <aside class="top-emergency-bar">
+    <div class="container top-bar-inner">
+      <div style="display: flex; align-items: center; gap: 0.75rem;">
+        <span class="er-status-badge">
+          <span class="pulse-dot"></span>
+          <span>ER Door-to-Doctor Time: <strong>~11 Mins</strong> (Trauma Level 1 Ready)</span>
+        </span>
+        <span style="opacity: 0.8; font-size: 0.8rem; display: none;" class="desktop-only">
+          • 180+ Board-Certified Specialists On-Duty
+        </span>
+      </div>
+
+      <div class="top-hotlines">
+        <a href="tel:+18009112872" class="hotline-link" style="color: #ffedd5; font-weight: 700;">
+          🚑 Ambulance Hotline: <strong>+1 (800) 911-AURA</strong>
+        </a>
+        <a href="tel:+18005552273" class="hotline-link">
+          📞 24/7 General Care: <strong>+1 (800) 555-CARE</strong>
+        </a>
+        <button type="button" class="btn btn-emergency" style="font-size: 0.75rem; padding: 0.25rem 0.65rem;" onclick="AmbulanceSOS.open()">
+          🚨 SOS Emergency
+        </button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- =========================================================================
+       2. Main Navigation Header
+       ========================================================================= -->
+  <header class="site-header">
+    <div class="container header-inner">
+      <!-- Brand Logo -->
+      <a href="#home" class="brand-logo">
+        <div class="brand-icon-wrapper">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2v20M2 12h20M7 7l10 10M17 7L7 17"/>
+          </svg>
+        </div>
+        <div>
+          <span>AuraHealth</span>
+          <span class="brand-text-sub">International Hospital</span>
+        </div>
+      </a>
+
+      <!-- Desktop Nav Links -->
+      <nav class="main-nav">
+        <a href="#triage" class="nav-link">Symptom Checker</a>
+        <a href="#doctors" class="nav-link">Find a Doctor</a>
+        <a href="#departments" class="nav-link">Specialties</a>
+        <a href="#packages" class="nav-link">Health Packages</a>
+        <a href="#patient-portal" class="nav-link">Patient Portal</a>
+        <a href="#operations" class="nav-link">Bed Tracker</a>
+        <a href="#contact" class="nav-link">Contact</a>
+      </nav>
+
+      <!-- Header Actions -->
+      <div class="header-actions">
+        <button type="button" class="btn btn-outline" style="padding: 0.5rem 0.8rem;" onclick="App.openSearchModal()" title="Search doctors and services (Ctrl+K)">
+          <span>🔍</span>
+          <span style="font-size: 0.75rem; color: var(--text-muted); background: var(--bg-alt); padding: 0.1rem 0.4rem; border-radius: 4px;">Ctrl+K</span>
+        </button>
+
+        <button type="button" class="btn btn-secondary" id="portalAuthNavBtn" onclick="PatientPortal.openLoginModal()">
+          👤 Patient Login (2FA)
+        </button>
+
+        <button type="button" class="btn btn-primary" onclick="BookingWizard.open()">
+          📅 Book Appointment
+        </button>
+
+        <button type="button" class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Toggle navigation">
+          ☰
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Mobile Drawer -->
+  <div id="mobileNavDrawer" style="display: none; position: fixed; top: 120px; left: 0; right: 0; background: white; z-index: 49; padding: 1.5rem; border-bottom: 2px solid var(--primary); box-shadow: var(--shadow-xl);">
+    <div style="display: flex; flex-direction: column; gap: 1rem; font-weight: 700;">
+      <a href="#triage" onclick="App.closeAllModals()">🩺 Symptom Checker</a>
+      <a href="#doctors" onclick="App.closeAllModals()">👨‍⚕️ Find a Doctor</a>
+      <a href="#departments" onclick="App.closeAllModals()">🏥 Medical Specialties</a>
+      <a href="#packages" onclick="App.closeAllModals()">📦 Health Checkup Packages</a>
+      <a href="#patient-portal" onclick="App.closeAllModals()">👤 Patient Portal</a>
+      <a href="#operations" onclick="App.closeAllModals()">📊 Live Bed Availability</a>
+      <a href="#contact" onclick="App.closeAllModals()">📍 Location & Contact</a>
+      <button class="btn btn-primary" style="margin-top: 0.5rem;" onclick="App.closeAllModals(); BookingWizard.open()">
+        📅 Book Appointment Now
+      </button>
+      <button class="btn btn-emergency" onclick="App.closeAllModals(); AmbulanceSOS.open()">
+        🚨 Request Emergency Ambulance
+      </button>
+    </div>
+  </div>
+
+  <main>
+    <!-- =======================================================================
+         3. Hero Section & Emergency Hub
+         ======================================================================= -->
+    <section class="hero-section" id="home">
+      <div class="hero-backdrop-pattern"></div>
+      <div class="container hero-grid">
+        <!-- Hero Left -->
+        <div>
+          <div class="hero-pill-badge">
+            <span>🏆 JCI Accredited Hospital</span>
+            <span>•</span>
+            <span>Level-1 Trauma & Emergency Center</span>
+          </div>
+
+          <h1 class="hero-title">
+            World-Class Healthcare, <br>
+            <span class="highlight-gradient">Healing With Compassion.</span>
+          </h1>
+
+          <p class="hero-description">
+            AuraHealth brings together international medical specialists, robotic-assisted surgical theaters, and 24/7 rapid emergency trauma response. Personalized care designed around your life.
+          </p>
+
+          <div class="hero-cta-group">
+            <button type="button" class="btn btn-primary" style="font-size: 1.05rem; padding: 0.8rem 1.6rem;" onclick="BookingWizard.open()">
+              📅 Schedule Consultation
+            </button>
+            <button type="button" class="btn btn-outline" style="font-size: 1.05rem; padding: 0.8rem 1.5rem;" onclick="document.getElementById('doctors').scrollIntoView({behavior: 'smooth'})">
+              👨‍⚕️ Explore Specialists
+            </button>
+            <button type="button" class="btn btn-emergency" style="font-size: 1.05rem; padding: 0.8rem 1.5rem;" onclick="AmbulanceSOS.open()">
+              🚑 24/7 SOS Ambulance
+            </button>
+          </div>
+
+          <!-- Quick Metrics -->
+          <div class="hero-stats-row">
+            <div class="stat-item">
+              <h4>180+</h4>
+              <p>Top Physicians</p>
+            </div>
+            <div class="stat-item">
+              <h4>99.6%</h4>
+              <p>Recovery Rate</p>
+            </div>
+            <div class="stat-item">
+              <h4>500k+</h4>
+              <p>Patients Healed</p>
+            </div>
+            <div class="stat-item">
+              <h4>24/7</h4>
+              <p>Emergency Care</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Hero Right: Quick Action Hub -->
+        <div>
+          <div class="hero-hub-card">
+            <div class="hub-card-header">
+              <h3>
+                <span>⚡</span>
+                <span>Immediate Patient Actions</span>
+              </h3>
+              <span class="badge badge-success">Online 24/7</span>
+            </div>
+
+            <div class="quick-action-cards">
+              <!-- Tile 1 -->
+              <div class="action-tile tile-blue" onclick="BookingWizard.open()">
+                <div class="tile-icon">📅</div>
+                <div>
+                  <h4>Book Appointment</h4>
+                  <p>In-person or virtual telehealth video consultation</p>
+                </div>
+              </div>
+
+              <!-- Tile 2 -->
+              <div class="action-tile tile-emerald" onclick="document.getElementById('doctors').scrollIntoView({behavior: 'smooth'})">
+                <div class="tile-icon">👨‍⚕️</div>
+                <div>
+                  <h4>Find a Specialist</h4>
+                  <p>Filter by specialty, language, and immediate availability</p>
+                </div>
+              </div>
+
+              <!-- Tile 3 -->
+              <div class="action-tile tile-red" onclick="AmbulanceSOS.open()">
+                <div class="tile-icon">🚑</div>
+                <div>
+                  <h4>Emergency SOS</h4>
+                  <p>Dispatch paramedic ambulance with live GPS tracking</p>
+                </div>
+              </div>
+
+              <!-- Tile 4 -->
+              <div class="action-tile tile-purple" onclick="document.getElementById('patient-portal').scrollIntoView({behavior: 'smooth'})">
+                <div class="tile-icon">📋</div>
+                <div>
+                  <h4>Patient Portal</h4>
+                  <p>Access validated lab reports, prescriptions, and billing</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Live ER Monitor Card -->
+            <div class="live-er-monitor-card">
+              <div class="er-monitor-info">
+                <h5>Emergency Department Status</h5>
+                <div class="er-time">~11 Minutes</div>
+                <p>Estimated door-to-physician initial intake time</p>
+              </div>
+              <div style="text-align: right;">
+                <span class="badge badge-danger" style="margin-bottom: 0.5rem;">4 Bays Open</span>
+                <div>
+                  <a href="tel:+18009112872" style="color: #38bdf8; font-size: 0.8rem; font-weight: 700; text-decoration: underline;">
+                    Call ER Direct →
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =======================================================================
+         4. Clinical Triage & Symptom Assessment Tool
+         ======================================================================= -->
+    <section class="section-padding triage-section" id="triage">
+      <div class="container">
+        <div class="section-header">
+          <span class="section-subtitle">AI & Clinical Guidance</span>
+          <h2 class="section-title">Interactive Symptom Checker & Triage</h2>
+          <p class="section-description">
+            Experiencing discomfort or sudden symptoms? Select what you are feeling below to receive immediate clinical direction and connect with the appropriate specialist.
+          </p>
+        </div>
+
+        <div class="triage-card">
+          <div class="triage-step-container">
+            <h3 style="font-size: 1.15rem; font-weight: 800; margin-bottom: 1rem; color: var(--text-primary);">
+              Step 1: Select Your Current Symptoms
+            </h3>
+
+            <!-- Symptom Chips (Populated via JS) -->
+            <div class="symptom-chips-grid" id="symptomChipsContainer"></div>
+
+            <div id="triageResultContainer">
+              <div style="text-align: center; padding: 2rem; color: var(--text-muted); font-size: 0.95rem;">
+                👆 Select one or more symptoms above to view clinical guidance and immediate medical recommendations.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =======================================================================
+         5. Find a Doctor Directory
+         ======================================================================= -->
+    <section class="section-padding doctors-section" id="doctors">
+      <div class="container">
+        <div class="section-header">
+          <span class="section-subtitle">Board-Certified Faculty</span>
+          <h2 class="section-title">Meet Our Medical Specialists</h2>
+          <p class="section-description">
+            Consult with internationally trained chief physicians and surgeons. Review credentials, patient ratings, consultation fees, and real-time appointment availability.
+          </p>
+        </div>
+
+        <!-- Filter Toolbar -->
+        <div class="doctors-filter-toolbar">
+          <div class="filter-search-input">
+            <span>🔍</span>
+            <input type="text" id="doctorSearchInput" placeholder="Search physician by name, specialty, or condition...">
+          </div>
+
+          <div class="filter-selects-group">
+            <label for="doctorDeptFilter" style="font-size: 0.85rem; font-weight: 700; color: var(--text-muted);">Specialty:</label>
+            <select id="doctorDeptFilter" class="filter-select">
+              <option value="all">All Medical Specialties</option>
+              <option value="cardiology">Cardiovascular Sciences</option>
+              <option value="neurology">Neurosciences & Stroke</option>
+              <option value="orthopedics">Orthopedics & Joint Surgery</option>
+              <option value="oncology">Comprehensive Cancer Care</option>
+              <option value="pediatrics">Pediatrics & Neonatal Care</option>
+              <option value="maternity">Obstetrics & Gynecology</option>
+              <option value="emergency">Emergency & Trauma Care</option>
+              <option value="radiology">Diagnostic Radiology</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Doctors Grid (Populated via JS) -->
+        <div class="doctors-grid" id="doctorsGrid"></div>
+      </div>
+    </section>
+
+    <!-- =======================================================================
+         6. Clinical Departments & Centers of Excellence
+         ======================================================================= -->
+    <section class="section-padding" id="departments">
+      <div class="container">
+        <div class="section-header">
+          <span class="section-subtitle">Comprehensive Healthcare</span>
+          <h2 class="section-title">Centers of Clinical Excellence</h2>
+          <p class="section-description">
+            Equipped with state-of-the-art medical technology, specialized inpatient wings, and multi-disciplinary medical boards for holistic treatment.
+          </p>
+        </div>
+
+        <!-- Departments Grid (Populated via JS) -->
+        <div class="departments-grid" id="departmentsGrid"></div>
+      </div>
+    </section>
+
+    <!-- =======================================================================
+         7. Preventive Health Checkup Packages
+         ======================================================================= -->
+    <section class="section-padding packages-section" id="packages">
+      <div class="container">
+        <div class="section-header">
+          <span class="section-subtitle">Early Detection & Longevity</span>
+          <h2 class="section-title">Preventive Health Checkup Packages</h2>
+          <p class="section-description">
+            Invest in your long-term wellness with comprehensive whole-body screenings. Transparent pricing, modern pathology diagnostics, and same-day physician consultation.
+          </p>
+        </div>
+
+        <!-- Packages Grid (Populated via JS) -->
+        <div class="packages-grid" id="packagesGrid"></div>
+      </div>
+    </section>
+
+    <!-- =======================================================================
+         8. Real-Time Hospital Operations & Live Bed Tracker
+         ======================================================================= -->
+    <section class="section-padding" id="operations" style="background: #0f172a; color: white;">
+      <div class="container">
+        <div style="text-align: center; max-width: 680px; margin: 0 auto;">
+          <span class="section-subtitle" style="background: rgba(2, 132, 199, 0.25); color: #38bdf8;">Transparency in Healthcare</span>
+          <h2 class="section-title" style="color: white;">Live Hospital Operations & Bed Availability</h2>
+          <p class="section-description" style="color: #94a3b8;">
+            AuraHealth publishes real-time bed capacity and blood bank reserves to ensure seamless emergency admissions and community healthcare coordination.
+          </p>
+        </div>
+
+        <div class="operations-tracker-card" style="margin-top: 2rem;">
+          <h3 style="font-size: 1.25rem; font-weight: 800; display: flex; align-items: center; justify-content: space-between;">
+            <span>🛏️ Live Inpatient & Intensive Care Bed Availability</span>
+            <span class="badge badge-success" style="font-size: 0.8rem;">Live Synced</span>
+          </h3>
+
+          <!-- Bed Grid (Populated via JS) -->
+          <div class="operations-grid" id="liveBedGrid"></div>
+
+          <!-- Blood Bank Inventory -->
+          <div style="margin-top: 3rem; border-top: 1px solid rgba(255, 255, 255, 0.1); padding-top: 2rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <div>
+                <h4 style="font-size: 1.1rem; font-weight: 700; color: white;">🩸 AuraHealth Blood Bank Inventory Status</h4>
+                <p style="font-size: 0.8rem; color: #94a3b8;">Real-time reserve units available for emergency transfusions</p>
+              </div>
+              <button class="btn btn-outline" style="border-color: rgba(255, 255, 255, 0.2); color: white; font-size: 0.82rem;" onclick="App.showToast('Blood donation drive open daily 9 AM - 5 PM at Main Pavilion.', 'primary')">
+                Become a Blood Donor
+              </button>
+            </div>
+
+            <div class="blood-bank-grid" id="bloodBankGrid"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =======================================================================
+         9. Interactive Patient Portal (Full Dashboard)
+         ======================================================================= -->
+    <section class="section-padding portal-section" id="patient-portal">
+      <div class="container">
+        <div class="section-header">
+          <span class="section-subtitle">Self-Service Healthcare</span>
+          <h2 class="section-title">AuraHealth Patient Portal</h2>
+          <p class="section-description">
+            Manage your medical records, review electronic lab results, download doctor prescriptions, and pay hospital invoices from one secure dashboard.
+          </p>
+        </div>
+
+        <div class="portal-container">
+          <!-- Sidebar -->
+          <aside class="portal-sidebar">
+            <div class="portal-user-profile">
+              <div class="portal-user-avatar" id="portalUserAvatar">AV</div>
+              <div class="portal-user-info" style="flex: 1;">
+                <h4 id="portalPatientName">Alexander Vance</h4>
+                <p id="portalPatientId">ID: AH-PT-98042 • O+</p>
+                <div style="display: flex; gap: 0.35rem; align-items: center; margin-top: 0.3rem;">
+                  <span class="badge badge-success" id="portalInsuranceBadge" style="font-size: 0.68rem;">Verified 2FA</span>
+                </div>
+                <button type="button" class="btn btn-outline" style="font-size: 0.72rem; padding: 0.25rem 0.5rem; color: #cbd5e1; border-color: rgba(255,255,255,0.25); margin-top: 0.5rem; width: 100%; text-align: center;" onclick="PatientPortal.openLoginModal()">
+                  🔑 Switch / 2FA Login
+                </button>
+              </div>
+            </div>
+
+            <nav class="portal-nav">
+              <button type="button" class="portal-tab-btn active" data-tab="overview">
+                <span>📊</span> <span>Dashboard Overview</span>
+              </button>
+              <button type="button" class="portal-tab-btn" data-tab="appointments">
+                <span>📅</span> <span>My Appointments</span>
+              </button>
+              <button type="button" class="portal-tab-btn" data-tab="lab">
+                <span>🔬</span> <span>Lab & Diagnostic Reports</span>
+              </button>
+              <button type="button" class="portal-tab-btn" data-tab="prescriptions">
+                <span>💊</span> <span>Digital Prescriptions</span>
+              </button>
+              <button type="button" class="portal-tab-btn" data-tab="billing">
+                <span>💳</span> <span>Invoices & Co-Pays</span>
+              </button>
+            </nav>
+
+            <div style="margin-top: auto; padding-top: 1.5rem; border-top: 1px solid rgba(255, 255, 255, 0.1);">
+              <div style="font-size: 0.75rem; color: #94a3b8;">
+                Attending Physician:<br>
+                <strong style="color: white;">Dr. Sarah Jenkins (Cardiology)</strong>
+              </div>
+            </div>
+          </aside>
+
+          <!-- Main Content Area -->
+          <div class="portal-main-content">
+            <!-- Tab 1: Overview -->
+            <div class="portal-tab-pane active" id="portal-tab-overview">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                <h3 style="font-size: 1.4rem; font-weight: 800; color: var(--text-primary);">Health Summary & Alerts</h3>
+                <button class="btn btn-primary" onclick="BookingWizard.open()">+ Schedule New Appointment</button>
+              </div>
+
+              <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 2rem;">
+                <div style="background: var(--bg-subtle); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.25rem;">
+                  <div style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted);">BLOOD PRESSURE</div>
+                  <div style="font-size: 1.5rem; font-weight: 800; color: var(--primary-dark); margin-top: 0.2rem;">124 / 82 <span style="font-size: 0.8rem; font-weight: 600;">mmHg</span></div>
+                  <div style="font-size: 0.75rem; color: var(--success); font-weight: 600; margin-top: 0.2rem;">✓ Optimal Range</div>
+                </div>
+
+                <div style="background: var(--bg-subtle); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.25rem;">
+                  <div style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted);">FASTING GLUCOSE</div>
+                  <div style="font-size: 1.5rem; font-weight: 800; color: var(--primary-dark); margin-top: 0.2rem;">94 <span style="font-size: 0.8rem; font-weight: 600;">mg/dL</span></div>
+                  <div style="font-size: 0.75rem; color: var(--success); font-weight: 600; margin-top: 0.2rem;">✓ Normal Fasting</div>
+                </div>
+
+                <div style="background: var(--bg-subtle); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.25rem;">
+                  <div style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted);">CHOLESTEROL (TOTAL)</div>
+                  <div style="font-size: 1.5rem; font-weight: 800; color: var(--primary-dark); margin-top: 0.2rem;">178 <span style="font-size: 0.8rem; font-weight: 600;">mg/dL</span></div>
+                  <div style="font-size: 0.75rem; color: var(--success); font-weight: 600; margin-top: 0.2rem;">✓ Under Target &lt;200</div>
+                </div>
+              </div>
+
+              <!-- Upcoming Visit Callout -->
+              <div style="background: #f0f9ff; border: 1.5px solid #bae6fd; border-radius: var(--radius-lg); padding: 1.5rem; margin-bottom: 2rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                  <div>
+                    <span class="badge badge-primary">Next Upcoming Visit</span>
+                    <h4 style="font-size: 1.2rem; font-weight: 800; color: var(--text-primary); margin: 0.5rem 0 0.2rem;">
+                      Dr. Sarah Jenkins — Cardiology Consultation
+                    </h4>
+                    <p style="font-size: 0.88rem; color: var(--text-secondary);">
+                      📅 Saturday, Nov 28, 2026 at 10:30 AM • 📍 Wing B, Level 3, Suite 304
+                    </p>
+                  </div>
+                  <button class="btn btn-outline" onclick="PatientPortal.switchTab('appointments')">Manage Visit</button>
+                </div>
+              </div>
+
+              <!-- Allergies & Notes -->
+              <div style="background: white; border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.5rem;">
+                <h4 style="font-size: 1rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.75rem;">
+                  ⚠️ Medical Alert & Documented Allergies
+                </h4>
+                <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                  <span class="badge badge-danger">Penicillin (Severe Rash)</span>
+                  <span class="badge badge-danger">Sulfa drugs</span>
+                  <span class="badge badge-primary">Blood Type: O Positive</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tab 2: Appointments -->
+            <div class="portal-tab-pane" id="portal-tab-appointments">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                <h3 style="font-size: 1.4rem; font-weight: 800; color: var(--text-primary);">My Scheduled Consultations</h3>
+                <button class="btn btn-primary" onclick="BookingWizard.open()">+ Book Another Specialist</button>
+              </div>
+              <div id="portalApptsList"></div>
+            </div>
+
+            <!-- Tab 3: Lab Reports -->
+            <div class="portal-tab-pane" id="portal-tab-lab">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                <h3 style="font-size: 1.4rem; font-weight: 800; color: var(--text-primary);">Electronic Laboratory Reports</h3>
+                <span class="badge badge-success">Hospital Pathologist Certified</span>
+              </div>
+              <div id="portalLabList"></div>
+            </div>
+
+            <!-- Tab 4: Prescriptions -->
+            <div class="portal-tab-pane" id="portal-tab-prescriptions">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                <h3 style="font-size: 1.4rem; font-weight: 800; color: var(--text-primary);">Active Hospital Prescriptions</h3>
+                <button class="btn btn-outline" onclick="App.showToast('Refill requests sent directly to AuraHealth Central Pharmacy.', 'primary')">Pharmacy Hotline: Ext. 402</button>
+              </div>
+              <div id="portalRxList"></div>
+            </div>
+
+            <!-- Tab 5: Billing -->
+            <div class="portal-tab-pane" id="portal-tab-billing">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                <h3 style="font-size: 1.4rem; font-weight: 800; color: var(--text-primary);">Invoices, Insurance & Co-Pays</h3>
+                <span style="font-size: 0.85rem; font-weight: 600; color: var(--success);">All transactions 256-bit encrypted</span>
+              </div>
+              <div id="portalBillingList"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =======================================================================
+         10. Patient Stories & Testimonials
+         ======================================================================= -->
+    <section class="section-padding" style="background: white;">
+      <div class="container">
+        <div class="section-header">
+          <span class="section-subtitle">Real Healing Journeys</span>
+          <h2 class="section-title">What Our Patients Say</h2>
+          <p class="section-description">
+            Over 500,000 families have trusted AuraHealth during their most vulnerable moments. Here are their recovery stories.
+          </p>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.75rem;" id="testimonialsGrid"></div>
+      </div>
+    </section>
+
+    <!-- =======================================================================
+         11. Health Knowledge Hub & Articles
+         ======================================================================= -->
+    <section class="section-padding" style="background: var(--bg-body);">
+      <div class="container">
+        <div class="section-header">
+          <span class="section-subtitle">Physician Insights</span>
+          <h2 class="section-title">Health Knowledge & Wellness Hub</h2>
+          <p class="section-description">
+            Evidence-based medical advice written directly by our attending clinicians and research fellows.
+          </p>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 2rem;" id="articlesGrid"></div>
+      </div>
+    </section>
+
+    <!-- =======================================================================
+         12. Frequently Asked Questions
+         ======================================================================= -->
+    <section class="section-padding" style="background: white;">
+      <div class="container" style="max-width: 850px;">
+        <div class="section-header">
+          <span class="section-subtitle">Patient & Visitor Guide</span>
+          <h2 class="section-title">Frequently Asked Questions</h2>
+          <p class="section-description">
+            Everything you need to know about scheduling, emergency protocols, insurance coverage, and inpatient visiting hours.
+          </p>
+        </div>
+
+        <div id="faqsAccordion"></div>
+      </div>
+    </section>
+
+    <!-- =======================================================================
+         13. Location, Maps & Contact Us
+         ======================================================================= -->
+    <section class="section-padding" id="contact" style="background: linear-gradient(180deg, #f8fafc 0%, #e0f2fe 100%);">
+      <div class="container">
+        <div class="section-header">
+          <span class="section-subtitle">24/7 Availability</span>
+          <h2 class="section-title">Visit or Contact Our Hospital</h2>
+          <p class="section-description">
+            Located in the heart of the Metro Health District with dedicated emergency trauma bays and multi-level patient parking.
+          </p>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1.2fr; gap: 3rem; background: white; border-radius: var(--radius-xl); border: 1px solid var(--border); padding: 3rem; box-shadow: var(--shadow-lg);">
+          <!-- Info Column -->
+          <div>
+            <h3 style="font-size: 1.4rem; font-weight: 800; color: var(--text-primary); margin-bottom: 1.25rem;">
+              Campus Location & Hotlines
+            </h3>
+
+            <div style="display: flex; flex-direction: column; gap: 1.25rem; font-size: 0.95rem; color: var(--text-secondary);">
+              <div>
+                <strong style="color: var(--text-primary);">📍 Hospital Address:</strong><br>
+                742 Medical Center Boulevard, Metro Health District, NY 10024
+              </div>
+
+              <div>
+                <strong style="color: var(--emergency);">🚨 24/7 Emergency & Trauma Hotline:</strong><br>
+                <a href="tel:+18009112872" style="color: var(--emergency); font-weight: 800; font-size: 1.1rem;">+1 (800) 911-AURA</a>
+              </div>
+
+              <div>
+                <strong style="color: var(--primary);">📞 General Appointments & Inquiries:</strong><br>
+                <a href="tel:+18005552273" style="color: var(--primary); font-weight: 700;">+1 (800) 555-CARE</a>
+              </div>
+
+              <div>
+                <strong style="color: var(--text-primary);">🕒 Operating Hours:</strong><br>
+                Emergency & Trauma: <strong>Open 24/7/365</strong><br>
+                Outpatient Clinics: Mon – Sat: 7:30 AM – 8:00 PM<br>
+                Visiting Hours: Daily 10:00 AM – 8:00 PM
+              </div>
+
+              <div>
+                <strong style="color: var(--text-primary);">🚗 Valet Parking & Metro Access:</strong><br>
+                Free patient valet parking at Gate 2. Metro Blue Line connects directly to "Health District Station".
+              </div>
+            </div>
+          </div>
+
+          <!-- Contact Form Column -->
+          <div>
+            <h3 style="font-size: 1.3rem; font-weight: 800; color: var(--text-primary); margin-bottom: 1rem;">
+              Send an Inpatient or Care Inquiry
+            </h3>
+
+            <form id="hospitalContactForm">
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div class="form-group">
+                  <label class="form-label" for="contactFullName">Full Name *</label>
+                  <input type="text" id="contactFullName" class="form-control" required placeholder="Alexander Vance">
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="contactPhone">Phone Number *</label>
+                  <input type="tel" id="contactPhone" class="form-control" required placeholder="+1 (555) 000-0000">
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="contactEmail">Email Address *</label>
+                <input type="email" id="contactEmail" class="form-control" required placeholder="alexander@example.com">
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="contactDept">Interested Specialty</label>
+                <select id="contactDept" class="form-control">
+                  <option value="general">General Healthcare Inquiry</option>
+                  <option value="cardiology">Cardiovascular Sciences</option>
+                  <option value="neurology">Neurosciences</option>
+                  <option value="orthopedics">Orthopedics</option>
+                  <option value="oncology">Oncology Cancer Care</option>
+                  <option value="billing">Insurance & Billing Desk</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="contactMessage">Message or Medical Query *</label>
+                <textarea id="contactMessage" class="form-control" rows="4" required placeholder="Please describe how we can assist you or your family member..."></textarea>
+              </div>
+
+              <button type="submit" class="btn btn-primary" style="width: 100%; padding: 0.8rem;">
+                ✉️ Submit Medical Inquiry
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- =========================================================================
+       14. Site Footer
+       ========================================================================= -->
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <a href="#home" class="brand-logo" style="color: white;">
+            <div class="brand-icon-wrapper">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 2v20M2 12h20M7 7l10 10M17 7L7 17"/>
+              </svg>
+            </div>
+            <div>
+              <span>AuraHealth</span>
+              <span class="brand-text-sub" style="color: #38bdf8;">International Hospital</span>
+            </div>
+          </a>
+          <p>
+            Advancing international medical science, robotic precision surgery, and compassionate patient care since 1998.
+          </p>
+          <div style="font-size: 0.8rem; color: #cbd5e1; margin-top: 1rem;">
+            🏆 Joint Commission International (JCI) Accredited<br>
+            🔒 HIPAA & GDPR Compliant Medical Records
+          </div>
+        </div>
+
+        <div class="footer-column">
+          <h4>Clinical Specialties</h4>
+          <ul class="footer-links">
+            <li><a href="#departments">Cardiology & Heart Center</a></li>
+            <li><a href="#departments">Neurosciences & Stroke</a></li>
+            <li><a href="#departments">Orthopedics & Joint Surgery</a></li>
+            <li><a href="#departments">Oncology Cancer Center</a></li>
+            <li><a href="#departments">Pediatric NICU & PICU</a></li>
+            <li><a href="#departments">Maternity & Women's Health</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-column">
+          <h4>Patient Resources</h4>
+          <ul class="footer-links">
+            <li><a href="#patient-portal">Patient Portal Login</a></li>
+            <li><a href="#triage">Clinical Symptom Checker</a></li>
+            <li><a href="#packages">Executive Health Checkups</a></li>
+            <li><a href="#operations">Real-Time Bed Occupancy</a></li>
+            <li><a href="#contact">Visiting Hours & Guidelines</a></li>
+            <li><a href="#contact">Accepted Insurance Carriers</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-column">
+          <h4>Emergency & Newsletter</h4>
+          <p style="font-size: 0.85rem; margin-bottom: 1rem;">
+            Subscribe to our weekly health digest for clinical research insights and preventive care tips.
+          </p>
+          <form id="newsletterForm" style="display: flex; gap: 0.4rem;">
+            <input type="email" placeholder="Your email..." required style="padding: 0.6rem 0.8rem; border-radius: var(--radius-md); border: 1px solid rgba(255, 255, 255, 0.2); background: rgba(255, 255, 255, 0.08); color: white; width: 100%; outline: none;">
+            <button type="submit" class="btn btn-primary" style="padding: 0.6rem 1rem;">Join</button>
+          </form>
+          <div style="margin-top: 1.5rem; font-size: 0.82rem;">
+            Emergency SOS: <strong style="color: #ef4444;">+1 (800) 911-AURA</strong>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <div>© 2026 AuraHealth International Hospital & Research Center. All rights reserved.</div>
+        <div style="display: flex; gap: 1.5rem;">
+          <a href="#">Privacy Policy</a>
+          <a href="#">HIPAA Statement</a>
+          <a href="#">Terms of Care</a>
+          <a href="#">Patient Rights</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- =========================================================================
+       15. Interactive Modals
+       ========================================================================= -->
+
+  <!-- Modal 1: 4-Step Interactive Appointment Booking Wizard -->
+  <div class="modal-overlay" id="bookingModal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 style="font-size: 1.25rem; font-weight: 800; color: var(--text-primary);">
+          📅 Schedule Specialist Consultation
+        </h3>
+        <button type="button" class="modal-close-btn" onclick="BookingWizard.close()">×</button>
+      </div>
+
+      <div class="modal-body">
+        <!-- Stepper Indicator -->
+        <div class="stepper-nav">
+          <div class="step-node active" id="stepNode1">
+            <div class="step-circle">1</div>
+            <span class="step-label">Specialist</span>
+          </div>
+          <div class="step-node" id="stepNode2">
+            <div class="step-circle">2</div>
+            <span class="step-label">Date & Time</span>
+          </div>
+          <div class="step-node" id="stepNode3">
+            <div class="step-circle">3</div>
+            <span class="step-label">Patient Info</span>
+          </div>
+          <div class="step-node" id="stepNode4">
+            <div class="step-circle">4</div>
+            <span class="step-label">Confirmation</span>
+          </div>
+        </div>
+
+        <form id="bookingForm" onsubmit="event.preventDefault();">
+          <!-- Step 1 Pane: Department & Doctor -->
+          <div class="booking-step-pane" id="bookingStep1">
+            <div class="form-group">
+              <label class="form-label" for="bookDeptSelect">1. Choose Medical Specialty *</label>
+              <select id="bookDeptSelect" class="form-control" required></select>
+              <div class="field-error" id="bookDeptError"></div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="bookDoctorSelect">2. Choose Specialist Physician *</label>
+              <select id="bookDoctorSelect" class="form-control" required>
+                <option value="">-- Please select a specialty first --</option>
+              </select>
+              <div class="field-error" id="bookDoctorError"></div>
+            </div>
+
+            <div id="selectedDoctorInfo" style="display: none; background: #f0f9ff; border: 1px solid #bae6fd; border-radius: var(--radius-md); padding: 1rem; margin-bottom: 1.25rem; align-items: center; gap: 1rem;"></div>
+
+            <div class="form-group">
+              <label class="form-label">Consultation Mode *</label>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+                <button type="button" class="btn btn-outline consult-type-btn selected" data-type="in-person">
+                  🏥 In-Person Hospital Visit
+                </button>
+                <button type="button" class="btn btn-outline consult-type-btn" data-type="telehealth">
+                  💻 Telehealth Video Call
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Step 2 Pane: Date & Slot -->
+          <div class="booking-step-pane" id="bookingStep2" style="display: none;">
+            <div class="form-group">
+              <label class="form-label" for="bookDate">Select Consultation Date *</label>
+              <input type="date" id="bookDate" class="form-control" required>
+              <div class="field-error" id="bookDateError"></div>
+              <span class="field-hint" id="bookDateHint">📅 Current system date: <strong id="todayDateDisplay"></strong> • Booking window: today through upcoming 60 days. Past dates are strictly rejected.</span>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Available Time Slots for Selected Date *</label>
+              <div class="slot-grid" id="availableSlotsContainer"></div>
+              <div class="field-error" id="slotError"></div>
+              <span class="field-hint" id="slotHint"></span>
+            </div>
+          </div>
+
+          <!-- Step 3 Pane: Patient Info -->
+          <div class="booking-step-pane" id="bookingStep3" style="display: none;">
+            <div class="form-group">
+              <label class="form-label" for="patientName">Patient Full Name *</label>
+              <input type="text" id="patientName" class="form-control" placeholder="e.g., Alexander Vance" required autocomplete="name">
+              <div class="field-error" id="patientNameError"></div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+              <div class="form-group">
+                <label class="form-label" for="patientPhone">Contact Phone Number *</label>
+                <input type="tel" id="patientPhone" class="form-control" placeholder="+1 (555) 234-5678" required autocomplete="tel">
+                <div class="field-error" id="patientPhoneError"></div>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="patientEmail">Email Address *</label>
+                <input type="email" id="patientEmail" class="form-control" placeholder="alexander@example.com" required autocomplete="email">
+                <div class="field-error" id="patientEmailError"></div>
+              </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+              <div class="form-group">
+                <label class="form-label" for="patientDob">Date of Birth *</label>
+                <input type="date" id="patientDob" class="form-control" required>
+                <div class="field-error" id="patientDobError"></div>
+                <div id="patientAgeDisplay"></div>
+                <span class="field-hint">Must be in the past (cannot be born in future dates).</span>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="patientGender">Gender *</label>
+                <select id="patientGender" class="form-control">
+                  <option value="Male">Male</option>
+                  <option value="Female">Female</option>
+                  <option value="Non-binary">Non-binary</option>
+                  <option value="Prefer not to say">Prefer not to say</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="patientInsurance">Insurance Carrier</label>
+              <select id="patientInsurance" class="form-control">
+                <option value="BlueCross BlueShield">BlueCross BlueShield</option>
+                <option value="Aetna Healthcare">Aetna Healthcare</option>
+                <option value="Cigna Health">Cigna Health</option>
+                <option value="Medicare">Medicare</option>
+                <option value="UnitedHealthcare">UnitedHealthcare</option>
+                <option value="Self-Pay / Cash">Self-Pay / International Cash</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="patientSymptoms">Chief Complaint / Reason for Visit</label>
+              <textarea id="patientSymptoms" class="form-control" rows="2" placeholder="Briefly describe your symptoms or reason for scheduling..."></textarea>
+            </div>
+          </div>
+
+          <!-- Step 4 Pane: Confirmation & Pass -->
+          <div class="booking-step-pane" id="bookingStep4" style="display: none;">
+            <div id="bookingConfirmationContainer"></div>
+          </div>
+
+          <!-- Step Actions Buttons -->
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 2rem; border-top: 1px solid var(--border); padding-top: 1.25rem;">
+            <button type="button" class="btn btn-outline" id="bookPrevBtn" style="display: none;" onclick="BookingWizard.prevStep()">
+              ← Back
+            </button>
+            <div style="margin-left: auto; display: flex; gap: 0.5rem;">
+              <button type="button" class="btn btn-primary" id="bookNextBtn" onclick="BookingWizard.nextStep()">
+                Continue →
+              </button>
+              <button type="button" class="btn btn-secondary" id="bookFinishBtn" style="display: none;" onclick="BookingWizard.close()">
+                Done / Close
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 2: 24/7 Emergency Ambulance SOS Dispatch Simulator -->
+  <div class="modal-overlay" id="ambulanceModal">
+    <div class="modal-box" style="border-top: 6px solid var(--emergency);">
+      <div class="modal-header">
+        <h3 style="font-size: 1.3rem; font-weight: 800; color: var(--emergency); display: flex; align-items: center; gap: 0.5rem;">
+          🚨 Emergency Ambulance SOS Dispatch
+        </h3>
+        <button type="button" class="modal-close-btn" onclick="AmbulanceSOS.close()">×</button>
+      </div>
+
+      <div class="modal-body">
+        <!-- Intake View -->
+        <div id="ambulanceIntakeView">
+          <div style="background: #fef2f2; border: 1.5px solid #fecaca; border-radius: var(--radius-md); padding: 1.25rem; margin-bottom: 1.5rem;">
+            <h4 style="font-size: 1rem; font-weight: 800; color: #991b1b; margin-bottom: 0.35rem;">
+              Critical Emergency Dispatch System
+            </h4>
+            <p style="font-size: 0.85rem; color: #b91c1c; line-height: 1.5;">
+              If you or someone nearby is experiencing acute chest pain, sudden paralysis/facial drooping, severe hemorrhaging, or unconsciousness, trigger immediate dispatch below.
+            </p>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="sosLocationInput">Current Location / Pickup Address *</label>
+            <input type="text" id="sosLocationInput" class="form-control" value="Detected via GPS: 742 Lexington Ave, Apt 4B" required>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="sosConditionSelect">Suspected Medical Emergency</label>
+            <select id="sosConditionSelect" class="form-control">
+              <option value="cardiac">Suspected Heart Attack / Acute Chest Pain</option>
+              <option value="stroke">Suspected Stroke / Slurred Speech / FAST</option>
+              <option value="trauma">Severe Trauma / Fall / Accident</option>
+              <option value="respiratory">Severe Breathing Difficulty / Anaphylaxis</option>
+              <option value="obstetric">Emergency Labor / Pregnancy Complication</option>
+              <option value="other">Other Unresponsive / Acute Condition</option>
+            </select>
+          </div>
+
+          <button type="button" class="btn btn-emergency" style="width: 100%; padding: 1rem; font-size: 1.15rem; font-weight: 800; margin-top: 1rem;" onclick="AmbulanceSOS.dispatchNow()">
+            🚑 DISPATCH AMBULANCE UNIT NOW
+          </button>
+
+          <div style="text-align: center; margin-top: 1.25rem; font-size: 0.85rem;">
+            Direct Emergency Line: <a href="tel:+18009112872" style="color: var(--emergency); font-weight: 800;">+1 (800) 911-AURA</a>
+          </div>
+        </div>
+
+        <!-- Live Tracker View -->
+        <div id="ambulanceLiveTrackerView" style="display: none; text-align: center;">
+          <div style="font-size: 3rem; margin-bottom: 0.5rem; animation: pulse 1s infinite;">🚑</div>
+          <span class="badge badge-danger" style="font-size: 0.85rem; padding: 0.35rem 0.85rem;">PARAMEDIC UNIT ALPHA-04 EN ROUTE</span>
+
+          <div style="margin: 1.5rem 0;">
+            <div style="font-size: 0.85rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Estimated Arrival Time</div>
+            <div id="ambulanceEtaTimer" style="font-size: 2.8rem; font-weight: 800; color: var(--emergency); letter-spacing: -0.02em;">
+              6:48 MINS
+            </div>
+          </div>
+
+          <div style="background: var(--bg-alt); height: 10px; border-radius: var(--radius-full); overflow: hidden; margin-bottom: 1.5rem;">
+            <div id="ambulanceProgressFill" style="background: var(--emergency); height: 100%; width: 15%; transition: width 1s linear;"></div>
+          </div>
+
+          <div style="background: #f8fafc; border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.25rem; text-align: left; margin-bottom: 1.5rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 0.75rem; margin-bottom: 0.75rem;">
+              <div>
+                <h4 style="font-size: 0.95rem; font-weight: 800; color: var(--text-primary);">Lead Paramedic: Robert Diaz, EMT-P</h4>
+                <p style="font-size: 0.78rem; color: var(--text-muted);">Vehicle: ICU Mobile Ambulance #A-104</p>
+              </div>
+              <a href="tel:+18009112872" class="btn btn-outline" style="font-size: 0.8rem; padding: 0.4rem 0.75rem;">
+                📞 Call Driver
+              </a>
+            </div>
+
+            <div style="font-size: 0.82rem; color: var(--text-secondary); line-height: 1.5;">
+              <strong>Bystander Safety Instructions:</strong>
+              <ul style="margin-left: 1.25rem; margin-top: 0.35rem;">
+                <li>Keep the patient calm and seated or lying in a recovery position.</li>
+                <li>Unlock the front door and turn on exterior porch lights for paramedics.</li>
+                <li>Gather any medications or recent hospital discharge papers.</li>
+                <li>If patient becomes unresponsive, begin chest compressions immediately (100-120 bpm).</li>
+              </ul>
+            </div>
+          </div>
+
+          <button type="button" class="btn btn-outline" onclick="AmbulanceSOS.close()">
+            Close Tracker Window (Ambulance will continue en route)
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 3: Doctor Full Profile View -->
+  <div class="modal-overlay" id="doctorDetailModal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 style="font-size: 1.25rem; font-weight: 800; color: var(--text-primary);">Physician Profile</h3>
+        <button type="button" class="modal-close-btn" onclick="App.closeAllModals()">×</button>
+      </div>
+      <div class="modal-body" id="doctorDetailContent"></div>
+    </div>
+  </div>
+
+  <!-- Modal 4: Global Search Dialog (Ctrl+K) -->
+  <div class="modal-overlay" id="searchModal">
+    <div class="modal-box" style="max-width: 580px;">
+      <div class="modal-header" style="border-bottom: none; padding-bottom: 0;">
+        <div style="display: flex; align-items: center; gap: 0.75rem; width: 100%;">
+          <span style="font-size: 1.2rem;">🔍</span>
+          <input type="text" id="globalSearchInput" placeholder="Search doctors, departments, checkup packages..." style="width: 100%; border: none; outline: none; font-size: 1.1rem; color: var(--text-primary); font-family: inherit;" oninput="App.handleGlobalSearch(this.value)">
+        </div>
+        <button type="button" class="modal-close-btn" onclick="App.closeAllModals()">×</button>
+      </div>
+      <div class="modal-body" style="padding-top: 1rem;">
+        <div id="globalSearchResults" style="max-height: 380px; overflow-y: auto;">
+          <div style="text-align: center; padding: 2rem; color: var(--text-muted); font-size: 0.9rem;">
+            Type to search doctors, clinical specialties, health checkup packages, or symptoms...
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 5: Official Email Confirmation Viewer -->
+  <div class="modal-overlay" id="emailPreviewModal">
+    <div class="modal-box" style="max-width: 680px; padding: 0;">
+      <div class="modal-header" style="background: #f8fafc; border-bottom: 1px solid var(--border);">
+        <div style="display: flex; align-items: center; gap: 0.6rem;">
+          <span style="font-size: 1.3rem;">📬</span>
+          <div>
+            <h3 style="font-size: 1.1rem; font-weight: 800; color: var(--text-primary);">Hospital Confirmation Email</h3>
+            <p style="font-size: 0.75rem; color: var(--text-muted);">Dispatched to patient inbox</p>
+          </div>
+        </div>
+        <button type="button" class="modal-close-btn" onclick="BookingWizard.closeEmailPreview()">×</button>
+      </div>
+
+      <div class="modal-body" style="padding: 1.5rem;">
+        <div class="email-client-card">
+          <div class="email-client-header">
+            <div class="email-meta-row">
+              <span class="email-meta-label">From:</span>
+              <span style="font-weight: 600; color: var(--text-primary);">AuraHealth Central Scheduling &lt;appointments@aurahealth.org&gt;</span>
+            </div>
+            <div class="email-meta-row">
+              <span class="email-meta-label">To:</span>
+              <span id="emailModalTo" style="font-weight: 700; color: var(--primary);">patient@example.com</span>
+            </div>
+            <div class="email-meta-row">
+              <span class="email-meta-label">Date:</span>
+              <span id="emailModalDate" style="color: var(--text-secondary);"></span>
+            </div>
+            <div class="email-meta-row">
+              <span class="email-meta-label">Subject:</span>
+              <span id="emailModalSubject" style="font-weight: 800; color: var(--text-primary);">Confirmed: Specialist Consultation [Ref: AH-XXXXXX]</span>
+            </div>
+          </div>
+
+          <div class="email-body-content" id="emailModalBody">
+            <!-- HTML email content injected by BookingWizard -->
+          </div>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem; margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--border);">
+          <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+            <button type="button" class="btn btn-primary" style="background: #ea4335; border-color: #ea4335;" onclick="BookingWizard.openInGmail()">
+              🚀 Open in Gmail (1-Click)
+            </button>
+            <button type="button" class="btn btn-secondary" onclick="BookingWizard.downloadEmlFile()">
+              📥 Download .EML (Outlook / Mail)
+            </button>
+            <button type="button" class="btn btn-outline" onclick="BookingWizard.openMailtoClient()">
+              ✉️ Open in Mail Client
+            </button>
+          </div>
+          <button type="button" class="btn btn-outline" onclick="BookingWizard.resendConfirmationEmail()">
+            🔄 Resend Pass
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 6: Secure Patient Login with Verification Code (2FA OTP) & Booking Lookup -->
+  <div class="modal-overlay" id="patientLoginModal">
+    <div class="modal-box" style="max-width: 520px;">
+      <div class="modal-header">
+        <div>
+          <span style="font-size: 0.75rem; font-weight: 800; text-transform: uppercase; color: var(--primary);">Patient Authentication</span>
+          <h3 style="font-size: 1.25rem; font-weight: 800; color: var(--text-primary);">Secure Patient Portal Login</h3>
+        </div>
+        <button type="button" class="modal-close-btn" onclick="PatientPortal.closeLoginModal()">×</button>
+      </div>
+
+      <div class="modal-body">
+        <!-- Auth Tabs: OTP vs Booking Lookup -->
+        <div style="display: flex; border-bottom: 1px solid var(--border); margin-bottom: 1.5rem;">
+          <button type="button" class="auth-tab-btn active" id="authTabOtpBtn" onclick="PatientPortal.switchAuthTab('otp')">
+            🔒 2FA Verification Code
+          </button>
+          <button type="button" class="auth-tab-btn" id="authTabLookupBtn" onclick="PatientPortal.switchAuthTab('lookup')">
+            🔍 Booking Reference Lookup
+          </button>
+        </div>
+
+        <!-- Tab 1: OTP Login Flow -->
+        <div id="authPaneOtp">
+          <!-- Step 1: Request Code -->
+          <div id="otpStep1">
+            <p style="font-size: 0.88rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 1.25rem;">
+              Enter your registered patient email address or phone number. We will send a secure 6-digit one-time verification code (OTP) to authenticate your access.
+            </p>
+
+            <div class="form-group">
+              <label class="form-label" for="loginIdentifier">Email Address or Phone Number *</label>
+              <input type="text" id="loginIdentifier" class="form-control" placeholder="e.g., patient@example.com or +1 555 234 5678" required>
+              <div class="field-error" id="loginIdentifierError"></div>
+            </div>
+
+            <!-- Quick Fill Suggestions -->
+            <div style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 1.25rem; background: #f8fafc; padding: 0.6rem 0.8rem; border-radius: var(--radius-md); border: 1px solid var(--border);">
+              <strong>Quick Fill:</strong>
+              <button type="button" style="color: var(--primary); font-weight: 700; text-decoration: underline; margin-left: 0.35rem;" onclick="PatientPortal.fillQuickIdentifier('alexander@example.com')">
+                Demo: Alexander Vance
+              </button>
+              <span id="lastBookedQuickLink"></span>
+            </div>
+
+            <button type="button" class="btn btn-primary" id="sendOtpSubmitBtn" style="width: 100%; padding: 0.8rem;" onclick="PatientPortal.sendOtpCode()">
+              📲 Send 6-Digit Verification Code
+            </button>
+          </div>
+
+          <!-- Step 2: Verify Code -->
+          <div id="otpStep2" style="display: none;">
+            <!-- Real-World Delivery Status Box (Gmail & SMS dispatch feedback) -->
+            <div id="otpDeliveryStatusBox"></div>
+
+            <!-- Prominent On-Screen Delivery Notification & Auto-fill Card -->
+            <div style="background: #f0fdf4; border: 2px solid #22c55e; border-radius: var(--radius-md); padding: 1.25rem; margin-bottom: 1.25rem; box-shadow: var(--shadow-sm);">
+              <div style="display: flex; align-items: flex-start; gap: 0.75rem;">
+                <span style="font-size: 2rem;">🔑</span>
+                <div style="flex: 1;">
+                  <div style="font-size: 0.78rem; font-weight: 800; text-transform: uppercase; color: #15803d; letter-spacing: 0.05em;">
+                    Live Verification Code (Delivered on Screen)
+                  </div>
+                  <div style="font-size: 0.82rem; color: #166534; margin: 0.2rem 0 0.6rem; line-height: 1.4;">
+                    Your security code is also displayed below so you can proceed without waiting for email delivery:
+                  </div>
+                  <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
+                    <div style="font-size: 1.85rem; font-weight: 800; letter-spacing: 0.15em; font-family: monospace; background: white; padding: 0.4rem 1rem; border-radius: 6px; border: 2px solid #22c55e; color: #0f172a;" id="simulatedOtpCodeText">
+                      ------
+                    </div>
+                    <button type="button" class="btn btn-primary" style="font-size: 0.9rem; padding: 0.55rem 1.15rem; font-weight: 800; background: #16a34a; border-color: #15803d; box-shadow: 0 4px 12px rgba(22, 163, 74, 0.35);" onclick="PatientPortal.autofillOtp()">
+                      ⚡ Click to Auto-Fill & Log In
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div style="margin-top: 1rem; padding-top: 0.75rem; border-top: 1px dashed #86efac; display: flex; justify-content: space-between; align-items: center; font-size: 0.78rem; flex-wrap: wrap; gap: 0.5rem;">
+                <button type="button" style="color: var(--primary); font-weight: 700; text-decoration: underline;" onclick="EmailGateway.downloadOtpEml(PatientPortal.pendingIdentifier, PatientPortal.generatedOtp)">
+                  📥 Open in Desktop Outlook / Windows Mail (.eml)
+                </button>
+                <button type="button" style="color: var(--text-muted); text-decoration: underline; font-weight: 600;" onclick="EmailGateway.openSettingsModal()">
+                  ⚙️ Notification & Delivery Settings
+                </button>
+              </div>
+            </div>
+
+            <div style="margin-bottom: 0.5rem; font-size: 0.85rem; color: var(--text-secondary);">
+              Enter the 6-digit verification code for <strong id="otpSentToDisplay" style="color: var(--primary);">your account</strong>:
+            </div>
+
+            <div class="form-group">
+              <input type="text" id="loginOtpInput" class="otp-digit-input" maxlength="6" placeholder="• • • • • •" autocomplete="one-time-code">
+              <div class="field-error" id="loginOtpError"></div>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.8rem; margin-bottom: 1.25rem;">
+              <span style="color: var(--text-muted);" id="otpCountdownTimer">Code valid for: <strong>10:00</strong></span>
+              <button type="button" style="color: var(--primary); font-weight: 700; text-decoration: underline;" onclick="PatientPortal.sendOtpCode()">
+                Resend Code
+              </button>
+            </div>
+
+            <div style="display: flex; gap: 0.75rem;">
+              <button type="button" class="btn btn-outline" style="flex: 1;" onclick="PatientPortal.backToOtpStep1()">
+                ← Back
+              </button>
+              <button type="button" class="btn btn-primary" style="flex: 2; padding: 0.8rem;" onclick="PatientPortal.verifyOtpCode()">
+                ✓ Verify & Access Records
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 2: Quick Booking Lookup -->
+        <div id="authPaneLookup" style="display: none;">
+          <p style="font-size: 0.88rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 1.25rem;">
+            Have a booking reference code from your confirmation pass? Enter it below to directly view your scheduled appointment, doctor notes, and clinical preparation pass.
+          </p>
+
+          <div class="form-group">
+            <label class="form-label" for="lookupRefInput">Booking Reference Number *</label>
+            <input type="text" id="lookupRefInput" class="form-control" placeholder="e.g., AH-829104" required>
+            <div class="field-error" id="lookupRefError"></div>
+          </div>
+
+          <button type="button" class="btn btn-primary" style="width: 100%; padding: 0.8rem;" onclick="PatientPortal.lookupBooking()">
+            🔍 Track & Open My Booking
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 7: Real Email & SMS Notification Center -->
+  <div class="modal-overlay" id="emailSettingsModal">
+    <div class="modal-box" style="max-width: 580px;">
+      <div class="modal-header">
+        <div style="display: flex; align-items: center; gap: 0.6rem;">
+          <span style="font-size: 1.3rem;">⚙️</span>
+          <div>
+            <h3 style="font-size: 1.15rem; font-weight: 800; color: var(--text-primary);">Notification & Live Delivery Settings</h3>
+            <p style="font-size: 0.75rem; color: var(--text-muted);">Real-world personal Gmail and mobile phone SMS dispatch</p>
+          </div>
+        </div>
+        <button type="button" class="modal-close-btn" onclick="EmailGateway.closeSettingsModal()">×</button>
+      </div>
+
+      <div class="modal-body">
+        <!-- Status of Active Delivery Channels -->
+        <div style="background: #f8fafc; border: 1.5px solid var(--border); border-radius: var(--radius-md); padding: 1rem; margin-bottom: 1.25rem;">
+          <div style="font-size: 0.82rem; font-weight: 800; color: var(--text-primary); margin-bottom: 0.5rem; text-transform: uppercase;">
+            Automated Delivery Gateway Status
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 0.5rem; font-size: 0.82rem;">
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+              <span>✉️ <strong>Direct Background Email to Gmail:</strong></span>
+              <span class="badge badge-primary">Requires Free Key Below</span>
+            </div>
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+              <span>📱 <strong>Mobile Phone SMS (Australia/Intl):</strong></span>
+              <span class="badge badge-warning">Carrier API Required</span>
+            </div>
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+              <span>⚡ <strong>Instant On-Screen Passcode:</strong></span>
+              <span class="badge badge-success">✓ Active (1-Click Auto-Fill)</span>
+            </div>
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+              <span>🔔 <strong>Browser & OS Push Notifications:</strong></span>
+              <button type="button" class="btn btn-outline" style="font-size: 0.72rem; padding: 0.2rem 0.5rem;" onclick="EmailGateway.requestNotificationPermission()">
+                Enable Desktop Alerts
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- EmailJS: Dispatches directly to Customer's Personal Gmail -->
+        <div style="background: #eff6ff; border: 1.5px solid #93c5fd; border-radius: var(--radius-md); padding: 1.25rem; margin-bottom: 1.25rem;">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.4rem;">
+            <h4 style="font-size: 0.95rem; font-weight: 800; color: #1d4ed8; margin: 0;">
+              📬 Send Directly to Customer's Gmail (EmailJS)
+            </h4>
+            <span class="badge badge-primary">Customer Delivery</span>
+          </div>
+          <p style="font-size: 0.8rem; color: #1e40af; line-height: 1.45; margin-bottom: 0.85rem;">
+            To send confirmation emails directly to whichever Gmail the <strong>customer</strong> enters:
+            <br>1. Create a free account at <a href="https://www.emailjs.com" target="_blank" style="text-decoration: underline; font-weight: 800; color: #1d4ed8;">emailjs.com</a> (Free 200 emails/month).
+            <br>2. In EmailJS: Connect your Gmail under <strong>Email Services</strong>, and create a template with <code>To Email: {{to_email}}</code>.
+            <br>3. Paste your keys below and click <strong>Save Settings</strong>:
+          </p>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 0.75rem;">
+            <div class="form-group" style="margin-bottom: 0;">
+              <label class="form-label" for="emailJsServiceIdInput" style="font-size: 0.78rem;">EmailJS Service ID</label>
+              <input type="text" id="emailJsServiceIdInput" class="form-control" placeholder="e.g. service_xxxxxxx">
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+              <label class="form-label" for="emailJsTemplateIdInput" style="font-size: 0.78rem;">EmailJS Template ID</label>
+              <input type="text" id="emailJsTemplateIdInput" class="form-control" placeholder="e.g. template_xxxxxxx">
+            </div>
+          </div>
+          <div class="form-group" style="margin-bottom: 0.5rem;">
+            <label class="form-label" for="emailJsPublicKeyInput" style="font-size: 0.78rem;">EmailJS Public Key</label>
+            <input type="text" id="emailJsPublicKeyInput" class="form-control" placeholder="e.g. xxxxxxxxxxxxxxxx">
+          </div>
+        </div>
+
+        <!-- Web3Forms: Admin Notification -->
+        <div style="background: #f8fafc; border: 1.5px solid var(--border); border-radius: var(--radius-md); padding: 1rem; margin-bottom: 1.25rem;">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.35rem;">
+            <h4 style="font-size: 0.88rem; font-weight: 700; color: var(--text-primary); margin: 0;">
+              🏥 Hospital Admin Alert Key (Web3Forms)
+            </h4>
+            <span class="badge badge-success">Hospital Alerts</span>
+          </div>
+          <p style="font-size: 0.76rem; color: var(--text-muted); margin-bottom: 0.5rem; line-height: 1.4;">
+            Web3Forms sends a copy of every booking directly to <strong>YOU (the hospital admin)</strong>.
+          </p>
+          <div class="form-group" style="margin-bottom: 0;">
+            <input type="text" id="web3FormsAccessKeyInput" class="form-control" placeholder="Web3Forms Access Key (for admin notifications)">
+          </div>
+        </div>
+
+        <!-- Live Delivery Test Center -->
+        <div style="background: #f0f9ff; border: 1.5px solid #bae6fd; border-radius: var(--radius-md); padding: 1.25rem; margin-bottom: 1.25rem;">
+          <h4 style="font-size: 0.95rem; font-weight: 800; color: #0369a1; margin-bottom: 0.4rem;">
+            🧪 Test Live Delivery to Your Personal Devices
+          </h4>
+          <p style="font-size: 0.8rem; color: #0284c7; line-height: 1.4; margin-bottom: 1rem;">
+            Test sending a live message to your actual Gmail address or physical smartphone:
+          </p>
+
+          <!-- Test Gmail -->
+          <div style="margin-bottom: 1rem;">
+            <label class="form-label" style="font-size: 0.78rem;" for="testEmailInput">Send Test Message to Gmail / Email</label>
+            <div style="display: flex; gap: 0.5rem;">
+              <input type="email" id="testEmailInput" class="form-control" placeholder="e.g. nirooj11@gmail.com" value="nirooj11@gmail.com" style="flex: 1; font-size: 0.85rem;">
+              <button type="button" class="btn btn-primary" style="font-size: 0.82rem; white-space: nowrap; padding: 0.5rem 0.9rem;" onclick="EmailGateway.testSendEmail(document.getElementById('testEmailInput').value)">
+                ✉️ Send to Gmail
+              </button>
+            </div>
+            <div style="font-size: 0.74rem; color: #0284c7; margin-top: 0.3rem;">
+              * Note: Check your Gmail Inbox and Spam folder. FormSubmit may request a 1-click confirmation on first use.
+            </div>
+          </div>
+
+          <!-- Test Mobile SMS -->
+          <div>
+            <label class="form-label" style="font-size: 0.78rem;" for="testPhoneInput">Send Test SMS to Mobile Phone</label>
+            <div style="display: flex; gap: 0.5rem;">
+              <input type="text" id="testPhoneInput" class="form-control" placeholder="e.g. +61 412 345 678 or +1 555 123 4567" style="flex: 1; font-size: 0.85rem;">
+              <button type="button" class="btn btn-secondary" style="font-size: 0.82rem; white-space: nowrap; padding: 0.5rem 0.9rem;" onclick="EmailGateway.testSendSms(document.getElementById('testPhoneInput').value)">
+                📱 Send SMS
+              </button>
+            </div>
+            <div style="font-size: 0.74rem; color: #0284c7; margin-top: 0.3rem;">
+              * Requires full international format including country code (e.g., +1 for USA, +61 for Australia, etc.).
+            </div>
+          </div>
+        </div>
+
+        <!-- Optional Custom EmailJS Configuration -->
+        <details style="margin-bottom: 1rem; border: 1px solid var(--border); border-radius: var(--radius-md); padding: 0.75rem;">
+          <summary style="font-size: 0.85rem; font-weight: 700; color: var(--text-primary); cursor: pointer;">
+            ⚙️ Advanced: Connect Dedicated Custom EmailJS / Domain
+          </summary>
+          <div style="margin-top: 0.85rem;">
+            <div class="form-group">
+              <label class="form-label" for="emailServiceModeSelect">Preferred Primary Mode</label>
+              <select id="emailServiceModeSelect" class="form-control" onchange="EmailGateway.handleServiceModeChange(this.value)">
+                <option value="auto">Multi-Channel Auto (FormSubmit + Textbelt SMS + Push + On-Screen)</option>
+                <option value="emailjs">Custom EmailJS Dedicated Account</option>
+                <option value="simulation">Local Simulation Only</option>
+              </select>
+            </div>
+
+            <div id="emailJsCredentialsGroup" style="display: none;">
+              <div class="form-group">
+                <label class="form-label" for="emailJsServiceIdInput">EmailJS Service ID</label>
+                <input type="text" id="emailJsServiceIdInput" class="form-control" placeholder="e.g., service_xyz123">
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="emailJsTemplateIdInput">EmailJS Template ID</label>
+                <input type="text" id="emailJsTemplateIdInput" class="form-control" placeholder="e.g., template_abc456">
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="emailJsPublicKeyInput">EmailJS Public Key</label>
+                <input type="text" id="emailJsPublicKeyInput" class="form-control" placeholder="e.g., user_key123">
+              </div>
+            </div>
+          </div>
+        </details>
+
+        <div style="display: flex; gap: 0.75rem; justify-content: flex-end;">
+          <button type="button" class="btn btn-outline" onclick="EmailGateway.closeSettingsModal()">Close</button>
+          <button type="button" class="btn btn-primary" onclick="EmailGateway.saveSettingsFromForm()">Save Settings</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notifications Container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- JavaScript Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+  <script src="js/data.js"></script>
+  <script src="js/email.js"></script>
+  <script src="js/booking.js"></script>
+  <script src="js/portal.js"></script>
+  <script src="js/triage.js"></script>
+  <script src="js/ambulance.js"></script>
+  <script src="js/admin.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

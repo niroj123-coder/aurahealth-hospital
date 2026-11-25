@@ -1,0 +1,21 @@
+{
+  "name": "aurahealth-hospital-portal",
+  "version": "1.0.0",
+  "description": "AuraHealth International Hospital - Modern, full-featured hospital web portal with appointment booking, patient portal, live bed tracker, and emergency ambulance dispatch.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "serve": "node server.js"
+  },
+  "keywords": [
+    "hospital",
+    "healthcare",
+    "medical-portal",
+    "appointment-booking",
+    "patient-portal",
+    "ambulance-sos",
+    "telehealth"
+  ],
+  "author": "AuraHealth Medical Group",
+  "license": "MIT"
+}
