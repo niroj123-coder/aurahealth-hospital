@@ -21,7 +21,7 @@
   <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
 
   <!-- Stylesheet with Cache Busting -->
-  <link rel="stylesheet" href="css/styles.css?v=2026.11.26.2">
+  <link rel="stylesheet" href="css/styles.css?v=2026.11.26.3">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23005B96'><path d='M12 2L4 5v6.09c0 5.05 3.41 9.76 8 10.91 4.59-1.15 8-5.86 8-10.91V5l-8-3zm1 14h-2v-3H8v-2h3V8h2v3h3v2h-3v3z'/></svg>">
 </head>
 <body>
@@ -97,10 +97,10 @@
             <span id="navLinkDepts">Clinical Services</span> ▾
           </button>
           <div class="nav-dropdown-menu" style="display: none;">
-            <a href="#departments" class="nav-dropdown-item">🩺 14 Specialist Departments</a>
-            <a href="#facilities" class="nav-dropdown-item">🏥 Hospital Facilities</a>
-            <a href="javascript:void(0)" onclick="App.openTelehealthModal()" class="nav-dropdown-item">📹 Telehealth Consultation</a>
-            <a href="#emergency-info" class="nav-dropdown-item" style="color: var(--emergency);">🚨 Level-1 Trauma Centre (000)</a>
+            <a href="#departments" class="nav-dropdown-item" onclick="App.closeDropdowns()">🩺 14 Specialist Departments</a>
+            <a href="#facilities" class="nav-dropdown-item" onclick="App.closeDropdowns()">🏥 Hospital Facilities</a>
+            <a href="javascript:void(0)" onclick="App.closeDropdowns(); App.openTelehealthModal()" class="nav-dropdown-item">📹 Telehealth Consultation</a>
+            <a href="#emergency-info" class="nav-dropdown-item" onclick="App.closeDropdowns()" style="color: var(--emergency);">🚨 Level-1 Trauma Centre (000)</a>
           </div>
         </div>
 
@@ -112,10 +112,10 @@
             <span id="navLinkVisitors">Patients & Visitors</span> ▾
           </button>
           <div class="nav-dropdown-menu" style="display: none;">
-            <a href="javascript:void(0)" onclick="App.openCheckinModal()" class="nav-dropdown-item">🎫 Digital Appointment Check-in</a>
-            <a href="javascript:void(0)" onclick="App.openLiveQueueModal()" class="nav-dropdown-item">⏱️ Live Wait Times & Queue</a>
-            <a href="#visitors" class="nav-dropdown-item">👥 Visitor Guidelines & Hours</a>
-            <a href="#patient-portal" class="nav-dropdown-item">👤 Patient Portal & Records</a>
+            <a href="javascript:void(0)" onclick="App.closeDropdowns(); App.openCheckinModal()" class="nav-dropdown-item">🎫 Digital Appointment Check-in</a>
+            <a href="javascript:void(0)" onclick="App.closeDropdowns(); App.openLiveQueueModal()" class="nav-dropdown-item">⏱️ Live Wait Times & Queue</a>
+            <a href="#visitors" class="nav-dropdown-item" onclick="App.closeDropdowns()">👥 Visitor Guidelines & Hours</a>
+            <a href="#patient-portal" class="nav-dropdown-item" onclick="App.closeDropdowns()">👤 Patient Portal & Records</a>
           </div>
         </div>
 
@@ -175,7 +175,7 @@
       <div class="container hero-grid" style="display: grid; grid-template-columns: 1.15fr 0.85fr; gap: 3rem; align-items: center;">
         <div>
           <div style="display: inline-flex; align-items: center; gap: 0.5rem; background: var(--primary-light); color: var(--primary); padding: 0.35rem 0.85rem; border-radius: var(--radius-full); font-weight: 700; font-size: 0.82rem; margin-bottom: 1.25rem;">
-            <span>🇦🇺 Premier Australian Hospital & Level-1 Trauma Centre</span>
+            <span id="heroBadge">🇦🇺 Premier Australian Hospital & Level-1 Trauma Centre</span>
           </div>
 
           <h1 class="hero-title" style="font-family: var(--font-heading); font-size: 3.2rem; font-weight: 800; color: var(--dark-navy); line-height: 1.15; margin-bottom: 1.25rem;">
@@ -183,7 +183,7 @@
             <span style="color: var(--primary);">Our Priority.</span>
           </h1>
 
-          <p style="font-size: 1.1rem; color: var(--text-secondary); line-height: 1.65; margin-bottom: 2rem; max-width: 580px;">
+          <p id="heroSubtitle" style="font-size: 1.1rem; color: var(--text-secondary); line-height: 1.65; margin-bottom: 2rem; max-width: 580px;">
             Darwin City Hospital provides world-class tertiary referral healthcare across the Top End of Australia. From 24/7 Level-1 trauma resuscitation and robotic surgery to compassionate family medicine, our 180+ qualified specialists are dedicated to your wellbeing.
           </p>
 
@@ -542,9 +542,9 @@
     </section>
 
     <!-- =======================================================================
-         10. Why Choose Us Section
+         10. Hospital Facilities & Why Choose Us Section
          ======================================================================= -->
-    <section class="section-padding" style="padding: 4rem 1rem; background: var(--bg-body);">
+    <section class="section-padding" id="facilities" style="padding: 4rem 1rem; background: var(--bg-body);">
       <div class="container">
         <div style="text-align: center; max-width: 700px; margin: 0 auto 3rem;">
           <h2 style="font-size: 2.2rem; font-weight: 800; color: var(--dark-navy);">Why Choose Darwin City Hospital</h2>

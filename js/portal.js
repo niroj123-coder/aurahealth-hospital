@@ -123,7 +123,7 @@ const PatientPortal = {
     const apptContainer = document.getElementById('portalAppointmentsList');
     const apptFullContainer = document.getElementById('portalAppointmentsListFull');
     if (apptContainer || apptFullContainer) {
-      const apptHtml = appts.length === 0 
+      const apptHtml = appts.length === 0
         ? `<div style="text-align: center; padding: 2rem; color: var(--text-muted);">No appointments booked. Click 'Book Appointment' to schedule one.</div>`
         : appts.map(a => {
           const statusClass = a.status === 'confirmed' ? 'badge-success' : a.status === 'cancelled' ? 'badge-danger' : a.status === 'completed' ? 'badge-secondary' : 'badge-warning';
@@ -267,18 +267,18 @@ const PatientPortal = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ appointmentId: apptId, newDate, newTime })
     })
-    .then(r => r.json())
-    .then(res => {
-      if (res.success) {
-        App.showToast(`✅ ${res.message}`, 'success');
-        this.renderPatientDashboard();
-      } else {
-        App.showToast(`❌ Error: ${res.error}`, 'error');
-      }
-    })
-    .catch(err => {
-      App.showToast('Could not reschedule appointment.', 'error');
-    });
+      .then(r => r.json())
+      .then(res => {
+        if (res.success) {
+          App.showToast(`✅ ${res.message}`, 'success');
+          this.renderPatientDashboard();
+        } else {
+          App.showToast(`❌ Error: ${res.error}`, 'error');
+        }
+      })
+      .catch(err => {
+        App.showToast('Could not reschedule appointment.', 'error');
+      });
   },
 
   // Cancel Appointment
@@ -290,18 +290,18 @@ const PatientPortal = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ appointmentId: apptId })
     })
-    .then(r => r.json())
-    .then(res => {
-      if (res.success) {
-        App.showToast(`✅ ${res.message}`, 'success');
-        this.renderPatientDashboard();
-      } else {
-        App.showToast(`❌ ${res.error}`, 'error');
-      }
-    })
-    .catch(() => {
-      App.showToast('Error cancelling appointment.', 'error');
-    });
+      .then(r => r.json())
+      .then(res => {
+        if (res.success) {
+          App.showToast(`✅ ${res.message}`, 'success');
+          this.renderPatientDashboard();
+        } else {
+          App.showToast(`❌ ${res.error}`, 'error');
+        }
+      })
+      .catch(() => {
+        App.showToast('Error cancelling appointment.', 'error');
+      });
   },
 
   // =========================================================================
