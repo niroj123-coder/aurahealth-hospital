@@ -93,6 +93,21 @@ const App = {
       });
     }
 
+    // Nav Dropdown click toggling and outside click closing
+    document.querySelectorAll('.nav-dropdown-toggle').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const parent = btn.closest('.nav-dropdown');
+        const wasActive = parent.classList.contains('active');
+        document.querySelectorAll('.nav-dropdown').forEach(d => d.classList.remove('active'));
+        if (!wasActive) parent.classList.add('active');
+      });
+    });
+
+    document.addEventListener('click', () => {
+      document.querySelectorAll('.nav-dropdown').forEach(d => d.classList.remove('active'));
+    });
+
     // Dark/Light Mode Preference Init
     const savedTheme = localStorage.getItem('dch_theme') || 'light';
     document.documentElement.setAttribute('data-theme', savedTheme);

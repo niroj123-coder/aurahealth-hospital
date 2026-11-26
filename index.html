@@ -20,8 +20,8 @@
   <!-- QRCode CDN for Digital Patient ID & Check-in QR Generation -->
   <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
 
-  <!-- Stylesheet -->
-  <link rel="stylesheet" href="css/styles.css">
+  <!-- Stylesheet with Cache Busting -->
+  <link rel="stylesheet" href="css/styles.css?v=2026.11.26.2">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23005B96'><path d='M12 2L4 5v6.09c0 5.05 3.41 9.76 8 10.91 4.59-1.15 8-5.86 8-10.91V5l-8-3zm1 14h-2v-3H8v-2h3V8h2v3h3v2h-3v3z'/></svg>">
 </head>
 <body>
@@ -30,12 +30,12 @@
        1. Top Emergency Ticker & Information Bar
        ========================================================================= -->
   <aside class="top-emergency-bar">
-    <div class="top-bar-inner">
+    <div class="container top-bar-inner">
       <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
         <span class="emergency-call-badge">
           <span>🚨 Australian Emergency: Dial 000</span>
         </span>
-        <span style="opacity: 0.9; font-size: 0.8rem;" id="topSubBarNote">
+        <span style="opacity: 0.95; font-size: 0.8rem;" id="topSubBarNote">
           🏥 Level-1 Regional Trauma Centre NT • 24/7 Resuscitation Ready
         </span>
         <span style="background: rgba(255,255,255,0.15); padding: 0.15rem 0.5rem; border-radius: 4px; font-size: 0.72rem; font-weight: 600;">
@@ -43,27 +43,28 @@
         </span>
       </div>
 
-      <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
+      <div style="display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap;">
         <!-- Language Switcher -->
         <div style="display: flex; align-items: center; gap: 0.25rem;">
           <span style="font-size: 0.8rem; opacity: 0.9;">🌐</span>
-          <select id="globalLangSelector" onchange="App.setLanguage(this.value)" aria-label="Select Language" style="background: rgba(255,255,255,0.18); color: #fff; border: 1px solid rgba(255,255,255,0.35); border-radius: 4px; padding: 0.15rem 0.45rem; font-size: 0.74rem; font-weight: 600; cursor: pointer; outline: none;">
+          <select id="globalLangSelector" onchange="App.setLanguage(this.value)" aria-label="Select Language" style="background: rgba(255,255,255,0.18); color: #fff; border: 1px solid rgba(255,255,255,0.35); border-radius: 4px; padding: 0.2rem 0.5rem; font-size: 0.74rem; font-weight: 600; cursor: pointer; outline: none;">
             <option value="en" style="color: #0F172A;">English (AU)</option>
             <option value="ne" style="color: #0F172A;">नेपाली (Nepali)</option>
             <option value="hi" style="color: #0F172A;">हिन्दी (Hindi)</option>
           </select>
         </div>
 
-        <button type="button" class="btn btn-outline" style="padding: 0.15rem 0.55rem; font-size: 0.72rem; color: #fff; border-color: rgba(255,255,255,0.35);" onclick="App.openLiveQueueModal()" title="Live Wait Times & Clinic Queue">⏱️ Wait Times</button>
-        <button type="button" class="btn btn-outline" style="padding: 0.15rem 0.55rem; font-size: 0.72rem; color: #fff; border-color: rgba(255,255,255,0.35);" onclick="App.openTelehealthModal()" title="Virtual Telehealth Consultation">📹 Telehealth</button>
+        <button type="button" class="top-bar-btn" onclick="App.openLiveQueueModal()" title="Live Wait Times & Clinic Queue">⏱️ Wait Times</button>
+        <button type="button" class="top-bar-btn" onclick="App.openTelehealthModal()" title="Virtual Telehealth Consultation">📹 Telehealth</button>
 
-        <a href="tel:0889990000" style="color: #e0f0fa; font-weight: 600; font-size: 0.82rem;">
-          📞 Non-Emergency: <strong>(08) 8999 0000</strong>
+        <a href="tel:0889990000" class="top-bar-btn" style="text-decoration: none;">
+          📞 (08) 8999 0000
         </a>
+
         <div style="display: flex; align-items: center; gap: 0.25rem;">
-          <button type="button" class="btn btn-outline" style="padding: 0.15rem 0.45rem; font-size: 0.72rem; color: #fff; border-color: rgba(255,255,255,0.3);" onclick="App.adjustFontSize(-5)" title="Decrease Font Size">A-</button>
-          <button type="button" class="btn btn-outline" style="padding: 0.15rem 0.45rem; font-size: 0.72rem; color: #fff; border-color: rgba(255,255,255,0.3);" onclick="App.adjustFontSize(5)" title="Increase Font Size">A+</button>
-          <button type="button" class="btn btn-outline" style="padding: 0.15rem 0.55rem; font-size: 0.72rem; color: #fff; border-color: rgba(255,255,255,0.3);" onclick="App.toggleTheme()" title="Toggle Dark/Light Mode">🌓 Theme</button>
+          <button type="button" class="top-bar-btn" style="padding: 0.2rem 0.45rem;" onclick="App.adjustFontSize(-5)" title="Decrease Font Size">A-</button>
+          <button type="button" class="top-bar-btn" style="padding: 0.2rem 0.45rem;" onclick="App.adjustFontSize(5)" title="Increase Font Size">A+</button>
+          <button type="button" class="top-bar-btn" onclick="App.toggleTheme()" title="Toggle Dark/Light Mode">🌓 Theme</button>
         </div>
       </div>
     </div>
@@ -73,20 +74,20 @@
        2. Sticky Navigation Header with Professional Dropdowns
        ========================================================================= -->
   <header class="site-header" style="position: sticky; top: 0; background: var(--bg-surface); z-index: 100; box-shadow: var(--shadow-sm); border-bottom: 1px solid var(--border);">
-    <div class="container header-inner" style="display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 1rem;">
+    <div class="container header-inner" style="display: flex; align-items: center; justify-content: space-between; padding: 0.65rem 1rem;">
       <!-- Hospital Logo -->
-      <a href="#home" class="brand-logo" style="display: flex; align-items: center; gap: 0.75rem; text-decoration: none;">
-        <div style="background: var(--primary); color: white; width: 42px; height: 42px; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: 800; box-shadow: 0 4px 10px rgba(0, 91, 150, 0.3);">
+      <a href="#home" class="brand-logo" style="display: flex; align-items: center; gap: 0.75rem; text-decoration: none; flex-shrink: 0; min-width: 250px;">
+        <div style="background: var(--primary); color: white; width: 42px; height: 42px; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: 800; box-shadow: 0 4px 10px rgba(0, 91, 150, 0.3); flex-shrink: 0;">
           +
         </div>
-        <div>
-          <span style="font-size: 1.25rem; font-weight: 800; color: var(--dark-navy); letter-spacing: -0.5px; display: block; line-height: 1.1;" id="navHospitalTitle">Darwin City Hospital</span>
-          <span style="font-size: 0.72rem; color: var(--secondary); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;" id="navHospitalSubtitle">Northern Territory • Australia</span>
+        <div style="white-space: nowrap;">
+          <span style="font-size: 1.25rem; font-weight: 800; color: var(--dark-navy); letter-spacing: -0.5px; display: block; line-height: 1.1; white-space: nowrap;" id="navHospitalTitle">Darwin City Hospital</span>
+          <span style="font-size: 0.72rem; color: var(--secondary); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap;" id="navHospitalSubtitle">Northern Territory • Australia</span>
         </div>
       </a>
 
       <!-- Desktop Nav Links with Dropdowns -->
-      <nav class="main-nav" style="display: flex; gap: 1.2rem; font-size: 0.9rem; font-weight: 600; align-items: center;">
+      <nav class="main-nav" style="display: flex; gap: 1rem; font-size: 0.88rem; font-weight: 600; align-items: center; white-space: nowrap;">
         <a href="#home" class="nav-link" id="navLinkHome">Home</a>
         <a href="#about" class="nav-link" id="navLinkAbout">About Us</a>
 
@@ -95,7 +96,7 @@
           <button type="button" class="nav-dropdown-toggle">
             <span id="navLinkDepts">Clinical Services</span> ▾
           </button>
-          <div class="nav-dropdown-menu">
+          <div class="nav-dropdown-menu" style="display: none;">
             <a href="#departments" class="nav-dropdown-item">🩺 14 Specialist Departments</a>
             <a href="#facilities" class="nav-dropdown-item">🏥 Hospital Facilities</a>
             <a href="javascript:void(0)" onclick="App.openTelehealthModal()" class="nav-dropdown-item">📹 Telehealth Consultation</a>
@@ -110,7 +111,7 @@
           <button type="button" class="nav-dropdown-toggle">
             <span id="navLinkVisitors">Patients & Visitors</span> ▾
           </button>
-          <div class="nav-dropdown-menu">
+          <div class="nav-dropdown-menu" style="display: none;">
             <a href="javascript:void(0)" onclick="App.openCheckinModal()" class="nav-dropdown-item">🎫 Digital Appointment Check-in</a>
             <a href="javascript:void(0)" onclick="App.openLiveQueueModal()" class="nav-dropdown-item">⏱️ Live Wait Times & Queue</a>
             <a href="#visitors" class="nav-dropdown-item">👥 Visitor Guidelines & Hours</a>
@@ -123,21 +124,21 @@
       </nav>
 
       <!-- Action Buttons -->
-      <div style="display: flex; align-items: center; gap: 0.5rem;">
-        <button type="button" class="btn btn-outline" style="padding: 0.5rem 0.75rem; font-size: 0.82rem;" onclick="App.openSearchModal()" title="Search clinical services (Ctrl+K)">
+      <div style="display: flex; align-items: center; gap: 0.45rem; flex-shrink: 0;">
+        <button type="button" class="btn btn-outline" style="padding: 0.45rem 0.65rem; font-size: 0.8rem;" onclick="App.openSearchModal()" title="Search clinical services (Ctrl+K)">
           <span>🔍</span>
-          <span style="font-size: 0.7rem; color: var(--text-muted); background: var(--bg-alt); padding: 0.1rem 0.35rem; border-radius: 4px; margin-left: 0.25rem;">Ctrl+K</span>
+          <span style="font-size: 0.68rem; color: var(--text-muted); background: var(--bg-alt); padding: 0.1rem 0.35rem; border-radius: 4px; margin-left: 0.2rem;">Ctrl+K</span>
         </button>
 
-        <button type="button" class="btn btn-outline" style="font-size: 0.85rem; padding: 0.5rem 0.8rem;" onclick="App.openCheckinModal()" title="Digital Appointment Check-in">
+        <button type="button" class="btn btn-outline" style="font-size: 0.82rem; padding: 0.45rem 0.75rem;" onclick="App.openCheckinModal()" title="Digital Appointment Check-in">
           🎫 Check In
         </button>
 
-        <button type="button" class="btn btn-secondary" id="portalAuthNavBtn" style="font-size: 0.85rem; padding: 0.5rem 0.9rem;" onclick="PatientPortal.openLoginModal()">
+        <button type="button" class="btn btn-secondary" id="portalAuthNavBtn" style="font-size: 0.82rem; padding: 0.45rem 0.8rem;" onclick="PatientPortal.openLoginModal()">
           👤 Portal Login
         </button>
 
-        <button type="button" class="btn btn-primary" style="font-size: 0.85rem; padding: 0.5rem 1rem;" onclick="BookingWizard.open()">
+        <button type="button" class="btn btn-primary" style="font-size: 0.82rem; padding: 0.45rem 0.95rem; font-weight: 700;" onclick="BookingWizard.open()">
           📅 Book Appointment
         </button>
 

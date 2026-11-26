@@ -1415,8 +1415,9 @@ const server = http.createServer(async (req, res) => {
     const ext = path.extname(safePath).toLowerCase();
     const contentType = MIME_TYPES[ext] || 'application/octet-stream';
 
-    // 1 hour cache for assets, no-cache for index.html
-    const cacheControl = (ext === '.html') ? 'no-cache, must-revalidate' : 'public, max-age=3600';
+    // Ensure HTML, CSS, and JS are immediately updated without stale browser cache
+    const isCodeAsset = ext === '.html' || ext === '.css' || ext === '.js';
+    const cacheControl = isCodeAsset ? 'no-cache, must-revalidate, max-age=0' : 'public, max-age=3600';
 
     res.writeHead(200, {
       'Content-Type': contentType,
