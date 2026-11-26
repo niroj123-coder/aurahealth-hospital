@@ -14,6 +14,12 @@
   <!-- Chart.js CDN for Admin Analytics -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- QRCode CDN for Digital Patient ID & Check-in QR Generation -->
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+
   <!-- Stylesheet -->
   <link rel="stylesheet" href="css/styles.css">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23005B96'><path d='M12 2L4 5v6.09c0 5.05 3.41 9.76 8 10.91 4.59-1.15 8-5.86 8-10.91V5l-8-3zm1 14h-2v-3H8v-2h3V8h2v3h3v2h-3v3z'/></svg>">
@@ -29,7 +35,7 @@
         <span class="emergency-call-badge">
           <span>🚨 Australian Emergency: Dial 000</span>
         </span>
-        <span style="opacity: 0.9; font-size: 0.8rem;">
+        <span style="opacity: 0.9; font-size: 0.8rem;" id="topSubBarNote">
           🏥 Level-1 Regional Trauma Centre NT • 24/7 Resuscitation Ready
         </span>
         <span style="background: rgba(255,255,255,0.15); padding: 0.15rem 0.5rem; border-radius: 4px; font-size: 0.72rem; font-weight: 600;">
@@ -37,11 +43,24 @@
         </span>
       </div>
 
-      <div style="display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;">
+      <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
+        <!-- Language Switcher -->
+        <div style="display: flex; align-items: center; gap: 0.25rem;">
+          <span style="font-size: 0.8rem; opacity: 0.9;">🌐</span>
+          <select id="globalLangSelector" onchange="App.setLanguage(this.value)" aria-label="Select Language" style="background: rgba(255,255,255,0.18); color: #fff; border: 1px solid rgba(255,255,255,0.35); border-radius: 4px; padding: 0.15rem 0.45rem; font-size: 0.74rem; font-weight: 600; cursor: pointer; outline: none;">
+            <option value="en" style="color: #0F172A;">English (AU)</option>
+            <option value="ne" style="color: #0F172A;">नेपाली (Nepali)</option>
+            <option value="hi" style="color: #0F172A;">हिन्दी (Hindi)</option>
+          </select>
+        </div>
+
+        <button type="button" class="btn btn-outline" style="padding: 0.15rem 0.55rem; font-size: 0.72rem; color: #fff; border-color: rgba(255,255,255,0.35);" onclick="App.openLiveQueueModal()" title="Live Wait Times & Clinic Queue">⏱️ Wait Times</button>
+        <button type="button" class="btn btn-outline" style="padding: 0.15rem 0.55rem; font-size: 0.72rem; color: #fff; border-color: rgba(255,255,255,0.35);" onclick="App.openTelehealthModal()" title="Virtual Telehealth Consultation">📹 Telehealth</button>
+
         <a href="tel:0889990000" style="color: #e0f0fa; font-weight: 600; font-size: 0.82rem;">
           📞 Non-Emergency: <strong>(08) 8999 0000</strong>
         </a>
-        <div style="display: flex; align-items: center; gap: 0.3rem;">
+        <div style="display: flex; align-items: center; gap: 0.25rem;">
           <button type="button" class="btn btn-outline" style="padding: 0.15rem 0.45rem; font-size: 0.72rem; color: #fff; border-color: rgba(255,255,255,0.3);" onclick="App.adjustFontSize(-5)" title="Decrease Font Size">A-</button>
           <button type="button" class="btn btn-outline" style="padding: 0.15rem 0.45rem; font-size: 0.72rem; color: #fff; border-color: rgba(255,255,255,0.3);" onclick="App.adjustFontSize(5)" title="Increase Font Size">A+</button>
           <button type="button" class="btn btn-outline" style="padding: 0.15rem 0.55rem; font-size: 0.72rem; color: #fff; border-color: rgba(255,255,255,0.3);" onclick="App.toggleTheme()" title="Toggle Dark/Light Mode">🌓 Theme</button>
@@ -51,7 +70,7 @@
   </aside>
 
   <!-- =========================================================================
-       2. Sticky Navigation Header
+       2. Sticky Navigation Header with Professional Dropdowns
        ========================================================================= -->
   <header class="site-header" style="position: sticky; top: 0; background: var(--bg-surface); z-index: 100; box-shadow: var(--shadow-sm); border-bottom: 1px solid var(--border);">
     <div class="container header-inner" style="display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 1rem;">
@@ -61,28 +80,57 @@
           +
         </div>
         <div>
-          <span style="font-size: 1.25rem; font-weight: 800; color: var(--dark-navy); letter-spacing: -0.5px; display: block; line-height: 1.1;">Darwin City Hospital</span>
-          <span style="font-size: 0.72rem; color: var(--secondary); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Northern Territory • Australia</span>
+          <span style="font-size: 1.25rem; font-weight: 800; color: var(--dark-navy); letter-spacing: -0.5px; display: block; line-height: 1.1;" id="navHospitalTitle">Darwin City Hospital</span>
+          <span style="font-size: 0.72rem; color: var(--secondary); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;" id="navHospitalSubtitle">Northern Territory • Australia</span>
         </div>
       </a>
 
-      <!-- Desktop Nav Links -->
-      <nav class="main-nav" style="display: flex; gap: 1.2rem; font-size: 0.9rem; font-weight: 600;">
-        <a href="#home" class="nav-link">Home</a>
-        <a href="#about" class="nav-link">About Us</a>
-        <a href="#departments" class="nav-link">Departments</a>
-        <a href="#doctors" class="nav-link">Our Doctors</a>
-        <a href="#emergency-info" class="nav-link" style="color: var(--emergency);">Emergency (000)</a>
-        <a href="#visitors" class="nav-link">Patient & Visitors</a>
-        <a href="#health-news" class="nav-link">Health Info</a>
-        <a href="#contact" class="nav-link">Contact Us</a>
+      <!-- Desktop Nav Links with Dropdowns -->
+      <nav class="main-nav" style="display: flex; gap: 1.2rem; font-size: 0.9rem; font-weight: 600; align-items: center;">
+        <a href="#home" class="nav-link" id="navLinkHome">Home</a>
+        <a href="#about" class="nav-link" id="navLinkAbout">About Us</a>
+
+        <!-- Services Dropdown -->
+        <div class="nav-dropdown">
+          <button type="button" class="nav-dropdown-toggle">
+            <span id="navLinkDepts">Clinical Services</span> ▾
+          </button>
+          <div class="nav-dropdown-menu">
+            <a href="#departments" class="nav-dropdown-item">🩺 14 Specialist Departments</a>
+            <a href="#facilities" class="nav-dropdown-item">🏥 Hospital Facilities</a>
+            <a href="javascript:void(0)" onclick="App.openTelehealthModal()" class="nav-dropdown-item">📹 Telehealth Consultation</a>
+            <a href="#emergency-info" class="nav-dropdown-item" style="color: var(--emergency);">🚨 Level-1 Trauma Centre (000)</a>
+          </div>
+        </div>
+
+        <a href="#doctors" class="nav-link" id="navLinkDoctors">Our Doctors</a>
+
+        <!-- Patients & Visitors Dropdown -->
+        <div class="nav-dropdown">
+          <button type="button" class="nav-dropdown-toggle">
+            <span id="navLinkVisitors">Patients & Visitors</span> ▾
+          </button>
+          <div class="nav-dropdown-menu">
+            <a href="javascript:void(0)" onclick="App.openCheckinModal()" class="nav-dropdown-item">🎫 Digital Appointment Check-in</a>
+            <a href="javascript:void(0)" onclick="App.openLiveQueueModal()" class="nav-dropdown-item">⏱️ Live Wait Times & Queue</a>
+            <a href="#visitors" class="nav-dropdown-item">👥 Visitor Guidelines & Hours</a>
+            <a href="#patient-portal" class="nav-dropdown-item">👤 Patient Portal & Records</a>
+          </div>
+        </div>
+
+        <a href="#health-news" class="nav-link" id="navLinkHealthInfo">Health Info</a>
+        <a href="#contact" class="nav-link" id="navLinkContact">Contact Us</a>
       </nav>
 
       <!-- Action Buttons -->
-      <div style="display: flex; align-items: center; gap: 0.6rem;">
+      <div style="display: flex; align-items: center; gap: 0.5rem;">
         <button type="button" class="btn btn-outline" style="padding: 0.5rem 0.75rem; font-size: 0.82rem;" onclick="App.openSearchModal()" title="Search clinical services (Ctrl+K)">
           <span>🔍</span>
           <span style="font-size: 0.7rem; color: var(--text-muted); background: var(--bg-alt); padding: 0.1rem 0.35rem; border-radius: 4px; margin-left: 0.25rem;">Ctrl+K</span>
+        </button>
+
+        <button type="button" class="btn btn-outline" style="font-size: 0.85rem; padding: 0.5rem 0.8rem;" onclick="App.openCheckinModal()" title="Digital Appointment Check-in">
+          🎫 Check In
         </button>
 
         <button type="button" class="btn btn-secondary" id="portalAuthNavBtn" style="font-size: 0.85rem; padding: 0.5rem 0.9rem;" onclick="PatientPortal.openLoginModal()">
@@ -179,11 +227,29 @@
           <p style="color: var(--text-muted); font-size: 0.95rem;">Fast-track navigation to primary clinical workflows</p>
         </div>
 
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1.25rem;">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 1.25rem;">
           <div class="quick-access-card" style="background: var(--bg-body); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.5rem; text-align: center; cursor: pointer; transition: var(--transition);" onclick="BookingWizard.open()">
             <div style="font-size: 2.2rem; margin-bottom: 0.75rem;">📅</div>
             <div style="font-weight: 700; color: var(--text-primary); margin-bottom: 0.25rem;">Book Appointment</div>
             <div style="font-size: 0.78rem; color: var(--text-muted);">7-step online scheduler</div>
+          </div>
+
+          <div class="quick-access-card" style="background: var(--bg-body); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.5rem; text-align: center; cursor: pointer; transition: var(--transition);" onclick="App.openCheckinModal()">
+            <div style="font-size: 2.2rem; margin-bottom: 0.75rem;">🎫</div>
+            <div style="font-weight: 700; color: var(--primary); margin-bottom: 0.25rem;">Digital Check-in</div>
+            <div style="font-size: 0.78rem; color: var(--text-muted);">Get instant queue ticket</div>
+          </div>
+
+          <div class="quick-access-card" style="background: var(--bg-body); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.5rem; text-align: center; cursor: pointer; transition: var(--transition);" onclick="App.openLiveQueueModal()">
+            <div style="font-size: 2.2rem; margin-bottom: 0.75rem;">⏱️</div>
+            <div style="font-weight: 700; color: var(--secondary); margin-bottom: 0.25rem;">Live Wait Times</div>
+            <div style="font-size: 0.78rem; color: var(--text-muted);">Real-time clinic queue</div>
+          </div>
+
+          <div class="quick-access-card" style="background: var(--bg-body); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.5rem; text-align: center; cursor: pointer; transition: var(--transition);" onclick="App.openTelehealthModal()">
+            <div style="font-size: 2.2rem; margin-bottom: 0.75rem;">📹</div>
+            <div style="font-weight: 700; color: #7c3aed; margin-bottom: 0.25rem;">Telehealth Clinic</div>
+            <div style="font-size: 0.78rem; color: var(--text-muted);">Virtual video consultation</div>
           </div>
 
           <div class="quick-access-card" style="background: var(--bg-body); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.5rem; text-align: center; cursor: pointer; transition: var(--transition);" onclick="document.getElementById('doctors').scrollIntoView({behavior: 'smooth'})">
@@ -201,13 +267,7 @@
           <div class="quick-access-card" style="background: var(--bg-body); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.5rem; text-align: center; cursor: pointer; transition: var(--transition);" onclick="document.getElementById('patient-portal').scrollIntoView({behavior: 'smooth'})">
             <div style="font-size: 2.2rem; margin-bottom: 0.75rem;">👤</div>
             <div style="font-weight: 700; color: var(--text-primary); margin-bottom: 0.25rem;">Patient Portal</div>
-            <div style="font-size: 0.78rem; color: var(--text-muted);">Results, MRN & History</div>
-          </div>
-
-          <div class="quick-access-card" style="background: var(--bg-body); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.5rem; text-align: center; cursor: pointer; transition: var(--transition);" onclick="document.getElementById('departments').scrollIntoView({behavior: 'smooth'})">
-            <div style="font-size: 2.2rem; margin-bottom: 0.75rem;">🩺</div>
-            <div style="font-weight: 700; color: var(--text-primary); margin-bottom: 0.25rem;">Medical Services</div>
-            <div style="font-size: 0.78rem; color: var(--text-muted);">14 Clinical Specialties</div>
+            <div style="font-size: 0.78rem; color: var(--text-muted);">ID Card, Rx & Records</div>
           </div>
 
           <div class="quick-access-card" style="background: var(--bg-body); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.5rem; text-align: center; cursor: pointer; transition: var(--transition);" onclick="document.getElementById('contact').scrollIntoView({behavior: 'smooth'})">
@@ -431,11 +491,11 @@
         </div>
 
         <!-- Filter Controls -->
-        <div style="display: flex; gap: 1rem; justify-content: center; margin-bottom: 2.5rem; flex-wrap: wrap;">
-          <div style="position: relative; min-width: 280px;">
+        <div style="display: flex; gap: 0.75rem; justify-content: center; margin-bottom: 2.5rem; flex-wrap: wrap;">
+          <div style="position: relative; min-width: 260px;">
             <input type="text" id="doctorSearchInput" placeholder="Search doctor by name, specialty, or credentials..." style="width: 100%; padding: 0.75rem 1rem; border: 1px solid var(--border); border-radius: var(--radius-md); font-size: 0.9rem; outline: none;">
           </div>
-          <select id="doctorDeptFilter" style="padding: 0.75rem 1.25rem; border: 1px solid var(--border); border-radius: var(--radius-md); font-size: 0.9rem; background: white; outline: none;">
+          <select id="doctorDeptFilter" style="padding: 0.75rem 1rem; border: 1px solid var(--border); border-radius: var(--radius-md); font-size: 0.9rem; background: white; outline: none;">
             <option value="all">All Departments (14)</option>
             <option value="cardiology">Cardiology & Heart Health</option>
             <option value="neurology">Neurology & Stroke Unit</option>
@@ -451,6 +511,25 @@
             <option value="mental-health">Mental Health & Wellbeing</option>
             <option value="dental">Dental & Maxillofacial Care</option>
             <option value="pathology">Pathology & Clinical Laboratory</option>
+          </select>
+
+          <!-- Language Filter -->
+          <select id="doctorLangFilter" style="padding: 0.75rem 1rem; border: 1px solid var(--border); border-radius: var(--radius-md); font-size: 0.9rem; background: white; outline: none;">
+            <option value="all">🌐 All Languages</option>
+            <option value="english">English</option>
+            <option value="nepali">Nepali (नेपाली)</option>
+            <option value="hindi">Hindi (हिन्दी)</option>
+            <option value="mandarin">Mandarin (普通话)</option>
+            <option value="spanish">Spanish (Español)</option>
+            <option value="french">French (Français)</option>
+          </select>
+
+          <!-- Experience Filter -->
+          <select id="doctorExpFilter" style="padding: 0.75rem 1rem; border: 1px solid var(--border); border-radius: var(--radius-md); font-size: 0.9rem; background: white; outline: none;">
+            <option value="all">🎖️ Any Experience</option>
+            <option value="10">10+ Years Experience</option>
+            <option value="15">15+ Years Experience</option>
+            <option value="20">20+ Years Experience</option>
           </select>
         </div>
 
@@ -630,11 +709,17 @@
               <h3 style="font-size: 1.1rem; font-weight: 700; color: var(--text-primary);" id="portalPatientName">Niroj Khattri</h3>
               <div style="font-size: 0.78rem; color: var(--text-muted);" id="portalPatientId">MRN: DCH-MRN-9021 • Blood: O+</div>
               <span class="badge badge-success" style="margin-top: 0.5rem;" id="portalInsuranceBadge">Medicare Verified</span>
+              <button type="button" class="btn btn-outline" style="width: 100%; margin-top: 0.75rem; font-size: 0.78rem; padding: 0.35rem 0.5rem;" onclick="PatientPortal.openDigitalIdModal()">
+                🎫 View Digital ID Card
+              </button>
             </div>
 
             <nav style="display: flex; flex-direction: column; gap: 0.3rem;">
               <div class="dashboard-nav-item portal-tab-btn active" data-tab="overview">📊 Overview</div>
               <div class="dashboard-nav-item portal-tab-btn" data-tab="appointments">📅 Appointments</div>
+              <div class="dashboard-nav-item portal-tab-btn" data-tab="id-card">🎫 Digital Patient ID</div>
+              <div class="dashboard-nav-item portal-tab-btn" data-tab="family">👨‍👩‍👧 Family Profiles</div>
+              <div class="dashboard-nav-item portal-tab-btn" data-tab="payments">💳 Payments & Fees</div>
               <div class="dashboard-nav-item portal-tab-btn" data-tab="records">🧪 Medical Records</div>
               <div class="dashboard-nav-item portal-tab-btn" data-tab="prescriptions">💊 Prescriptions</div>
               <div class="dashboard-nav-item portal-tab-btn" data-tab="notifications">🔔 Notifications</div>
@@ -661,7 +746,13 @@
                 </div>
               </div>
 
-              <h4 style="font-size: 1.05rem; font-weight: 700; margin-bottom: 1rem; color: var(--text-primary);">Upcoming Specialist Appointments</h4>
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h4 style="font-size: 1.05rem; font-weight: 700; color: var(--text-primary); margin: 0;">Upcoming Specialist Appointments</h4>
+                <div style="display: flex; gap: 0.5rem;">
+                  <button type="button" class="btn btn-outline" style="font-size: 0.8rem; padding: 0.35rem 0.75rem;" onclick="App.openCheckinModal()">🎫 Check In</button>
+                  <button type="button" class="btn btn-primary" style="font-size: 0.8rem; padding: 0.35rem 0.75rem;" onclick="BookingWizard.open()">+ Book</button>
+                </div>
+              </div>
               <div id="portalAppointmentsList">
                 <!-- Loaded from SQLite DB -->
               </div>
@@ -675,6 +766,94 @@
               </div>
               <div id="portalAppointmentsListFull">
                 <!-- Reuses appointment card renderer -->
+              </div>
+            </div>
+
+            <!-- Tab: Digital Patient ID Card -->
+            <div class="portal-tab-pane" id="portal-tab-id-card" style="display: none;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 0.5rem;">
+                <div>
+                  <h3 style="font-size: 1.3rem; font-weight: 800; color: var(--dark-navy); margin: 0;">Digital Patient Identification Card</h3>
+                  <div style="font-size: 0.85rem; color: var(--text-muted);">Verified digital credential for hospital check-in & admissions</div>
+                </div>
+                <button type="button" class="btn btn-primary" onclick="window.print()">🖨️ Print Digital Card</button>
+              </div>
+              <div id="portalIdCardDisplayContainer">
+                <!-- Populated by PatientPortal.renderIdCard() -->
+              </div>
+            </div>
+
+            <!-- Tab: Family Profiles -->
+            <div class="portal-tab-pane" id="portal-tab-family" style="display: none;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+                <div>
+                  <h3 style="font-size: 1.3rem; font-weight: 800; color: var(--dark-navy); margin: 0;">Family Healthcare Profiles</h3>
+                  <div style="font-size: 0.85rem; color: var(--text-muted);">Manage family dependents authorized under your medical portal</div>
+                </div>
+                <button type="button" class="btn btn-outline" onclick="PatientPortal.toggleAddFamilyForm()">+ Add Family Member</button>
+              </div>
+
+              <!-- Add Member Form -->
+              <div id="addFamilyFormBox" style="display: none; background: white; border: 1px solid var(--border); border-radius: var(--radius-md); padding: 1.5rem; margin-bottom: 1.5rem;">
+                <h4 style="font-size: 1.05rem; font-weight: 700; color: var(--primary); margin-bottom: 1rem;">Add Family Dependent</h4>
+                <form onsubmit="PatientPortal.handleAddFamilyMember(event)">
+                  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1rem;">
+                    <div>
+                      <label style="font-size: 0.82rem; font-weight: 700; display: block; margin-bottom: 0.25rem;">Full Name *</label>
+                      <input type="text" id="famMemberName" required placeholder="e.g. Sunita Khattri" style="width: 100%; padding: 0.6rem; border: 1px solid var(--border); border-radius: 4px; font-size: 0.88rem;">
+                    </div>
+                    <div>
+                      <label style="font-size: 0.82rem; font-weight: 700; display: block; margin-bottom: 0.25rem;">Relationship *</label>
+                      <select id="famRelationship" required style="width: 100%; padding: 0.6rem; border: 1px solid var(--border); border-radius: 4px; font-size: 0.88rem; background: #fff;">
+                        <option value="Spouse">Spouse / Partner</option>
+                        <option value="Child">Child / Dependent</option>
+                        <option value="Parent">Parent</option>
+                        <option value="Sibling">Sibling</option>
+                        <option value="Other">Other Dependent</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label style="font-size: 0.82rem; font-weight: 700; display: block; margin-bottom: 0.25rem;">Date of Birth</label>
+                      <input type="date" id="famDob" style="width: 100%; padding: 0.6rem; border: 1px solid var(--border); border-radius: 4px; font-size: 0.88rem;">
+                    </div>
+                    <div>
+                      <label style="font-size: 0.82rem; font-weight: 700; display: block; margin-bottom: 0.25rem;">Blood Group</label>
+                      <select id="famBloodGroup" style="width: 100%; padding: 0.6rem; border: 1px solid var(--border); border-radius: 4px; font-size: 0.88rem; background: #fff;">
+                        <option value="O Positive">O Positive (O+)</option>
+                        <option value="A Positive">A Positive (A+)</option>
+                        <option value="B Positive">B Positive (B+)</option>
+                        <option value="AB Positive">AB Positive (AB+)</option>
+                        <option value="O Negative">O Negative (O-)</option>
+                        <option value="A Negative">A Negative (A-)</option>
+                        <option value="B Negative">B Negative (B-)</option>
+                        <option value="AB Negative">AB Negative (AB-)</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div style="display: flex; gap: 0.5rem;">
+                    <button type="submit" class="btn btn-primary" style="padding: 0.5rem 1.25rem; font-size: 0.88rem;">Save Dependent</button>
+                    <button type="button" class="btn btn-outline" style="padding: 0.5rem 1rem; font-size: 0.88rem;" onclick="PatientPortal.toggleAddFamilyForm()">Cancel</button>
+                  </div>
+                </form>
+              </div>
+
+              <div id="portalFamilyList">
+                <!-- Loaded from SQLite DB -->
+              </div>
+            </div>
+
+            <!-- Tab: Payments & Fees -->
+            <div class="portal-tab-pane" id="portal-tab-payments" style="display: none;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 0.5rem;">
+                <div>
+                  <h3 style="font-size: 1.3rem; font-weight: 800; color: var(--dark-navy); margin: 0;">Consultation Fees & Invoices</h3>
+                  <div style="font-size: 0.85rem; color: var(--text-muted);">Secure Stripe payment receipts & Medicare claim summaries</div>
+                </div>
+                <button type="button" class="btn btn-primary" onclick="PatientPortal.openStripePaymentModal()">💳 Pay Consultation Fee</button>
+              </div>
+
+              <div id="portalPaymentsList">
+                <!-- Loaded from SQLite DB -->
               </div>
             </div>
 
@@ -696,7 +875,10 @@
 
             <!-- Tab: Notifications -->
             <div class="portal-tab-pane" id="portal-tab-notifications" style="display: none;">
-              <h3 style="font-size: 1.3rem; font-weight: 800; color: var(--dark-navy); margin-bottom: 1.25rem;">Hospital Notification Center</h3>
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+                <h3 style="font-size: 1.3rem; font-weight: 800; color: var(--dark-navy); margin: 0;">Hospital Notification Center</h3>
+                <button type="button" class="btn btn-outline" style="font-size: 0.8rem; padding: 0.35rem 0.75rem;" onclick="PatientPortal.markAllNotificationsRead()">Mark all as read</button>
+              </div>
               <div id="portalNotificationsList">
                 <!-- Loaded from SQLite DB -->
               </div>
@@ -818,6 +1000,12 @@
                     <option value="completed">Completed</option>
                     <option value="cancelled">Cancelled</option>
                   </select>
+                  <a href="/api/admin/export-csv" class="btn btn-outline" style="font-size: 0.8rem; padding: 0.45rem 0.75rem; text-decoration: none;" title="Export clinical directory to CSV">
+                    📥 Export CSV
+                  </a>
+                  <button type="button" class="btn btn-outline" style="font-size: 0.8rem; padding: 0.45rem 0.75rem;" onclick="HospitalAdmin.triggerReminders()" title="Run automated 24h & 2h appointment reminder check">
+                    ⏰ Reminders Check
+                  </button>
                   <button type="button" class="btn btn-primary" style="font-size: 0.8rem; padding: 0.45rem 0.75rem;" onclick="BookingWizard.open()">
                     + Book New
                   </button>
@@ -1478,6 +1666,300 @@ ADMIN_EMAIL=your-admin-email@gmail.com</pre>
     <div class="carebot-input-row">
       <input type="text" id="careBotInput" placeholder="Ask about clinics, visiting hours, location..." style="flex: 1; padding: 0.5rem 0.75rem; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 0.85rem;" onkeydown="if(event.key==='Enter') App.sendCareBotMessage()">
       <button type="button" class="btn btn-primary" style="padding: 0.5rem 0.75rem; font-size: 0.85rem;" onclick="App.sendCareBotMessage()">Send</button>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       25. Digital Appointment Check-in Modal
+       ========================================================================= -->
+  <div class="modal-backdrop" id="checkinModal" onclick="if(event.target === this) App.closeAllModals()">
+    <div class="modal-box" style="max-width: 500px;">
+      <div class="modal-header">
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
+          <span style="font-size: 1.5rem;">🎫</span>
+          <div>
+            <h3 style="margin: 0; font-size: 1.2rem; color: var(--text-primary);">Digital Clinic Check-in</h3>
+            <span style="font-size: 0.75rem; color: var(--text-muted);">Darwin City Hospital Outpatient Reception</span>
+          </div>
+        </div>
+        <button type="button" class="modal-close-btn" onclick="App.closeAllModals()">✕</button>
+      </div>
+
+      <div class="modal-body" style="padding: 1.5rem;">
+        <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 1.25rem;">
+          Please enter your unique <strong>Appointment Reference Code</strong> (e.g. <code>DCH-892145</code>) from your confirmation email to check in and receive your queue number.
+        </p>
+
+        <form id="checkinForm" onsubmit="App.handleCheckinSubmit(event)">
+          <div style="margin-bottom: 1rem;">
+            <label style="display: block; font-size: 0.82rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.35rem;">Appointment Reference Number *</label>
+            <div style="display: flex; gap: 0.5rem;">
+              <input type="text" id="checkinRefInput" required placeholder="e.g. DCH-123456" style="flex: 1; padding: 0.75rem 1rem; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 1rem; font-family: monospace; text-transform: uppercase;">
+              <button type="submit" class="btn btn-primary" id="btnCheckinSubmit" style="padding: 0.75rem 1.25rem;">Check In 🚀</button>
+            </div>
+          </div>
+        </form>
+
+        <!-- Checkin Success Card -->
+        <div id="checkinResultCard" style="display: none; background: #f0fdf4; border: 2px solid #86efac; border-radius: var(--radius-md); padding: 1.25rem; margin-top: 1.25rem; text-align: center;">
+          <div style="font-size: 0.85rem; font-weight: 700; color: #166534; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.3rem;">✓ Check-in Confirmed</div>
+          <div style="font-size: 2.5rem; font-weight: 900; color: var(--primary); font-family: monospace;" id="checkinTicketNum">Q-104</div>
+          <div style="font-size: 1rem; font-weight: 700; color: #0F172A; margin: 0.4rem 0;" id="checkinDoctorInfo">Dr. Sarah Jenkins • Cardiology</div>
+          <div style="font-size: 0.85rem; color: #475569;" id="checkinRoomInfo">📍 Wing A, Level 3, Suite 304</div>
+          <div style="display: inline-block; background: #e0f2fe; color: #0369a1; padding: 0.3rem 0.85rem; border-radius: 9999px; font-weight: 700; font-size: 0.85rem; margin: 0.75rem 0;" id="checkinWaitInfo">
+            ⏱️ Estimated Wait: ~15 mins
+          </div>
+          <div style="margin-top: 0.75rem;">
+            <canvas id="checkinQrCanvas" style="display: inline-block; border-radius: 6px;"></canvas>
+            <div style="font-size: 0.72rem; color: #64748b; margin-top: 0.25rem;">Non-sensitive verification token for clinic nurse</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       26. Real-Time Clinic Queue & Wait Times Modal
+       ========================================================================= -->
+  <div class="modal-backdrop" id="liveQueueModal" onclick="if(event.target === this) App.closeAllModals()">
+    <div class="modal-box" style="max-width: 760px;">
+      <div class="modal-header">
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
+          <span style="font-size: 1.5rem;">⏱️</span>
+          <div>
+            <h3 style="margin: 0; font-size: 1.2rem; color: var(--text-primary);">Real-Time Clinic Queue & Wait Times</h3>
+            <span style="font-size: 0.75rem; color: var(--secondary); font-weight: 600;">● Live Outpatient Status • ACST Timezone</span>
+          </div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
+          <button type="button" class="btn btn-outline" style="font-size: 0.75rem; padding: 0.25rem 0.5rem;" onclick="App.refreshLiveQueue()">🔄 Refresh</button>
+          <button type="button" class="modal-close-btn" onclick="App.closeAllModals()">✕</button>
+        </div>
+      </div>
+
+      <div class="modal-body" style="padding: 1.5rem;">
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1.5rem; text-align: center;">
+          <div style="background: var(--bg-alt); padding: 1rem; border-radius: var(--radius-md);">
+            <div style="font-size: 1.6rem; font-weight: 800; color: var(--primary);" id="queueStatWaiting">3</div>
+            <div style="font-size: 0.78rem; color: var(--text-muted); font-weight: 600;">Patients Waiting</div>
+          </div>
+          <div style="background: rgba(0, 150, 136, 0.1); padding: 1rem; border-radius: var(--radius-md);">
+            <div style="font-size: 1.6rem; font-weight: 800; color: var(--secondary);" id="queueStatConsulting">1</div>
+            <div style="font-size: 0.78rem; color: var(--secondary); font-weight: 600;">In Consultation</div>
+          </div>
+          <div style="background: #fef3c7; padding: 1rem; border-radius: var(--radius-md);">
+            <div style="font-size: 1.6rem; font-weight: 800; color: #b45309;" id="queueStatAvgWait">12 mins</div>
+            <div style="font-size: 0.78rem; color: #b45309; font-weight: 600;">Average Wait Time</div>
+          </div>
+        </div>
+
+        <div style="overflow-x: auto;">
+          <table style="width: 100%; border-collapse: collapse; font-size: 0.88rem;">
+            <thead>
+              <tr style="border-bottom: 2px solid var(--border); text-align: left; color: var(--text-muted);">
+                <th style="padding: 0.75rem;">Ticket #</th>
+                <th style="padding: 0.75rem;">Specialist Doctor</th>
+                <th style="padding: 0.75rem;">Room</th>
+                <th style="padding: 0.75rem;">Status</th>
+                <th style="padding: 0.75rem;">Est. Wait</th>
+              </tr>
+            </thead>
+            <tbody id="liveQueueTableBody">
+              <!-- Dynamically populated by App.renderLiveQueue() -->
+            </tbody>
+          </table>
+        </div>
+
+        <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 1rem; text-align: center; border-top: 1px solid var(--border); padding-top: 0.75rem;">
+          🔒 <strong>Privacy Notice:</strong> In compliance with the Australian Privacy Principles (APPs), patient identities are strictly de-identified on public queue displays.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       27. Telehealth Consultation Simulator Modal
+       ========================================================================= -->
+  <div class="modal-backdrop" id="telehealthModal" onclick="if(event.target === this) App.closeAllModals()">
+    <div class="telehealth-modal-box">
+      <div style="padding: 1rem 1.5rem; background: #1e293b; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #334155;">
+        <div style="display: flex; align-items: center; gap: 0.6rem;">
+          <span style="color: #10b981; font-size: 1.2rem;">●</span>
+          <div>
+            <strong style="font-size: 1.05rem; display: block;">Darwin Telehealth Virtual Clinic</strong>
+            <span style="font-size: 0.75rem; color: #94a3b8;">High-definition encrypted medical consultation • WebRTC Demo</span>
+          </div>
+        </div>
+        <button type="button" onclick="App.closeAllModals()" style="background: none; border: none; color: #94a3b8; font-size: 1.25rem; cursor: pointer;">✕</button>
+      </div>
+
+      <div class="video-preview-grid">
+        <div class="video-main-box">
+          <div class="call-timer-badge">
+            <span>● REC</span>
+            <span id="telehealthCallTimer">00:04:32</span>
+          </div>
+          <!-- Doctor Video Simulation -->
+          <img src="https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&q=80&w=800" alt="Specialist Doctor Video" style="width: 100%; height: 100%; object-fit: cover;">
+          <div style="position: absolute; bottom: 16px; left: 16px; background: rgba(15, 23, 42, 0.85); padding: 0.4rem 0.85rem; border-radius: 6px; font-size: 0.85rem; font-weight: 700;">
+            Dr. Sarah Jenkins (Cardiology) • Wing A, Suite 304
+          </div>
+          <!-- Patient Picture-in-Picture -->
+          <div class="video-self-box">
+            <div style="width: 100%; height: 100%; background: #475569; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; text-align: center; color: #cbd5e1;">
+              👤 Patient Camera<br>(Niroj Khattri)
+            </div>
+          </div>
+        </div>
+
+        <!-- Consultation Notes & Chat Side Panel -->
+        <div style="background: #0f172a; padding: 1.25rem; display: flex; flex-direction: column; justify-content: space-between; border-left: 1px solid #334155;">
+          <div>
+            <h4 style="font-size: 0.95rem; font-weight: 700; color: #38bdf8; margin: 0 0 0.5rem;">Clinical Consultation Notes</h4>
+            <div style="background: #1e293b; padding: 0.75rem; border-radius: 6px; font-size: 0.8rem; line-height: 1.5; color: #e2e8f0; margin-bottom: 1rem;">
+              • Resting ECG review finalized.<br>
+              • BP currently 122/78 mmHg.<br>
+              • Continue Rosuvastatin 10mg nightly.<br>
+              • Repeat lipid panel in 6 months.
+            </div>
+
+            <h4 style="font-size: 0.95rem; font-weight: 700; color: #38bdf8; margin: 0 0 0.5rem;">Live Chat & Files</h4>
+            <div style="font-size: 0.78rem; color: #94a3b8; background: #1e293b; padding: 0.6rem; border-radius: 6px;">
+              <strong style="color: #38bdf8;">Dr. Jenkins:</strong> "I have updated your PBS prescription in your portal."
+            </div>
+          </div>
+
+          <div style="font-size: 0.72rem; color: #94a3b8; text-align: center; padding-top: 0.5rem; border-top: 1px solid #334155;">
+            ⚠️ Portfolio Telehealth Simulation. For medical emergencies dial 000.
+          </div>
+        </div>
+      </div>
+
+      <div class="telehealth-controls">
+        <div style="display: flex; gap: 0.5rem;">
+          <button type="button" class="btn btn-outline" style="color: #fff; border-color: #475569; font-size: 0.85rem;" onclick="App.toggleCallMute(this)">🎤 Mute</button>
+          <button type="button" class="btn btn-outline" style="color: #fff; border-color: #475569; font-size: 0.85rem;" onclick="App.toggleCallVideo(this)">📷 Stop Video</button>
+        </div>
+        <button type="button" class="btn btn-emergency" style="font-size: 0.85rem; padding: 0.5rem 1.25rem;" onclick="App.endTelehealthCall()">📞 End Consultation</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       28. Stripe Online Consultation Payment Modal
+       ========================================================================= -->
+  <div class="modal-backdrop" id="stripeCheckoutModal" onclick="if(event.target === this) App.closeAllModals()">
+    <div class="stripe-checkout-box">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
+          <span style="font-size: 1.4rem;">💳</span>
+          <div>
+            <h3 style="margin: 0; font-size: 1.2rem; color: #0f172a;">Online Consultation Payment</h3>
+            <span style="font-size: 0.75rem; color: #005B96; font-weight: 700;">Powered by Stripe (Test Mode)</span>
+          </div>
+        </div>
+        <button type="button" class="modal-close-btn" onclick="App.closeAllModals()">✕</button>
+      </div>
+
+      <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: var(--radius-md); padding: 1rem; margin-bottom: 1.25rem;">
+        <div style="display: flex; justify-content: space-between; font-size: 0.9rem; margin-bottom: 0.35rem;">
+          <span>Specialist Consultation Fee:</span>
+          <strong>$220.00 AUD</strong>
+        </div>
+        <div style="display: flex; justify-content: space-between; font-size: 0.82rem; color: #166534; margin-bottom: 0.35rem;">
+          <span>Estimated Medicare Rebate (Item 104):</span>
+          <span>-$80.85 AUD</span>
+        </div>
+        <div style="border-top: 1px solid #cbd5e1; padding-top: 0.4rem; display: flex; justify-content: space-between; font-size: 1.05rem; font-weight: 800; color: #0f172a;">
+          <span>Total Payable:</span>
+          <span style="color: #005B96;">$220.00 AUD</span>
+        </div>
+      </div>
+
+      <form id="stripePaymentForm" onsubmit="PatientPortal.handleStripePaymentSubmit(event)">
+        <div style="margin-bottom: 0.85rem;">
+          <label style="font-size: 0.82rem; font-weight: 700; display: block; margin-bottom: 0.25rem;">Cardholder Name *</label>
+          <input type="text" id="stripeCardName" required value="Niroj Khattri" style="width: 100%; padding: 0.7rem; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 0.9rem;">
+        </div>
+        <div style="margin-bottom: 0.85rem;">
+          <label style="font-size: 0.82rem; font-weight: 700; display: block; margin-bottom: 0.25rem;">Card Number (Stripe Demo) *</label>
+          <input type="text" id="stripeCardNumber" required value="4242 •••• •••• 4242" class="stripe-card-input">
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1.25rem;">
+          <div>
+            <label style="font-size: 0.82rem; font-weight: 700; display: block; margin-bottom: 0.25rem;">Expiry Date *</label>
+            <input type="text" required value="12/28" placeholder="MM/YY" style="width: 100%; padding: 0.7rem; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 0.9rem; text-align: center;">
+          </div>
+          <div>
+            <label style="font-size: 0.82rem; font-weight: 700; display: block; margin-bottom: 0.25rem;">CVC *</label>
+            <input type="text" required value="882" placeholder="123" style="width: 100%; padding: 0.7rem; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 0.9rem; text-align: center;">
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary" id="btnStripePay" style="width: 100%; padding: 0.85rem; font-size: 0.95rem;">
+          Pay $220.00 AUD via Stripe 🔒
+        </button>
+      </form>
+
+      <div id="stripePaymentSuccessBox" style="display: none; text-align: center; margin-top: 1.25rem; background: #f0fdf4; border: 1px solid #86efac; border-radius: 8px; padding: 1.25rem;">
+        <div style="font-size: 2rem; margin-bottom: 0.5rem;">🎉</div>
+        <h4 style="margin: 0 0 0.25rem; color: #166534; font-size: 1.1rem;">Payment Successful!</h4>
+        <div style="font-size: 0.85rem; color: #334155; margin-bottom: 0.75rem;" id="stripeReceiptText">Receipt: DCH-REC-892144</div>
+        <button type="button" class="btn btn-outline" onclick="App.closeAllModals(); PatientPortal.switchTab('payments')">View Payment in Portal</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       29. Digital Patient ID Card Modal
+       ========================================================================= -->
+  <div class="modal-backdrop" id="patientIdCardModal" onclick="if(event.target === this) App.closeAllModals()">
+    <div class="modal-box" style="max-width: 520px; background: transparent; box-shadow: none; border: none;">
+      <div id="patientIdModalCardContent">
+        <!-- Rendered by PatientPortal.renderIdCard() -->
+      </div>
+      <div style="display: flex; gap: 0.5rem; justify-content: center; margin-top: 1rem;">
+        <button type="button" class="btn btn-primary" onclick="window.print()">🖨️ Print ID Card</button>
+        <button type="button" class="btn btn-outline" style="background: #fff;" onclick="App.closeAllModals()">✕ Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       30. Patient Feedback & Rating Modal
+       ========================================================================= -->
+  <div class="modal-backdrop" id="feedbackModal" onclick="if(event.target === this) App.closeAllModals()">
+    <div class="modal-box" style="max-width: 500px;">
+      <div class="modal-header">
+        <h3 style="margin: 0; font-size: 1.2rem; color: var(--text-primary);">Patient Experience & Review</h3>
+        <button type="button" class="modal-close-btn" onclick="App.closeAllModals()">✕</button>
+      </div>
+      <div class="modal-body" style="padding: 1.5rem;">
+        <p style="font-size: 0.88rem; color: var(--text-secondary); margin-bottom: 1.25rem;">
+          Your feedback is critical in maintaining the clinical quality and compassionate care of Darwin City Hospital.
+        </p>
+        <form onsubmit="App.handleFeedbackSubmit(event)">
+          <div style="margin-bottom: 1rem;">
+            <label style="font-size: 0.85rem; font-weight: 700; display: block; margin-bottom: 0.35rem;">Your Name *</label>
+            <input type="text" id="fbPatientName" required value="Niroj Khattri" style="width: 100%; padding: 0.65rem; border: 1px solid var(--border); border-radius: 4px; font-size: 0.9rem;">
+          </div>
+          <div style="margin-bottom: 1rem;">
+            <label style="font-size: 0.85rem; font-weight: 700; display: block; margin-bottom: 0.35rem;">Overall Rating *</label>
+            <div class="star-rating-group">
+              <input type="radio" id="star5" name="ratingOverall" value="5" checked><label for="star5">★</label>
+              <input type="radio" id="star4" name="ratingOverall" value="4"><label for="star4">★</label>
+              <input type="radio" id="star3" name="ratingOverall" value="3"><label for="star3">★</label>
+              <input type="radio" id="star2" name="ratingOverall" value="2"><label for="star2">★</label>
+              <input type="radio" id="star1" name="ratingOverall" value="1"><label for="star1">★</label>
+            </div>
+          </div>
+          <div style="margin-bottom: 1rem;">
+            <label style="font-size: 0.85rem; font-weight: 700; display: block; margin-bottom: 0.35rem;">Your Feedback / Clinical Experience Comments</label>
+            <textarea id="fbComments" rows="3" placeholder="Share your experience with our medical team, nursing staff, or outpatient facility..." style="width: 100%; padding: 0.65rem; border: 1px solid var(--border); border-radius: 4px; font-size: 0.88rem; font-family: inherit;"></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary" style="width: 100%; padding: 0.75rem;">Submit Patient Review ⭐</button>
+        </form>
+      </div>
     </div>
   </div>
 

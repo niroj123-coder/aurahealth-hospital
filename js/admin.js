@@ -498,6 +498,18 @@ const HospitalAdmin = {
     }
   },
 
+  async triggerReminders() {
+    try {
+      const res = await fetch('/api/reminders/trigger', { method: 'POST' });
+      const data = await res.json();
+      if (data.success) {
+        App.showToast(`Automated reminder check completed. ${data.data.remindersProcessed} reminder(s) queued.`, 'success');
+      }
+    } catch (e) {
+      App.showToast('Reminder check error: ' + e.message, 'error');
+    }
+  },
+
   bindAdminEvents() {
     const adminTabBtns = document.querySelectorAll('.admin-nav-item');
     adminTabBtns.forEach(btn => {

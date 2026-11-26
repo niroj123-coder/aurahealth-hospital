@@ -183,7 +183,7 @@ const server = http.createServer(async (req, res) => {
   }
 
   // 3. Single Doctor API: GET /api/doctors/:id
-  if (req.method === 'GET' && pathname.startsWith('/api/doctors/')) {
+  if (req.method === 'GET' && pathname.startsWith('/api/doctors/') && pathname !== '/api/doctors/favorites') {
     try {
       const doctorId = pathname.replace('/api/doctors/', '');
       const doc = DarwinDB.getDoctorById(doctorId);
@@ -858,6 +858,508 @@ const server = http.createServer(async (req, res) => {
         ? 'Gmail SMTP is configured and operational.'
         : 'Gmail SMTP credentials are unconfigured. Update SMTP_USER and SMTP_PASS (Google App Password) in your .env file.'
     });
+  }
+
+  // =========================================================================
+  // 24. Digital Check-In: POST /api/checkin
+  // =========================================================================
+  if (req.method === 'POST' && pathname === '/api/checkin') {
+    try {
+      const body = await readBody(req);
+      if (!body.appointmentRef) {
+        return sendJson(res, 400, { success: false, error: 'Appointment reference code is required.' });
+      }
+      const checkinResult = DarwinDB.checkinAppointment(body.appointmentRef);
+      return sendJson(res, 200, {
+        success: true,
+        message: checkinResult.alreadyCheckedIn
+          ? `You are already checked in with ticket ${checkinResult.queueNumber}.`
+          : `Check-in successful! Your ticket number is ${checkinResult.queueNumber}.`,
+        checkin: checkinResult
+      });
+    } catch (err) {
+      return sendJson(res, 400, { success: false, error: err.message });
+    }
+  }
+
+  // 25. Live Queue Data: GET /api/queue/live
+  if (req.method === 'GET' && pathname === '/api/queue/live') {
+    try {
+      const queueList = DarwinDB.getPublicQueueData();
+      return sendJson(res, 200, {
+        success: true,
+        count: queueList.length,
+        timestamp: new Date().toISOString(),
+        data: queueList
+      });
+    } catch (err) {
+      return sendJson(res, 500, { success: false, error: err.message });
+    }
+  }
+
+  // 26. Update Queue Status: POST /api/queue/update-status
+  if (req.method === 'POST' && pathname === '/api/queue/update-status') {
+    try {
+      const body = await readBody(req);
+      if (!body.checkinId || !body.status) {
+        return sendJson(res, 400, { success: false, error: 'checkinId and status required.' });
+      }
+      const updated = DarwinDB.updateQueueStatus(body.checkinId, body.status);
+      return sendJson(res, 200, { success: true, message: `Queue status updated to ${body.status}.`, data: updated });
+    } catch (err) {
+      return sendJson(res, 400, { success: false, error: err.message });
+    }
+  }
+
+  // 27. Patient Family Profiles: GET & POST /api/patient/family
+  if (req.method === 'GET' && pathname === '/api/patient/family') {
+    try {
+      const patientId = Number(parsedUrl.searchParams.get('patientId') || '1');
+      const families = DarwinDB.getPatientFamilies(patientId);
+      return sendJson(res, 200, { success: true, count: families.length, data: families });
+    } catch (err) {
+      return sendJson(res, 500, { success: false, error: err.message });
+    }
+  }
+
+  if (req.method === 'POST' && pathname === '/api/patient/family') {
+    try {
+      const body = await readBody(req);
+      const patientId = Number(body.patientId || '1');
+      if (!body.memberName || !body.relationship) {
+        return sendJson(res, 400, { success: false, error: 'Family member name and relationship are required.' });
+      }
+      const member = DarwinDB.addPatientFamily(patientId, body);
+      return sendJson(res, 201, { success: true, message: 'Family member profile added successfully.', data: member });
+    } catch (err) {
+      return sendJson(res, 400, { success: false, error: err.message });
+    }
+  }
+
+  if (req.method === 'POST' && pathname === '/api/patient/family/delete') {
+    try {
+      const body = await readBody(req);
+      const patientId = Number(body.patientId || '1');
+      DarwinDB.deletePatientFamily(body.familyId, patientId);
+      return sendJson(res, 200, { success: true, message: 'Family profile removed.' });
+    } catch (err) {
+      return sendJson(res, 400, { success: false, error: err.message });
+    }
+  }
+
+  // 28. Payments (Stripe Checkout Simulation): POST /api/payments/create-intent
+  if (req.method === 'POST' && pathname === '/api/payments/create-intent') {
+    try {
+      const body = await readBody(req);
+      const amount = body.amountAud || 220;
+      const clientSecret = `pi_test_${crypto.randomBytes(12).toString('hex')}_secret_${crypto.randomBytes(8).toString('hex')}`;
+      return sendJson(res, 200, {
+        success: true,
+        clientSecret,
+        amountAud: amount,
+        currency: 'aud',
+        publishableKey: 'pk_test_darwin_mock_hospital_demo_key',
+        paymentMethods: ['card', 'apple_pay', 'google_pay']
+      });
+    } catch (err) {
+      return sendJson(res, 500, { success: false, error: err.message });
+    }
+  }
+
+  // 29. Confirm Payment: POST /api/payments/confirm
+  if (req.method === 'POST' && pathname === '/api/payments/confirm') {
+    try {
+      const body = await readBody(req);
+      if (!body.appointmentId) {
+        return sendJson(res, 400, { success: false, error: 'Appointment ID required for payment processing.' });
+      }
+      const paymentRecord = DarwinDB.recordPayment({
+        appointmentId: body.appointmentId,
+        patientId: body.patientId || 1,
+        amountAud: body.amountAud || 220,
+        currency: 'AUD',
+        status: 'paid',
+        paymentMethod: body.paymentMethod || 'credit_card',
+        stripePaymentIntentId: body.stripePaymentIntentId
+      });
+      return sendJson(res, 200, {
+        success: true,
+        message: 'Payment of $' + paymentRecord.amount_aud + ' AUD processed successfully.',
+        payment: paymentRecord
+      });
+    } catch (err) {
+      return sendJson(res, 400, { success: false, error: err.message });
+    }
+  }
+
+  // 30. Patient Payment History: GET /api/payments/history
+  if (req.method === 'GET' && pathname === '/api/payments/history') {
+    try {
+      const patientId = Number(parsedUrl.searchParams.get('patientId') || '1');
+      const payments = DarwinDB.getPatientPayments(patientId);
+      return sendJson(res, 200, { success: true, count: payments.length, data: payments });
+    } catch (err) {
+      return sendJson(res, 500, { success: false, error: err.message });
+    }
+  }
+
+  // 31. Patient Feedback: POST /api/feedback/submit & GET /api/feedback/public
+  if (req.method === 'POST' && pathname === '/api/feedback/submit') {
+    try {
+      const body = await readBody(req);
+      if (!body.patientName || !body.ratingOverall) {
+        return sendJson(res, 400, { success: false, error: 'Patient name and overall rating are required.' });
+      }
+      const feedback = DarwinDB.submitFeedback(body);
+      return sendJson(res, 201, {
+        success: true,
+        message: 'Thank you for your feedback! Your review helps us continuously improve Darwin City Hospital.',
+        feedback
+      });
+    } catch (err) {
+      return sendJson(res, 400, { success: false, error: err.message });
+    }
+  }
+
+  if (req.method === 'GET' && pathname === '/api/feedback/public') {
+    try {
+      const reviews = DarwinDB.getPublicFeedback(12);
+      return sendJson(res, 200, { success: true, count: reviews.length, data: reviews });
+    } catch (err) {
+      return sendJson(res, 500, { success: false, error: err.message });
+    }
+  }
+
+  // 32. Doctor Favorites: POST /api/doctors/favorite & GET /api/doctors/favorites
+  if (req.method === 'POST' && pathname === '/api/doctors/favorite') {
+    try {
+      const body = await readBody(req);
+      const patientId = Number(body.patientId || '1');
+      if (!body.doctorId) return sendJson(res, 400, { success: false, error: 'Doctor ID required.' });
+      const result = DarwinDB.toggleDoctorFavorite(patientId, body.doctorId);
+      return sendJson(res, 200, { success: true, favorited: result.favorited });
+    } catch (err) {
+      return sendJson(res, 400, { success: false, error: err.message });
+    }
+  }
+
+  if (req.method === 'GET' && pathname === '/api/doctors/favorites') {
+    try {
+      const patientId = Number(parsedUrl.searchParams.get('patientId') || '1');
+      const favorites = DarwinDB.getDoctorFavorites(patientId);
+      return sendJson(res, 200, { success: true, data: favorites });
+    } catch (err) {
+      return sendJson(res, 500, { success: false, error: err.message });
+    }
+  }
+
+  // 33. Digital Patient ID: GET /api/patient/id-card
+  if (req.method === 'GET' && pathname === '/api/patient/id-card') {
+    try {
+      const userId = Number(parsedUrl.searchParams.get('userId') || '1');
+      const cardData = DarwinDB.getDigitalPatientId(userId);
+      if (!cardData) return sendJson(res, 404, { success: false, error: 'Patient ID profile not found.' });
+      return sendJson(res, 200, { success: true, data: cardData });
+    } catch (err) {
+      return sendJson(res, 500, { success: false, error: err.message });
+    }
+  }
+
+  // 34. Download Sample Medical Report: GET /api/reports/download/:id
+  if (req.method === 'GET' && pathname.startsWith('/api/reports/download/')) {
+    try {
+      const reportId = Number(pathname.replace('/api/reports/download/', ''));
+      const rec = DarwinDB.getMedicalRecordById(reportId);
+      if (!rec) {
+        res.writeHead(404, { 'Content-Type': 'text/plain' });
+        return res.end('Medical report not found');
+      }
+
+      res.writeHead(200, {
+        'Content-Type': 'text/html; charset=utf-8',
+        'Content-Disposition': `inline; filename="Darwin_Medical_Report_${reportId}.html"`
+      });
+      return res.end(`
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+          <meta charset="UTF-8">
+          <title>Darwin City Hospital — Clinical Report #${reportId}</title>
+          <style>
+            body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; padding: 2.5rem; background: #fff; color: #1e293b; }
+            .watermark { position: fixed; top: 40%; left: 10%; font-size: 3.5rem; font-weight: 900; color: rgba(220, 38, 38, 0.08); transform: rotate(-30deg); pointer-events: none; text-align: center; line-height: 1.2; }
+            .header-bar { display: flex; justify-content: space-between; border-bottom: 3px solid #005B96; padding-bottom: 1.5rem; margin-bottom: 2rem; }
+            .logo-title { font-size: 1.6rem; font-weight: 800; color: #005B96; margin: 0; }
+            .logo-sub { font-size: 0.85rem; color: #009688; font-weight: 700; text-transform: uppercase; }
+            .meta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; background: #f8fafc; border: 1px solid #e2e8f0; padding: 1.25rem; border-radius: 8px; margin-bottom: 2rem; }
+            .meta-item { font-size: 0.9rem; }
+            .meta-item strong { color: #0f172a; }
+            .section-title { font-size: 1.15rem; font-weight: 700; color: #005B96; border-bottom: 1px solid #e2e8f0; padding-bottom: 0.5rem; margin-top: 1.5rem; }
+            .report-box { background: #fff; border: 1px solid #cbd5e1; border-radius: 6px; padding: 1.25rem; font-size: 0.95rem; line-height: 1.7; margin-top: 0.75rem; white-space: pre-wrap; }
+            .footer-notes { margin-top: 3rem; font-size: 0.8rem; color: #64748b; border-top: 1px solid #e2e8f0; padding-top: 1rem; text-align: center; }
+            .btn-print { background: #005B96; color: white; border: none; padding: 0.6rem 1.4rem; font-size: 0.9rem; font-weight: 700; border-radius: 6px; cursor: pointer; margin-bottom: 1.5rem; }
+            @media print { .btn-print { display: none; } }
+          </style>
+        </head>
+        <body>
+          <div class="watermark">SAMPLE CLINICAL REPORT<br>DEMONSTRATION RECORD ONLY</div>
+          <button class="btn-print" onclick="window.print()">🖨️ Print / Save as PDF</button>
+          <div class="header-bar">
+            <div>
+              <h1 class="logo-title">🏥 Darwin City Hospital</h1>
+              <div class="logo-sub">Department of Diagnostic Pathology & Imaging • Level-1 Trauma Centre</div>
+              <div style="font-size: 0.85rem; color: #64748b; margin-top: 0.3rem;">Mitchell St & Esplanade, Darwin NT 0800 • Phone: (08) 8999 0000</div>
+            </div>
+            <div style="text-align: right;">
+              <div style="font-size: 1.1rem; font-weight: 800; color: #0f172a;">REPORT #${rec.id}</div>
+              <div style="font-size: 0.85rem; color: #166534; font-weight: 700;">Status: ${rec.status || 'FINALIZED'}</div>
+              <div style="font-size: 0.85rem; color: #64748b;">Date: ${rec.record_date}</div>
+            </div>
+          </div>
+
+          <div class="meta-grid">
+            <div class="meta-item"><strong>Patient Name:</strong> ${rec.patient_name}</div>
+            <div class="meta-item"><strong>Medical Record No (MRN):</strong> ${rec.mrn}</div>
+            <div class="meta-item"><strong>Attending Specialist:</strong> ${rec.doctor_name}</div>
+            <div class="meta-item"><strong>Clinical Category:</strong> ${rec.record_type}</div>
+          </div>
+
+          <div class="section-title">Clinical Report Summary & Diagnostic Findings</div>
+          <h3 style="margin: 0.75rem 0 0.25rem; font-size: 1.05rem; color: #0f172a;">${rec.title}</h3>
+          <div class="report-box">${rec.summary}</div>
+
+          <div style="margin-top: 2rem; display: flex; justify-content: space-between; align-items: flex-end;">
+            <div>
+              <div style="font-size: 0.85rem; color: #64748b;">Accreditation: NATA / RCPA Accredited Laboratory NT-8821</div>
+              <div style="font-size: 0.85rem; color: #64748b;">Digital Verification Key: ${crypto.createHash('md5').update(rec.id + rec.record_date).digest('hex').substring(0, 16).toUpperCase()}</div>
+            </div>
+            <div style="text-align: center;">
+              <div style="font-family: 'Brush Script MT', cursive; font-size: 1.8rem; color: #005B96; margin-bottom: 0.2rem;">${rec.doctor_name}</div>
+              <div style="border-top: 1px solid #94a3b8; font-size: 0.8rem; color: #475569; padding-top: 0.2rem;">Electronic Clinical Sign-Off</div>
+            </div>
+          </div>
+
+          <div class="footer-notes">
+            SAMPLE CLINICAL REPORT — Fictional Demonstration Record for Darwin City Hospital Portfolio Project.<br>
+            Strictly for testing and academic review. Not a valid diagnostic document. In an emergency dial 000.
+          </div>
+        </body>
+        </html>
+      `);
+    } catch (err) {
+      return sendJson(res, 500, { success: false, error: err.message });
+    }
+  }
+
+  // 35. Download Sample Prescription: GET /api/prescriptions/download/:id
+  if (req.method === 'GET' && pathname.startsWith('/api/prescriptions/download/')) {
+    try {
+      const rxId = Number(pathname.replace('/api/prescriptions/download/', ''));
+      const rx = DarwinDB.getPrescriptionById(rxId);
+      if (!rx) {
+        res.writeHead(404, { 'Content-Type': 'text/plain' });
+        return res.end('Prescription record not found');
+      }
+
+      res.writeHead(200, {
+        'Content-Type': 'text/html; charset=utf-8',
+        'Content-Disposition': `inline; filename="Darwin_Prescription_${rxId}.html"`
+      });
+      return res.end(`
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+          <meta charset="UTF-8">
+          <title>Darwin City Hospital — e-Prescription #${rxId}</title>
+          <style>
+            body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; padding: 2.5rem; background: #fff; color: #1e293b; }
+            .watermark { position: fixed; top: 40%; left: 8%; font-size: 3rem; font-weight: 900; color: rgba(220, 38, 38, 0.12); transform: rotate(-25deg); pointer-events: none; text-align: center; line-height: 1.3; }
+            .header-bar { border-bottom: 2px solid #005B96; padding-bottom: 1.25rem; margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center; }
+            .rx-symbol { font-size: 2.5rem; font-weight: 900; color: #005B96; font-family: 'Times New Roman', serif; }
+            .meta-box { background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 1.25rem; margin-bottom: 1.5rem; }
+            .meta-row { display: flex; justify-content: space-between; margin-bottom: 0.5rem; font-size: 0.92rem; }
+            .rx-box { border: 2px dashed #009688; border-radius: 8px; padding: 1.5rem; background: #f0fdf4; margin-bottom: 1.5rem; }
+            .med-name { font-size: 1.3rem; font-weight: 800; color: #0f172a; margin-bottom: 0.4rem; }
+            .med-detail { font-size: 0.95rem; color: #334155; margin-bottom: 0.3rem; }
+            .btn-print { background: #005B96; color: white; border: none; padding: 0.6rem 1.4rem; font-size: 0.9rem; font-weight: 700; border-radius: 6px; cursor: pointer; margin-bottom: 1.5rem; }
+            @media print { .btn-print { display: none; } }
+          </style>
+        </head>
+        <body>
+          <div class="watermark">SAMPLE — NOT A VALID PRESCRIPTION<br>EDUCATIONAL PORTFOLIO DEMO</div>
+          <button class="btn-print" onclick="window.print()">🖨️ Print / Save as PDF</button>
+          
+          <div class="header-bar">
+            <div>
+              <h2 style="margin: 0; color: #005B96;">🏥 Darwin City Hospital</h2>
+              <div style="font-size: 0.85rem; color: #009688; font-weight: 700;">PBS CLINICAL PHARMACY PRESCRIPTION</div>
+              <div style="font-size: 0.8rem; color: #64748b;">48 Mitchell St, Darwin NT 0800 • Medicare Provider No: 4921841B</div>
+            </div>
+            <div style="text-align: right;">
+              <span class="rx-symbol">℞</span>
+              <div style="font-size: 0.85rem; font-weight: 700; color: #0f172a;">SCRIPT ID: RX-${rx.id}</div>
+              <div style="font-size: 0.8rem; color: #64748b;">Date: ${rx.issued_date}</div>
+            </div>
+          </div>
+
+          <div class="meta-box">
+            <div class="meta-row"><span><strong>Patient Name:</strong> ${rx.patient_name}</span><span><strong>MRN:</strong> ${rx.mrn}</span></div>
+            <div class="meta-row"><span><strong>Prescribing Doctor:</strong> ${rx.doctor_name}</span><span><strong>Credentials:</strong> ${rx.doctor_credentials || 'Consultant Specialist'}</span></div>
+          </div>
+
+          <div class="rx-box">
+            <div class="med-name">${rx.medication} (${rx.dosage})</div>
+            <div class="med-detail"><strong>Directions:</strong> ${rx.frequency}</div>
+            <div class="med-detail"><strong>Course Duration:</strong> ${rx.duration}</div>
+            <div class="med-detail"><strong>Refills Authorized:</strong> ${rx.refills_left} repeat(s) remaining</div>
+            <div class="med-detail"><strong>Special Pharmacy Instructions:</strong> ${rx.pharmacy_instructions || 'Dispense in accordance with standard PBS guidelines.'}</div>
+          </div>
+
+          <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-top: 2rem;">
+            <div>
+              <div style="font-size: 0.8rem; color: #64748b;">PBS Item Code: 89412M • Australian Digital Health Agency SafeScript NT</div>
+              <div style="font-size: 0.8rem; color: #64748b;">Security Barcode Token: ${crypto.createHash('sha256').update(rx.id + rx.medication).digest('hex').substring(0, 24).toUpperCase()}</div>
+            </div>
+            <div style="text-align: center;">
+              <div style="font-family: 'Brush Script MT', cursive; font-size: 1.8rem; color: #005B96;">${rx.doctor_name}</div>
+              <div style="border-top: 1px solid #94a3b8; font-size: 0.8rem; color: #475569; padding-top: 0.2rem;">Doctor's Signature & Stamp</div>
+            </div>
+          </div>
+
+          <div style="margin-top: 3rem; text-align: center; font-size: 0.8rem; color: #dc2626; font-weight: 700; border-top: 1px solid #fee2e2; padding-top: 1rem;">
+            ⚠️ SAMPLE – NOT A VALID PRESCRIPTION. For demonstration and portfolio inspection only. Do not present to a pharmacy.
+          </div>
+        </body>
+        </html>
+      `);
+    } catch (err) {
+      return sendJson(res, 500, { success: false, error: err.message });
+    }
+  }
+
+  // 36. Multilingual Translation Dictionary: GET /api/translations/:lang
+  if (req.method === 'GET' && pathname.startsWith('/api/translations/')) {
+    const lang = pathname.replace('/api/translations/', '').toLowerCase();
+    const TRANSLATIONS = {
+      en: {
+        hospital_name: "Darwin City Hospital",
+        tagline: "Northern Territory • Australia",
+        nav_home: "Home",
+        nav_about: "About Us",
+        nav_departments: "Departments",
+        nav_doctors: "Our Doctors",
+        nav_emergency: "Emergency (000)",
+        nav_visitors: "Patient & Visitors",
+        nav_health_info: "Health Info",
+        nav_contact: "Contact Us",
+        nav_portal: "Portal Login",
+        nav_book: "Book Appointment",
+        hero_title: "Your Health, Our Priority.",
+        hero_subtitle: "Darwin's premier tertiary healthcare provider and Level-1 Regional Trauma Centre. World-class medical specialists, 24/7 emergency resuscitation, and digital patient services for the Top End community.",
+        btn_book_appointment: "Book Appointment",
+        btn_find_doctor: "Find a Specialist",
+        btn_live_queue: "Live Wait Times",
+        btn_telehealth: "Telehealth Clinic",
+        emergency_title: "Australian Medical Emergency: Dial 000 Immediately",
+        quick_access_title: "Rapid Clinical Services",
+        departments_title: "Specialist Medical Departments",
+        doctors_title: "Distinguished Medical Specialists",
+        testimonials_title: "Community & Patient Testimonials",
+        testimonials_note: "Fictional patient feedback presented for demonstration purposes",
+        checkin_title: "Digital Appointment Check-in",
+        checkin_btn: "Check In Now",
+        queue_title: "Real-Time Clinic Queue Status"
+      },
+      ne: {
+        hospital_name: "डार्विन सिटी अस्पताल",
+        tagline: "उत्तरी क्षेत्र • अष्ट्रेलिया",
+        nav_home: "गृहपृष्ठ",
+        nav_about: "हाम्रोबारे",
+        nav_departments: "विभागहरू",
+        nav_doctors: "हाम्रा डाक्टरहरू",
+        nav_emergency: "आकस्मिक सेवा (०००)",
+        nav_visitors: "बिरामी र आगन्तुक",
+        nav_health_info: "स्वास्थ्य जानकारी",
+        nav_contact: "सम्पर्क",
+        nav_portal: "पोर्टल लगइन",
+        nav_book: "अपोइन्टमेन्ट लिनुहोस्",
+        hero_title: "तपाईंको स्वास्थ्य, हाम्रो पहिलो प्राथमिकता।",
+        hero_subtitle: "डार्विनको प्रमुख तृतीयक स्वास्थ्य सेवा प्रदायक र लेभल-१ क्षेत्रीय ट्रमा सेन्टर। विश्वस्तरीय विशेषज्ञ डाक्टरहरू, २४/७ आकस्मिक उपचार, र डिजिटल बिरामी सेवाहरू।",
+        btn_book_appointment: "अपोइन्टमेन्ट लिनुहोस्",
+        btn_find_doctor: "डाक्टर खोज्नुहोस्",
+        btn_live_queue: "प्रत्यक्ष पालो हेर्नुहोस्",
+        btn_telehealth: "टेलिहेल्थ परामर्श",
+        emergency_title: "अष्ट्रेलियाली आकस्मिक स्वास्थ्य आपतकाल: तुरुन्त ००० मा फोन गर्नुहोस्",
+        quick_access_title: "द्रुत क्लिनिकल सेवाहरू",
+        departments_title: "विशेषज्ञ चिकित्सा विभागहरू",
+        doctors_title: "हाम्रा प्रतिष्ठित विशेषज्ञ डाक्टरहरू",
+        testimonials_title: "बिरामी प्रतिक्रिया तथा अनुभव",
+        testimonials_note: "प्रदर्शन उद्देश्यका लागि काल्पनिक बिरामी प्रतिक्रिया",
+        checkin_title: "डिजिटल अपोइन्टमेन्ट चेक-इन",
+        checkin_btn: "अहिले चेक-इन गर्नुहोस्",
+        queue_title: "प्रत्यक्ष अस्पताल लाम (Queue) स्थिति"
+      },
+      hi: {
+        hospital_name: "डार्विन सिटी अस्पताल",
+        tagline: "उत्तरी क्षेत्र • ऑस्ट्रेलिया",
+        nav_home: "मुख्य पृष्ठ",
+        nav_about: "हमारे बारे में",
+        nav_departments: "चिकित्सा विभाग",
+        nav_doctors: "हमारे डॉक्टर्स",
+        nav_emergency: "आपातकालीन (000)",
+        nav_visitors: "रोगी एवं आगंतुक",
+        nav_health_info: "स्वास्थ्य जानकारी",
+        nav_contact: "संपर्क करें",
+        nav_portal: "पोर्टल लॉगिन",
+        nav_book: "अपॉइंटमेंट बुक करें",
+        hero_title: "आपका स्वास्थ्य, हमारी सर्वोच्च प्राथमिकता।",
+        hero_subtitle: "डार्विन का प्रमुख तृतीयक स्वास्थ्य सेवा प्रदाता और लेवल-1 ट्रॉमा सेंटर। विश्व स्तरीय चिकित्सा विशेषज्ञ, 24/7 आपातकालीन सेवाएं और उन्नत डिजिटल रोगी सुविधाएं।",
+        btn_book_appointment: "अपॉइंटमेंट बुक करें",
+        btn_find_doctor: "विशेषज्ञ खोजें",
+        btn_live_queue: "लाइव प्रतीक्षा समय",
+        btn_telehealth: "टेलीहेल्थ क्लिनिक",
+        emergency_title: "ऑस्ट्रेलियाई आपातकालीन चिकित्सा सहायता: तुरंत 000 डायल करें",
+        quick_access_title: "त्वरित नैदानिक सेवाएं",
+        departments_title: "विशेषज्ञ चिकित्सा विभाग",
+        doctors_title: "हमारे प्रतिष्ठित चिकित्सा विशेषज्ञ",
+        testimonials_title: "रोगी समीक्षाएं एवं अनुभव",
+        testimonials_note: "प्रदर्शन उद्देश्य के लिए काल्पनिक रोगी प्रतिक्रिया",
+        checkin_title: "डिजिटल अपॉइंटमेंट चेक-इन",
+        checkin_btn: "अभी चेक-इन करें",
+        queue_title: "लाइव क्लिनिक कतार स्थिति"
+      }
+    };
+
+    const dict = TRANSLATIONS[lang] || TRANSLATIONS.en;
+    return sendJson(res, 200, { success: true, lang, translations: dict });
+  }
+
+  // 37. Automated Reminders: POST /api/reminders/trigger
+  if (req.method === 'POST' && pathname === '/api/reminders/trigger') {
+    try {
+      const result = DarwinDB.runAppointmentReminderCheck();
+      return sendJson(res, 200, { success: true, message: 'Automated reminders check completed.', data: result });
+    } catch (err) {
+      return sendJson(res, 500, { success: false, error: err.message });
+    }
+  }
+
+  // 38. Admin CSV Export: GET /api/admin/export-csv
+  if (req.method === 'GET' && pathname === '/api/admin/export-csv') {
+    try {
+      const appointments = DarwinDB.getAllAppointmentsFiltered(null, null);
+      let csv = 'Reference,Patient Name,Email,Phone,Doctor,Department,Date,Time,Status,Fee AUD\n';
+      appointments.forEach(a => {
+        csv += `"${a.id}","${a.patient_name}","${a.patient_email}","${a.patient_phone || ''}","${a.doctor_name}","${a.department_name}","${a.appointment_date}","${a.time_slot}","${a.status}","${a.fee_aud}"\n`;
+      });
+      res.writeHead(200, {
+        'Content-Type': 'text/csv; charset=utf-8',
+        'Content-Disposition': 'attachment; filename="darwin_appointments_export.csv"'
+      });
+      return res.end(csv);
+    } catch (err) {
+      return sendJson(res, 500, { success: false, error: err.message });
+    }
   }
 
   // =========================================================================

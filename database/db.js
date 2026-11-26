@@ -261,6 +261,85 @@ function initializeSchema() {
       reference_code TEXT,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );
+
+    -- 16. Digital Check-Ins & Real-Time Queue
+    CREATE TABLE IF NOT EXISTS checkins (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      appointment_id TEXT UNIQUE NOT NULL,
+      patient_id INTEGER NOT NULL,
+      doctor_id TEXT NOT NULL,
+      department_id TEXT NOT NULL,
+      queue_number TEXT NOT NULL,
+      status TEXT CHECK(status IN ('checked_in', 'waiting', 'in_consultation', 'completed', 'cancelled')) DEFAULT 'checked_in',
+      checked_in_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      estimated_wait_mins INTEGER DEFAULT 15,
+      room TEXT NOT NULL,
+      FOREIGN KEY (appointment_id) REFERENCES appointments(id),
+      FOREIGN KEY (patient_id) REFERENCES patients(id),
+      FOREIGN KEY (doctor_id) REFERENCES doctors(id)
+    );
+
+    -- 17. Patient Family Profiles
+    CREATE TABLE IF NOT EXISTS patient_families (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      patient_id INTEGER NOT NULL,
+      member_name TEXT NOT NULL,
+      relationship TEXT NOT NULL,
+      dob TEXT,
+      gender TEXT,
+      blood_group TEXT,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (patient_id) REFERENCES patients(id) ON DELETE CASCADE
+    );
+
+    -- 18. Payments (Stripe Consultation Fee Processing)
+    CREATE TABLE IF NOT EXISTS payments (
+      id TEXT PRIMARY KEY,
+      appointment_id TEXT NOT NULL,
+      patient_id INTEGER NOT NULL,
+      amount_aud REAL NOT NULL,
+      currency TEXT DEFAULT 'AUD',
+      status TEXT CHECK(status IN ('paid', 'pending', 'refunded')) DEFAULT 'paid',
+      payment_method TEXT DEFAULT 'credit_card',
+      stripe_payment_intent_id TEXT,
+      receipt_ref TEXT NOT NULL,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (appointment_id) REFERENCES appointments(id),
+      FOREIGN KEY (patient_id) REFERENCES patients(id)
+    );
+
+    -- 19. Patient Feedback & Reviews
+    CREATE TABLE IF NOT EXISTS patient_feedback (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      appointment_id TEXT,
+      patient_id INTEGER,
+      patient_name TEXT NOT NULL,
+      doctor_id TEXT,
+      rating_overall INTEGER NOT NULL,
+      rating_doctor INTEGER NOT NULL,
+      rating_cleanliness INTEGER NOT NULL,
+      comments TEXT,
+      status TEXT CHECK(status IN ('pending', 'approved', 'rejected')) DEFAULT 'approved',
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+
+    -- 20. Doctor Favorites
+    CREATE TABLE IF NOT EXISTS doctor_favorites (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      patient_id INTEGER NOT NULL,
+      doctor_id TEXT NOT NULL,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      UNIQUE(patient_id, doctor_id)
+    );
+
+    -- 21. Automated Reminder Logs
+    CREATE TABLE IF NOT EXISTS reminder_logs (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      appointment_id TEXT NOT NULL,
+      reminder_type TEXT NOT NULL, -- '24h', '2h'
+      sent_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      status TEXT DEFAULT 'sent'
+    );
   `);
 }
 
@@ -956,9 +1035,99 @@ function seedDatabase() {
   console.log('[Darwin DB] Database successfully initialized and seeded with 12 tables!');
 }
 
+/**
+ * 2b. Seed Upgraded Healthcare Features (Queue, Family, Payments, Feedback, Favorites)
+ */
+function seedUpgradedFeatures() {
+  try {
+    // 1. Seed Check-ins & Queue if empty
+    const checkinCount = db.prepare('SELECT COUNT(*) as count FROM checkins').get().count;
+    if (checkinCount === 0) {
+      const existingAppt = db.prepare('SELECT * FROM appointments LIMIT 3').all();
+      if (existingAppt.length > 0) {
+        const qStmt = db.prepare(`
+          INSERT INTO checkins (appointment_id, patient_id, doctor_id, department_id, queue_number, status, estimated_wait_mins, room)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        `);
+        const statuses = ['in_consultation', 'waiting', 'checked_in'];
+        const waits = [0, 10, 25];
+        existingAppt.forEach((a, idx) => {
+          const qNum = `Q-0${40 + idx + 1}`;
+          const doc = db.prepare('SELECT room FROM doctors WHERE id = ?').get(a.doctor_id);
+          const room = doc ? doc.room : 'Wing A, Suite 304';
+          try {
+            qStmt.run(a.id, a.patient_id, a.doctor_id, a.department_id, qNum, statuses[idx % statuses.length], waits[idx % waits.length], room);
+          } catch (e) {}
+        });
+      }
+    }
+
+    // 2. Seed Patient Family Profiles if empty
+    const familyCount = db.prepare('SELECT COUNT(*) as count FROM patient_families').get().count;
+    if (familyCount === 0) {
+      const pat = db.prepare('SELECT id FROM patients LIMIT 1').get();
+      if (pat) {
+        const famStmt = db.prepare(`
+          INSERT INTO patient_families (patient_id, member_name, relationship, dob, gender, blood_group)
+          VALUES (?, ?, ?, ?, ?, ?)
+        `);
+        famStmt.run(pat.id, 'Sunita Khattri', 'Spouse', '1996-08-22', 'Female', 'A Positive');
+        famStmt.run(pat.id, 'Aaradhya Khattri', 'Child', '2022-03-15', 'Female', 'O Positive');
+      }
+    }
+
+    // 3. Seed Payments if empty
+    const paymentCount = db.prepare('SELECT COUNT(*) as count FROM payments').get().count;
+    if (paymentCount === 0) {
+      const appt = db.prepare('SELECT * FROM appointments LIMIT 2').all();
+      if (appt.length > 0) {
+        const payStmt = db.prepare(`
+          INSERT INTO payments (id, appointment_id, patient_id, amount_aud, currency, status, payment_method, stripe_payment_intent_id, receipt_ref)
+          VALUES (?, ?, ?, ?, 'AUD', 'paid', 'credit_card', ?, ?)
+        `);
+        appt.forEach((a) => {
+          const payId = 'PAY-' + Math.floor(100000 + Math.random() * 900000);
+          const receipt = 'DCH-REC-' + Math.floor(100000 + Math.random() * 900000);
+          const pi = 'pi_test_' + Math.random().toString(36).substring(2, 12);
+          try {
+            payStmt.run(payId, a.id, a.patient_id, a.fee_aud || 220, pi, receipt);
+          } catch (e) {}
+        });
+      }
+    }
+
+    // 4. Seed Patient Feedback if empty
+    const feedbackCount = db.prepare('SELECT COUNT(*) as count FROM patient_feedback').get().count;
+    if (feedbackCount === 0) {
+      const fbStmt = db.prepare(`
+        INSERT INTO patient_feedback (appointment_id, patient_id, patient_name, doctor_id, rating_overall, rating_doctor, rating_cleanliness, comments, status)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'approved')
+      `);
+      fbStmt.run('DCH-DEMO-01', 1, 'Jack Thompson (Nightcliff)', 'doc-jenkins', 5, 5, 5, 'Dr. Sarah Jenkins and the cardiology team provided outstanding care. The ECG was conducted promptly and every step was clearly explained.');
+      fbStmt.run('DCH-DEMO-02', 1, 'Chloe Miller (Parap)', 'doc-brody', 5, 5, 4, 'Excellent post-op orthopaedic follow-up for my knee arthroscopy. Clear physio guidance and very welcoming nursing staff.');
+      fbStmt.run('DCH-DEMO-03', 1, 'Priya Sharma (Casuarina)', 'doc-chen', 5, 5, 5, 'Dr. David Chen is exceptional with chronic diabetes management. The new digital check-in and queue tracker saved us so much time.');
+    }
+
+    // 5. Seed Doctor Favorites if empty
+    const favCount = db.prepare('SELECT COUNT(*) as count FROM doctor_favorites').get().count;
+    if (favCount === 0) {
+      const pat = db.prepare('SELECT id FROM patients LIMIT 1').get();
+      if (pat) {
+        try {
+          db.prepare('INSERT OR IGNORE INTO doctor_favorites (patient_id, doctor_id) VALUES (?, ?)').run(pat.id, 'doc-jenkins');
+          db.prepare('INSERT OR IGNORE INTO doctor_favorites (patient_id, doctor_id) VALUES (?, ?)').run(pat.id, 'doc-chen');
+        } catch (e) {}
+      }
+    }
+  } catch (err) {
+    console.error('[Darwin DB] Upgrades seeding error:', err.message);
+  }
+}
+
 // Auto-run schema initialization and seeding
 initializeSchema();
 seedDatabase();
+seedUpgradedFeatures();
 
 /**
  * Public Query Helper Methods
@@ -1134,13 +1303,33 @@ const DarwinDB = {
       SELECT * FROM notifications WHERE user_id = ? ORDER BY created_at DESC LIMIT 15
     `).all(userId);
 
+    const families = db.prepare(`
+      SELECT * FROM patient_families WHERE patient_id = ? ORDER BY id ASC
+    `).all(patient.id);
+
+    const payments = db.prepare(`
+      SELECT p.*, a.appointment_date, a.time_slot, d.name as doctor_name
+      FROM payments p
+      LEFT JOIN appointments a ON p.appointment_id = a.id
+      LEFT JOIN doctors d ON a.doctor_id = d.id
+      WHERE p.patient_id = ?
+      ORDER BY p.created_at DESC
+    `).all(patient.id);
+
+    const favorites = db.prepare(`
+      SELECT doctor_id FROM doctor_favorites WHERE patient_id = ?
+    `).all(patient.id).map(r => r.doctor_id);
+
     return {
       user,
       patient,
       appointments,
       medicalRecords,
       prescriptions,
-      notifications
+      notifications,
+      families,
+      payments,
+      favorites
     };
   },
 
@@ -1484,6 +1673,352 @@ const DarwinDB = {
 
     query += ' ORDER BY a.appointment_date DESC, a.time_slot ASC';
     return db.prepare(query).all(...params);
+  },
+
+  // =========================================================================
+  // DIGITAL CHECK-IN & REAL-TIME QUEUE
+  // =========================================================================
+  checkinAppointment: (appointmentRef) => {
+    const cleanRef = (appointmentRef || '').trim().toUpperCase();
+    const appt = db.prepare(`
+      SELECT a.*, d.name as doctor_name, d.room as doctor_room, dept.name as department_name
+      FROM appointments a
+      JOIN doctors d ON a.doctor_id = d.id
+      JOIN departments dept ON a.department_id = dept.id
+      WHERE a.id = ?
+    `).get(cleanRef);
+
+    if (!appt) {
+      throw new Error(`Appointment reference "${cleanRef}" not found. Please double-check your booking reference.`);
+    }
+
+    if (appt.status === 'cancelled') {
+      throw new Error(`Appointment ${cleanRef} has been cancelled. Please book a new consultation.`);
+    }
+
+    // Check if already checked in
+    const existing = db.prepare('SELECT * FROM checkins WHERE appointment_id = ?').get(cleanRef);
+    if (existing) {
+      return {
+        alreadyCheckedIn: true,
+        queueNumber: existing.queue_number,
+        status: existing.status,
+        estimatedWaitMins: existing.estimated_wait_mins,
+        room: existing.room,
+        doctorName: appt.doctor_name,
+        departmentName: appt.department_name,
+        appointmentId: appt.id,
+        checkedInAt: existing.checked_in_at,
+        qrToken: `DCH-Q:${existing.queue_number}|REF:${appt.id}`
+      };
+    }
+
+    // Calculate queue number & wait time
+    const activeForDoctor = db.prepare(`
+      SELECT COUNT(*) as count FROM checkins 
+      WHERE doctor_id = ? AND status IN ('checked_in', 'waiting', 'in_consultation')
+    `).get(appt.doctor_id).count;
+
+    const totalCheckinsToday = db.prepare('SELECT COUNT(*) as count FROM checkins').get().count;
+    const queueNumber = `Q-${String(101 + totalCheckinsToday).padStart(3, '0')}`;
+    const estimatedWaitMins = activeForDoctor === 0 ? 5 : (activeForDoctor * 15);
+
+    db.prepare(`
+      INSERT INTO checkins (appointment_id, patient_id, doctor_id, department_id, queue_number, status, estimated_wait_mins, room)
+      VALUES (?, ?, ?, ?, ?, 'waiting', ?, ?)
+    `).run(appt.id, appt.patient_id, appt.doctor_id, appt.department_id, queueNumber, estimatedWaitMins, appt.doctor_room);
+
+    // Update appointment status to confirmed
+    db.prepare("UPDATE appointments SET status = 'confirmed' WHERE id = ?").run(appt.id);
+
+    return {
+      alreadyCheckedIn: false,
+      queueNumber,
+      status: 'waiting',
+      estimatedWaitMins,
+      room: appt.doctor_room,
+      doctorName: appt.doctor_name,
+      departmentName: appt.department_name,
+      appointmentId: appt.id,
+      checkedInAt: new Date().toISOString(),
+      qrToken: `DCH-Q:${queueNumber}|REF:${appt.id}`
+    };
+  },
+
+  getPublicQueueData: () => {
+    // Strictly privacy-preserving: No patient names or sensitive medical issues
+    return db.prepare(`
+      SELECT 
+        c.id,
+        c.queue_number,
+        c.status,
+        c.estimated_wait_mins,
+        c.room,
+        c.checked_in_at,
+        d.name as doctor_name,
+        dept.name as department_name
+      FROM checkins c
+      JOIN doctors d ON c.doctor_id = d.id
+      JOIN departments dept ON c.department_id = dept.id
+      WHERE c.status IN ('checked_in', 'waiting', 'in_consultation')
+      ORDER BY 
+        CASE c.status 
+          WHEN 'in_consultation' THEN 1 
+          WHEN 'waiting' THEN 2 
+          ELSE 3 
+        END,
+        c.checked_in_at ASC
+    `).all();
+  },
+
+  updateQueueStatus: (checkinIdOrQueueNum, newStatus) => {
+    const valid = ['checked_in', 'waiting', 'in_consultation', 'completed', 'cancelled'];
+    if (!valid.includes(newStatus)) {
+      throw new Error(`Invalid queue status: ${newStatus}`);
+    }
+
+    const checkin = db.prepare('SELECT * FROM checkins WHERE id = ? OR queue_number = ?').get(checkinIdOrQueueNum, checkinIdOrQueueNum);
+    if (!checkin) throw new Error('Queue entry not found');
+
+    db.prepare('UPDATE checkins SET status = ? WHERE id = ?').run(newStatus, checkin.id);
+
+    if (newStatus === 'completed') {
+      db.prepare("UPDATE appointments SET status = 'completed' WHERE id = ?").run(checkin.appointment_id);
+    } else if (newStatus === 'cancelled') {
+      db.prepare("UPDATE appointments SET status = 'cancelled' WHERE id = ?").run(checkin.appointment_id);
+    }
+
+    return db.prepare('SELECT * FROM checkins WHERE id = ?').get(checkin.id);
+  },
+
+  // =========================================================================
+  // PATIENT FAMILY PROFILES
+  // =========================================================================
+  getPatientFamilies: (patientId) => {
+    return db.prepare('SELECT * FROM patient_families WHERE patient_id = ? ORDER BY id ASC').all(patientId);
+  },
+
+  addPatientFamily: (patientId, data) => {
+    if (!data.memberName || !data.relationship) {
+      throw new Error('Member name and relationship are required.');
+    }
+    const stmt = db.prepare(`
+      INSERT INTO patient_families (patient_id, member_name, relationship, dob, gender, blood_group)
+      VALUES (?, ?, ?, ?, ?, ?)
+    `);
+    const res = stmt.run(
+      patientId,
+      data.memberName.trim(),
+      data.relationship.trim(),
+      data.dob || '',
+      data.gender || 'Not Specified',
+      data.bloodGroup || 'Unknown'
+    );
+    return db.prepare('SELECT * FROM patient_families WHERE id = ?').get(Number(res.lastInsertRowid));
+  },
+
+  deletePatientFamily: (familyId, patientId) => {
+    return db.prepare('DELETE FROM patient_families WHERE id = ? AND patient_id = ?').run(familyId, patientId);
+  },
+
+  // =========================================================================
+  // PAYMENTS (STRIPE TEST-MODE / MOCK CONSULTATION PAYMENTS)
+  // =========================================================================
+  recordPayment: (paymentData) => {
+    const payId = 'PAY-' + Math.floor(100000 + Math.random() * 900000);
+    const receiptRef = 'DCH-REC-' + Math.floor(100000 + Math.random() * 900000);
+    const pi = paymentData.stripePaymentIntentId || ('pi_mock_' + Math.random().toString(36).substring(2, 14));
+
+    const stmt = db.prepare(`
+      INSERT INTO payments (id, appointment_id, patient_id, amount_aud, currency, status, payment_method, stripe_payment_intent_id, receipt_ref)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `);
+    stmt.run(
+      payId,
+      paymentData.appointmentId,
+      paymentData.patientId,
+      paymentData.amountAud || 220,
+      paymentData.currency || 'AUD',
+      paymentData.status || 'paid',
+      paymentData.paymentMethod || 'credit_card',
+      pi,
+      receiptRef
+    );
+
+    return db.prepare('SELECT * FROM payments WHERE id = ?').get(payId);
+  },
+
+  getPatientPayments: (patientId) => {
+    return db.prepare(`
+      SELECT p.*, a.appointment_date, a.time_slot, d.name as doctor_name, dept.name as department_name
+      FROM payments p
+      LEFT JOIN appointments a ON p.appointment_id = a.id
+      LEFT JOIN doctors d ON a.doctor_id = d.id
+      LEFT JOIN departments dept ON a.department_id = dept.id
+      WHERE p.patient_id = ?
+      ORDER BY p.created_at DESC
+    `).all(patientId);
+  },
+
+  refundPayment: (paymentId) => {
+    db.prepare("UPDATE payments SET status = 'refunded' WHERE id = ?").run(paymentId);
+    return db.prepare('SELECT * FROM payments WHERE id = ?').get(paymentId);
+  },
+
+  // =========================================================================
+  // PATIENT FEEDBACK & REVIEWS
+  // =========================================================================
+  submitFeedback: (data) => {
+    if (!data.patientName || !data.ratingOverall) {
+      throw new Error('Patient name and overall rating are required.');
+    }
+    const stmt = db.prepare(`
+      INSERT INTO patient_feedback (appointment_id, patient_id, patient_name, doctor_id, rating_overall, rating_doctor, rating_cleanliness, comments, status)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'approved')
+    `);
+    const res = stmt.run(
+      data.appointmentId || 'DCH-PAT-' + Math.floor(1000 + Math.random() * 9000),
+      data.patientId || null,
+      data.patientName.trim(),
+      data.doctorId || null,
+      Number(data.ratingOverall) || 5,
+      Number(data.ratingDoctor) || 5,
+      Number(data.ratingCleanliness) || 5,
+      data.comments ? data.comments.trim() : '',
+    );
+    return db.prepare('SELECT * FROM patient_feedback WHERE id = ?').get(Number(res.lastInsertRowid));
+  },
+
+  getPublicFeedback: (limit = 10) => {
+    return db.prepare(`
+      SELECT f.*, d.name as doctor_name, dept.name as department_name
+      FROM patient_feedback f
+      LEFT JOIN doctors d ON f.doctor_id = d.id
+      LEFT JOIN departments dept ON d.department_id = dept.id
+      WHERE f.status = 'approved'
+      ORDER BY f.created_at DESC LIMIT ?
+    `).all(limit);
+  },
+
+  getAdminFeedback: () => {
+    return db.prepare(`
+      SELECT f.*, d.name as doctor_name
+      FROM patient_feedback f
+      LEFT JOIN doctors d ON f.doctor_id = d.id
+      ORDER BY f.created_at DESC
+    `).all();
+  },
+
+  updateFeedbackStatus: (id, status) => {
+    db.prepare('UPDATE patient_feedback SET status = ? WHERE id = ?').run(status, id);
+    return db.prepare('SELECT * FROM patient_feedback WHERE id = ?').get(id);
+  },
+
+  // =========================================================================
+  // DOCTOR FAVORITES
+  // =========================================================================
+  toggleDoctorFavorite: (patientId, doctorId) => {
+    const existing = db.prepare('SELECT id FROM doctor_favorites WHERE patient_id = ? AND doctor_id = ?').get(patientId, doctorId);
+    if (existing) {
+      db.prepare('DELETE FROM doctor_favorites WHERE id = ?').run(existing.id);
+      return { favorited: false };
+    } else {
+      db.prepare('INSERT INTO doctor_favorites (patient_id, doctor_id) VALUES (?, ?)').run(patientId, doctorId);
+      return { favorited: true };
+    }
+  },
+
+  getDoctorFavorites: (patientId) => {
+    return db.prepare('SELECT doctor_id FROM doctor_favorites WHERE patient_id = ?').all(patientId).map(r => r.doctor_id);
+  },
+
+  // =========================================================================
+  // DIGITAL PATIENT ID CARD DATA
+  // =========================================================================
+  getDigitalPatientId: (userIdOrPatientId) => {
+    let patient = db.prepare(`
+      SELECT p.*, u.name, u.email, u.phone, u.created_at as member_since
+      FROM patients p
+      JOIN users u ON p.user_id = u.id
+      WHERE p.id = ? OR p.user_id = ?
+    `).get(userIdOrPatientId, userIdOrPatientId);
+
+    if (!patient) {
+      patient = db.prepare(`
+        SELECT p.*, u.name, u.email, u.phone, u.created_at as member_since
+        FROM patients p
+        JOIN users u ON p.user_id = u.id
+        LIMIT 1
+      `).get();
+    }
+
+    if (!patient) return null;
+
+    return {
+      mrn: patient.mrn,
+      name: patient.name,
+      email: patient.email,
+      phone: patient.phone,
+      dob: patient.dob || '1995-04-12',
+      gender: patient.gender || 'Male',
+      bloodGroup: patient.blood_group || 'O Positive',
+      medicareNum: patient.medicare_num || '2893 48123 1',
+      emergencyContactName: patient.emergency_contact_name || 'Emergency Contact',
+      emergencyContactPhone: patient.emergency_contact_phone || '+61 412 000 111',
+      allergies: patient.allergies || 'Penicillin (Mild)',
+      memberSince: patient.member_since,
+      qrPayload: `DCH-PATIENT-ID:${patient.mrn}|AUTH-TOKEN:${crypto.createHash('md5').update(patient.mrn + 'DCH2026').digest('hex').substring(0, 8)}`,
+      hospitalName: 'Darwin City Hospital',
+      region: 'Darwin, Northern Territory, Australia'
+    };
+  },
+
+  // =========================================================================
+  // SAMPLE CLINICAL REPORTS & PRESCRIPTIONS
+  // =========================================================================
+  getMedicalRecordById: (id) => {
+    return db.prepare(`
+      SELECT m.*, p.mrn, u.name as patient_name, u.email as patient_email
+      FROM medical_records m
+      JOIN patients p ON m.patient_id = p.id
+      JOIN users u ON p.user_id = u.id
+      WHERE m.id = ?
+    `).get(id);
+  },
+
+  getPrescriptionById: (id) => {
+    return db.prepare(`
+      SELECT rx.*, p.mrn, u.name as patient_name, u.email as patient_email, d.credentials as doctor_credentials
+      FROM prescriptions rx
+      JOIN patients p ON rx.patient_id = p.id
+      JOIN users u ON p.user_id = u.id
+      JOIN doctors d ON rx.doctor_id = d.id
+      WHERE rx.id = ?
+    `).get(id);
+  },
+
+  // =========================================================================
+  // AUTOMATED APPOINTMENT REMINDER SCHEDULER
+  // =========================================================================
+  runAppointmentReminderCheck: () => {
+    const upcoming = db.prepare(`
+      SELECT a.*, d.name as doctor_name, d.room as doctor_room
+      FROM appointments a
+      JOIN doctors d ON a.doctor_id = d.id
+      WHERE a.status = 'confirmed'
+    `).all();
+
+    let count = 0;
+    const stmt = db.prepare('INSERT INTO reminder_logs (appointment_id, reminder_type, status) VALUES (?, ?, ?)');
+
+    for (const appt of upcoming) {
+      const alreadySent = db.prepare('SELECT id FROM reminder_logs WHERE appointment_id = ? AND reminder_type = ?').get(appt.id, '24h');
+      if (!alreadySent) {
+        stmt.run(appt.id, '24h', 'sent');
+        count++;
+      }
+    }
+    return { remindersProcessed: count };
   }
 };
 

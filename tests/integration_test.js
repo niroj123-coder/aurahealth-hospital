@@ -64,9 +64,12 @@ async function runTests() {
     assert('Invalid email returns 400', invalidEmailRes.status === 400);
 
     const unconfiguredSmtpRes = await makeRequest('POST', '/api/auth/send-otp', { email: 'patient@example.com', purpose: 'booking' });
-    // When SMTP credentials are placeholders, it correctly returns 503 with helpful setup instructions
-    assert('Unconfigured SMTP returns 503 Service Unavailable', unconfiguredSmtpRes.status === 503);
-    assert('503 response explains Gmail SMTP credentials setup', unconfiguredSmtpRes.body.error.includes('Gmail SMTP'));
+    if (!smtpRes.body.configured) {
+      assert('Unconfigured SMTP returns 503 Service Unavailable', unconfiguredSmtpRes.status === 503);
+      assert('503 response explains Gmail SMTP credentials setup', unconfiguredSmtpRes.body?.error?.includes('Gmail SMTP'));
+    } else {
+      assert('Live configured Gmail SMTP handles OTP dispatch', unconfiguredSmtpRes.status === 200 || unconfiguredSmtpRes.status === 429);
+    }
 
     // 3. Database OTP Hashing, Expiry, and Rate Limiting
     console.log('\n--- 3. Database OTP Security & Rate Limiting ---');
@@ -204,6 +207,108 @@ async function runTests() {
     // Admin email delivery logs
     const emailLogsRes = await makeRequest('GET', '/api/admin/email-logs');
     assert('Admin can view email delivery logs (GET /api/admin/email-logs)', emailLogsRes.status === 200 && emailLogsRes.body.count > 0);
+
+    // 7. Digital Check-in & Live Queue APIs
+    console.log('\n--- 7. Digital Check-In & Live Queue APIs ---');
+    const checkinRes = await makeRequest('POST', '/api/checkin', { appointmentRef: validBooking.body.referenceId });
+    assert('Digital check-in succeeds with 200 OK', checkinRes.status === 200 && checkinRes.body.success === true);
+    assert('Ticket number assigned (starts with Q-)', checkinRes.body.checkin.queueNumber.startsWith('Q-'));
+    assert('Non-sensitive QR verification token generated', checkinRes.body.checkin.qrToken.includes(checkinRes.body.checkin.queueNumber));
+
+    const liveQueueRes = await makeRequest('GET', '/api/queue/live');
+    assert('Live queue status retrieved (GET /api/queue/live)', liveQueueRes.status === 200 && liveQueueRes.body.count > 0);
+    const queueSample = liveQueueRes.body.data[0];
+    assert('Live queue preserves privacy: no patient names exposed', !queueSample.hasOwnProperty('patient_name') && !queueSample.hasOwnProperty('patient_email'));
+
+    // 8. Patient Family Management
+    console.log('\n--- 8. Patient Family Profiles ---');
+    const addFamilyRes = await makeRequest('POST', '/api/patient/family', {
+      patientId: 1,
+      memberName: 'Rohan Khattri',
+      relationship: 'Brother',
+      dob: '1998-09-14',
+      gender: 'Male',
+      bloodGroup: 'O Positive'
+    });
+    assert('Add family dependent profile succeeds with 201', addFamilyRes.status === 201 && addFamilyRes.body.data.member_name === 'Rohan Khattri');
+
+    const getFamilyRes = await makeRequest('GET', '/api/patient/family?patientId=1');
+    assert('Retrieve family profiles succeeds with 200', getFamilyRes.status === 200 && getFamilyRes.body.count >= 1);
+
+    // 9. Online Stripe Payments Simulation
+    console.log('\n--- 9. Online Stripe Payments ---');
+    const intentRes = await makeRequest('POST', '/api/payments/create-intent', { appointmentId: validBooking.body.referenceId, amountAud: 220 });
+    assert('Create payment intent returns client secret and AUD amount', intentRes.status === 200 && intentRes.body.clientSecret.startsWith('pi_test_'));
+
+    const payConfirmRes = await makeRequest('POST', '/api/payments/confirm', {
+      appointmentId: validBooking.body.referenceId,
+      patientId: 1,
+      amountAud: 220,
+      stripePaymentIntentId: intentRes.body.clientSecret
+    });
+    assert('Payment confirmation records payment with receipt ref', payConfirmRes.status === 200 && payConfirmRes.body.payment.receipt_ref.startsWith('DCH-REC-'));
+
+    const payHistoryRes = await makeRequest('GET', '/api/payments/history?patientId=1');
+    assert('Patient payment history accessible with receipt records', payHistoryRes.status === 200 && payHistoryRes.body.count > 0);
+
+    // 10. Patient Feedback & Reviews
+    console.log('\n--- 10. Patient Feedback & Quality Ratings ---');
+    const feedbackSubmitRes = await makeRequest('POST', '/api/feedback/submit', {
+      appointmentId: validBooking.body.referenceId,
+      patientName: 'Alex Mercer',
+      doctorId: 'doc-jenkins',
+      ratingOverall: 5,
+      ratingDoctor: 5,
+      ratingCleanliness: 5,
+      comments: 'Seamless check-in, pristine clinical suite, and exceptional cardiology advice from Dr. Jenkins.'
+    });
+    assert('Submit patient feedback returns 201 Created', feedbackSubmitRes.status === 201 && feedbackSubmitRes.body.success === true);
+
+    const publicFeedbackRes = await makeRequest('GET', '/api/feedback/public');
+    assert('Public approved reviews accessible', publicFeedbackRes.status === 200 && publicFeedbackRes.body.count >= 3);
+
+    // 11. Doctor Favorites
+    console.log('\n--- 11. Doctor Favorites API ---');
+    const favToggleRes = await makeRequest('POST', '/api/doctors/favorite', { patientId: 1, doctorId: 'doc-brody' });
+    assert('Toggle doctor favorite returns state', favToggleRes.status === 200 && typeof favToggleRes.body.favorited === 'boolean');
+
+    const getFavsRes = await makeRequest('GET', '/api/doctors/favorites?patientId=1');
+    assert('Get patient favorites returns array of doctor IDs', getFavsRes.status === 200 && Array.isArray(getFavsRes.body.data));
+
+    // 12. Digital Patient ID Card Data
+    console.log('\n--- 12. Digital Patient ID Card ---');
+    const idCardRes = await makeRequest('GET', '/api/patient/id-card?userId=1');
+    assert('Digital Patient ID card payload returned with MRN', idCardRes.status === 200 && idCardRes.body.data.mrn.startsWith('DCH-MRN-'));
+    assert('Patient ID QR payload is non-sensitive token', idCardRes.body.data.qrPayload.includes(idCardRes.body.data.mrn));
+
+    // 13. Downloadable Medical Reports & Prescriptions
+    console.log('\n--- 13. Clinical Report & Prescription Downloads ---');
+    const reportDownloadRes = await makeRequest('GET', '/api/reports/download/1');
+    assert('Download clinical report returns 200 HTML document', reportDownloadRes.status === 200 && reportDownloadRes.raw.includes('SAMPLE CLINICAL REPORT'));
+
+    const rxDownloadRes = await makeRequest('GET', '/api/prescriptions/download/1');
+    assert('Download e-prescription returns 200 with mandatory watermark', rxDownloadRes.status === 200 && rxDownloadRes.raw.includes('SAMPLE – NOT A VALID PRESCRIPTION'));
+
+    // 14. Multilingual Translation Dictionaries
+    console.log('\n--- 14. Multilingual Translation Endpoints ---');
+    const neRes = await makeRequest('GET', '/api/translations/ne');
+    assert('Nepali translation dictionary available', neRes.status === 200 && neRes.body.translations.hero_title.includes('स्वास्थ्य'));
+
+    const hiRes = await makeRequest('GET', '/api/translations/hi');
+    assert('Hindi translation dictionary available', hiRes.status === 200 && hiRes.body.translations.hero_title.includes('स्वास्थ्य'));
+
+    const enRes = await makeRequest('GET', '/api/translations/en');
+    assert('English dictionary available', enRes.status === 200 && enRes.body.translations.hero_title.includes('Health'));
+
+    // 15. Automated Reminders Check
+    console.log('\n--- 15. Automated Reminders Scheduler ---');
+    const reminderRes = await makeRequest('POST', '/api/reminders/trigger');
+    assert('Automated reminders check completes', reminderRes.status === 200 && reminderRes.body.success === true);
+
+    // 16. Admin CSV Export
+    console.log('\n--- 16. Admin CSV Export ---');
+    const csvRes = await makeRequest('GET', '/api/admin/export-csv');
+    assert('Admin appointments CSV export returns 200 with text/csv header', csvRes.status === 200 && csvRes.raw.includes('Reference,Patient Name'));
 
   } catch (err) {
     console.error('Fatal test error:', err);

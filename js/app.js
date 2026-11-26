@@ -5,12 +5,17 @@
 
 const App = {
   currentDoctorFilter: 'all',
+  currentDoctorLangFilter: 'all',
+  currentDoctorExpFilter: 'all',
   currentSearchQuery: '',
   fontSizeLevel: 100, // percentage
   enquiryVerifiedEmail: '',
   enquiryVerifiedToken: null,
   enquiryOtpTimer: null,
   enquiryOtpSeconds: 0,
+  telehealthTimerInterval: null,
+  telehealthSeconds: 272,
+  userDoctorFavorites: new Set(['doc-jenkins']),
 
   init() {
     this.renderDepartments();
@@ -20,11 +25,16 @@ const App = {
     this.renderFaqs();
     this.initAnimatedCounters();
     this.bindGlobalEvents();
+    this.loadDoctorFavorites();
 
     // Initialize submodules
     if (window.BookingWizard) window.BookingWizard.init();
     if (window.PatientPortal) window.PatientPortal.init();
     if (window.HospitalAdmin) window.HospitalAdmin.init();
+
+    if (window.lucide) {
+      try { lucide.createIcons(); } catch (e) {}
+    }
 
     console.log('🏥 Darwin City Hospital Web Platform initialized successfully.');
   },
@@ -67,9 +77,31 @@ const App = {
       });
     }
 
+    const langFilter = document.getElementById('doctorLangFilter');
+    if (langFilter) {
+      langFilter.addEventListener('change', (e) => {
+        this.currentDoctorLangFilter = e.target.value.toLowerCase();
+        this.renderDoctors();
+      });
+    }
+
+    const expFilter = document.getElementById('doctorExpFilter');
+    if (expFilter) {
+      expFilter.addEventListener('change', (e) => {
+        this.currentDoctorExpFilter = e.target.value;
+        this.renderDoctors();
+      });
+    }
+
     // Dark/Light Mode Preference Init
     const savedTheme = localStorage.getItem('dch_theme') || 'light';
     document.documentElement.setAttribute('data-theme', savedTheme);
+
+    // Language Preference Init
+    const savedLang = localStorage.getItem('dch_lang') || 'en';
+    const langSelect = document.getElementById('globalLangSelector');
+    if (langSelect) langSelect.value = savedLang;
+    if (savedLang !== 'en') this.setLanguage(savedLang);
   },
 
   onEnquiryEmailChanged() {
@@ -488,7 +520,7 @@ const App = {
     document.body.style.overflow = 'hidden';
   },
 
-  // 2. Doctors Rendering (All 15 Specialist Profiles)
+  // 2. Doctors Rendering (All 15 Specialist Profiles with Multi-Faceted Filters & Favorites)
   renderDoctors() {
     const grid = document.getElementById('doctorsGrid');
     if (!grid) return;
@@ -497,6 +529,20 @@ const App = {
 
     if (this.currentDoctorFilter && this.currentDoctorFilter !== 'all') {
       filtered = filtered.filter(d => d.departmentId === this.currentDoctorFilter);
+    }
+
+    if (this.currentDoctorLangFilter && this.currentDoctorLangFilter !== 'all') {
+      filtered = filtered.filter(d =>
+        d.languages.some(lang => lang.toLowerCase().includes(this.currentDoctorLangFilter))
+      );
+    }
+
+    if (this.currentDoctorExpFilter && this.currentDoctorExpFilter !== 'all') {
+      const minYears = parseInt(this.currentDoctorExpFilter, 10);
+      filtered = filtered.filter(d => {
+        const years = parseInt(d.experience, 10) || 0;
+        return years >= minYears;
+      });
     }
 
     if (this.currentSearchQuery) {
@@ -511,54 +557,108 @@ const App = {
     if (filtered.length === 0) {
       grid.innerHTML = `
         <div style="grid-column: 1 / -1; text-align: center; padding: 3rem; background: white; border-radius: var(--radius-lg); border: 1px solid var(--border);">
-          <h4 style="font-size: 1.15rem; color: var(--text-primary); margin-bottom: 0.5rem;">No specialist doctors match your search</h4>
-          <p style="color: var(--text-muted); font-size: 0.9rem;">Try selecting a different specialty or clearing your search keywords.</p>
+          <h4 style="font-size: 1.15rem; color: var(--text-primary); margin-bottom: 0.5rem;">No specialist doctors match your search or filters</h4>
+          <p style="color: var(--text-muted); font-size: 0.9rem;">Try selecting a different language, specialty, or experience tier.</p>
           <button class="btn btn-secondary" style="margin-top: 1rem;" onclick="App.resetDoctorFilters()">Reset All Filters</button>
         </div>
       `;
       return;
     }
 
-    grid.innerHTML = filtered.map(doc => `
-      <div class="doctor-card">
-        <div class="doctor-avatar-wrapper">
-          <img src="${doc.avatar}" alt="${doc.name}" class="doctor-avatar" loading="lazy">
-          <div class="doctor-fee-badge">$${doc.fee} AUD</div>
-        </div>
-
-        <div class="doctor-info">
-          <h3 class="doctor-name">${doc.name}</h3>
-          <div class="doctor-specialty">${doc.specialisation || doc.title}</div>
-          <div class="doctor-credentials">${doc.credentials}</div>
-
-          <div class="doctor-meta-row">
-            <div>⏱️ <strong>${doc.experience}</strong> Exp</div>
-            <div>🗣️ <strong>${doc.languages.join(', ')}</strong></div>
-          </div>
-
-          <div style="font-size: 0.8rem; color: var(--success); font-weight: 600; margin-bottom: 1rem;">
-            🟢 Available: ${doc.nextAvailable}
-          </div>
-
-          <div style="display: flex; gap: 0.5rem; margin-top: auto;">
-            <button class="btn btn-outline" style="flex: 1; font-size: 0.82rem; padding: 0.5rem;" onclick="App.openDoctorModal('${doc.id}')">
-              View Profile
-            </button>
-            <button class="btn btn-primary" style="flex: 1; font-size: 0.82rem; padding: 0.5rem;" onclick="BookingWizard.open('${doc.id}')">
-              Book Visit
+    grid.innerHTML = filtered.map(doc => {
+      const isFav = this.userDoctorFavorites.has(doc.id);
+      return `
+        <div class="doctor-card">
+          <div class="doctor-avatar-wrapper" style="position: relative;">
+            <img src="${doc.avatar}" alt="${doc.name}" class="doctor-avatar" loading="lazy">
+            <div class="doctor-fee-badge">$${doc.fee} AUD</div>
+            <button type="button" class="btn-doctor-fav ${isFav ? 'favorited' : ''}" style="position: absolute; top: 10px; right: 10px; background: rgba(255,255,255,0.95); border: 1px solid var(--border); border-radius: 50%; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow-sm);" onclick="App.toggleDoctorFav('${doc.id}', this)" title="${isFav ? 'Remove from favorites' : 'Add to favorite specialists'}">
+              ${isFav ? '❤️' : '🤍'}
             </button>
           </div>
+
+          <div class="doctor-info">
+            <h3 class="doctor-name">${doc.name}</h3>
+            <div class="doctor-specialty">${doc.specialisation || doc.title}</div>
+            <div class="doctor-credentials">${doc.credentials}</div>
+
+            <div class="doctor-meta-row">
+              <div>⏱️ <strong>${doc.experience}</strong> Exp</div>
+              <div>🗣️ <strong>${doc.languages.join(', ')}</strong></div>
+            </div>
+
+            <div style="font-size: 0.8rem; color: var(--success); font-weight: 600; margin-bottom: 1rem;">
+              🟢 Available: ${doc.nextAvailable}
+            </div>
+
+            <div style="display: flex; gap: 0.5rem; margin-top: auto;">
+              <button class="btn btn-outline" style="flex: 1; font-size: 0.82rem; padding: 0.5rem;" onclick="App.openDoctorModal('${doc.id}')">
+                View Profile
+              </button>
+              <button class="btn btn-primary" style="flex: 1; font-size: 0.82rem; padding: 0.5rem;" onclick="BookingWizard.open('${doc.id}')">
+                Book Visit
+              </button>
+            </div>
+          </div>
         </div>
-      </div>
-    `).join('');
+      `;
+    }).join('');
+  },
+
+  async loadDoctorFavorites() {
+    try {
+      const res = await fetch('/api/doctors/favorites?patientId=1');
+      const json = await res.json();
+      if (json.success && Array.isArray(json.data)) {
+        this.userDoctorFavorites = new Set(json.data);
+      }
+    } catch (e) {
+      console.warn('Could not load doctor favorites from API:', e.message);
+    }
+  },
+
+  async toggleDoctorFav(doctorId, btn) {
+    try {
+      const res = await fetch('/api/doctors/favorite', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ patientId: 1, doctorId })
+      });
+      const data = await res.json();
+      if (data.success) {
+        if (data.favorited) {
+          this.userDoctorFavorites.add(doctorId);
+          if (btn) {
+            btn.classList.add('favorited');
+            btn.textContent = '❤️';
+          }
+          this.showToast('Specialist added to your favorites.', 'success');
+        } else {
+          this.userDoctorFavorites.delete(doctorId);
+          if (btn) {
+            btn.classList.remove('favorited');
+            btn.textContent = '🤍';
+          }
+          this.showToast('Specialist removed from your favorites.', 'info');
+        }
+      }
+    } catch (e) {
+      this.showToast('Error updating favorites.', 'error');
+    }
   },
 
   resetDoctorFilters() {
     this.currentDoctorFilter = 'all';
+    this.currentDoctorLangFilter = 'all';
+    this.currentDoctorExpFilter = 'all';
     this.currentSearchQuery = '';
     const deptSelect = document.getElementById('doctorDeptFilter');
+    const langSelect = document.getElementById('doctorLangFilter');
+    const expSelect = document.getElementById('doctorExpFilter');
     const searchInput = document.getElementById('doctorSearchInput');
     if (deptSelect) deptSelect.value = 'all';
+    if (langSelect) langSelect.value = 'all';
+    if (expSelect) expSelect.value = 'all';
     if (searchInput) searchInput.value = '';
     this.renderDoctors();
   },
@@ -863,32 +963,291 @@ const App = {
     this.showToast(`Theme switched to ${next} mode`, 'info');
   },
 
-  // 10. Modals & Notifications
-  closeAllModals() {
-    document.querySelectorAll('.modal-backdrop, .search-modal-backdrop').forEach(m => m.classList.remove('active'));
-    document.body.style.overflow = '';
+  // 11. Multilingual Translation Switcher
+  async setLanguage(lang) {
+    try {
+      const res = await fetch(`/api/translations/${lang}`);
+      const json = await res.json();
+      if (!json.success || !json.translations) return;
+
+      const t = json.translations;
+      localStorage.setItem('dch_lang', lang);
+
+      const navTitle = document.getElementById('navHospitalTitle');
+      if (navTitle && t.hospital_name) navTitle.textContent = t.hospital_name;
+
+      const navSub = document.getElementById('navHospitalSubtitle');
+      if (navSub && t.tagline) navSub.textContent = t.tagline;
+
+      const navHome = document.getElementById('navLinkHome');
+      if (navHome && t.nav_home) navHome.textContent = t.nav_home;
+
+      const navAbout = document.getElementById('navLinkAbout');
+      if (navAbout && t.nav_about) navAbout.textContent = t.nav_about;
+
+      const navDepts = document.getElementById('navLinkDepts');
+      if (navDepts && t.nav_departments) navDepts.textContent = t.nav_departments;
+
+      const navDocs = document.getElementById('navLinkDoctors');
+      if (navDocs && t.nav_doctors) navDocs.textContent = t.nav_doctors;
+
+      const navVisitors = document.getElementById('navLinkVisitors');
+      if (navVisitors && t.nav_visitors) navVisitors.textContent = t.nav_visitors;
+
+      const navHealth = document.getElementById('navLinkHealthInfo');
+      if (navHealth && t.nav_health_info) navHealth.textContent = t.nav_health_info;
+
+      const navContact = document.getElementById('navLinkContact');
+      if (navContact && t.nav_contact) navContact.textContent = t.nav_contact;
+
+      const heroH1 = document.querySelector('.hero-title');
+      if (heroH1 && t.hero_title) {
+        heroH1.innerHTML = t.hero_title.replace(',', ',<br><span style="color: var(--primary);">') + '</span>';
+      }
+
+      this.showToast(`Language set to ${lang === 'ne' ? 'नेपाली (Nepali)' : lang === 'hi' ? 'हिन्दी (Hindi)' : 'English (AU)'}`, 'info');
+    } catch (e) {
+      console.warn('Language fetch failed:', e.message);
+    }
   },
 
-  showToast(message, type = 'info') {
-    let container = document.getElementById('toastContainer');
-    if (!container) {
-      container = document.createElement('div');
-      container.id = 'toastContainer';
-      container.className = 'toast-container';
-      document.body.appendChild(container);
+  // 12. Digital Appointment Check-in
+  openCheckinModal() {
+    this.closeAllModals();
+    const modal = document.getElementById('checkinModal');
+    const resultCard = document.getElementById('checkinResultCard');
+    const input = document.getElementById('checkinRefInput');
+    if (resultCard) resultCard.style.display = 'none';
+    if (input) input.value = '';
+    if (modal) {
+      modal.classList.add('active');
+      document.body.style.overflow = 'hidden';
+      if (input) input.focus();
+    }
+  },
+
+  async handleCheckinSubmit(event) {
+    if (event) event.preventDefault();
+    const input = document.getElementById('checkinRefInput');
+    const submitBtn = document.getElementById('btnCheckinSubmit');
+    const resultCard = document.getElementById('checkinResultCard');
+    const ticketEl = document.getElementById('checkinTicketNum');
+    const docEl = document.getElementById('checkinDoctorInfo');
+    const roomEl = document.getElementById('checkinRoomInfo');
+    const waitEl = document.getElementById('checkinWaitInfo');
+    const canvas = document.getElementById('checkinQrCanvas');
+
+    const ref = (input?.value || '').trim();
+    if (!ref) {
+      this.showToast('Please enter your appointment reference code.', 'warning');
+      return;
     }
 
-    const toast = document.createElement('div');
-    toast.className = `toast-item toast-${type}`;
-    const icon = type === 'success' ? '✅' : type === 'warning' ? '⚠️' : type === 'error' ? '❌' : 'ℹ️';
-    toast.innerHTML = `<span style="font-size: 1.1rem;">${icon}</span> <span>${message}</span>`;
-    container.appendChild(toast);
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Verifying... ⏳';
+    }
 
-    setTimeout(() => {
-      toast.style.opacity = '0';
-      toast.style.transform = 'translateY(10px)';
-      setTimeout(() => toast.remove(), 300);
-    }, 4500);
+    try {
+      const res = await fetch('/api/checkin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ appointmentRef: ref })
+      });
+      const data = await res.json();
+
+      if (!res.ok || !data.success) {
+        this.showToast(data.error || 'Check-in failed.', 'error');
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Check In 🚀';
+        }
+        return;
+      }
+
+      const c = data.checkin;
+      if (ticketEl) ticketEl.textContent = c.queueNumber;
+      if (docEl) docEl.textContent = `${c.doctorName} • ${c.departmentName}`;
+      if (roomEl) roomEl.textContent = `📍 ${c.room}`;
+      if (waitEl) waitEl.textContent = `⏱️ Estimated Wait: ~${c.estimatedWaitMins} mins`;
+
+      if (canvas && window.QRCode) {
+        QRCode.toCanvas(canvas, c.qrToken || `DCH:${c.queueNumber}`, { width: 110, margin: 1 });
+      }
+
+      if (resultCard) resultCard.style.display = 'block';
+      this.showToast(data.message, 'success');
+
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Checked In ✓';
+      }
+    } catch (err) {
+      this.showToast('Network error during check-in: ' + err.message, 'error');
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Check In 🚀';
+      }
+    }
+  },
+
+  // 13. Live Wait Times & Queue Board
+  openLiveQueueModal() {
+    this.closeAllModals();
+    const modal = document.getElementById('liveQueueModal');
+    if (modal) {
+      modal.classList.add('active');
+      document.body.style.overflow = 'hidden';
+      this.refreshLiveQueue();
+    }
+  },
+
+  async refreshLiveQueue() {
+    const tableBody = document.getElementById('liveQueueTableBody');
+    const waitingEl = document.getElementById('queueStatWaiting');
+    const consultEl = document.getElementById('queueStatConsulting');
+    const avgWaitEl = document.getElementById('queueStatAvgWait');
+
+    try {
+      const res = await fetch('/api/queue/live');
+      const json = await res.json();
+      if (!json.success || !Array.isArray(json.data)) return;
+
+      const list = json.data;
+      const waitingCount = list.filter(q => q.status === 'waiting' || q.status === 'checked_in').length;
+      const consultCount = list.filter(q => q.status === 'in_consultation').length;
+      if (waitingEl) waitingEl.textContent = waitingCount;
+      if (consultEl) consultEl.textContent = consultCount;
+      if (avgWaitEl) avgWaitEl.textContent = waitingCount === 0 ? '5 mins' : `${waitingCount * 12} mins`;
+
+      if (tableBody) {
+        if (list.length === 0) {
+          tableBody.innerHTML = `<tr><td colspan="5" style="text-align: center; padding: 2rem; color: var(--text-muted);">No patients currently in outpatient queue.</td></tr>`;
+        } else {
+          tableBody.innerHTML = list.map(q => {
+            const isConsult = q.status === 'in_consultation';
+            const badgeClass = isConsult ? 'badge-success' : 'badge-primary';
+            const statusLabel = isConsult ? 'In Consultation' : 'Waiting for Doctor';
+            return `
+              <tr style="border-bottom: 1px solid var(--border);">
+                <td style="padding: 0.75rem; font-weight: 800; font-family: monospace; font-size: 1.1rem; color: var(--primary);">${q.queue_number}</td>
+                <td style="padding: 0.75rem; font-weight: 600;">${q.doctor_name}<br><span style="font-size: 0.75rem; color: var(--text-muted);">${q.department_name}</span></td>
+                <td style="padding: 0.75rem; font-size: 0.82rem; color: var(--text-secondary);">${q.room}</td>
+                <td style="padding: 0.75rem;"><span class="badge ${badgeClass}">${statusLabel}</span></td>
+                <td style="padding: 0.75rem; font-weight: 700; color: ${isConsult ? 'var(--secondary)' : 'var(--text-primary)'};">${isConsult ? 'In Progress' : `~${q.estimated_wait_mins} mins`}</td>
+              </tr>
+            `;
+          }).join('');
+        }
+      }
+    } catch (e) {
+      console.warn('Live queue fetch error:', e.message);
+    }
+  },
+
+  // 14. Telehealth Consultation Simulator
+  openTelehealthModal() {
+    this.closeAllModals();
+    const modal = document.getElementById('telehealthModal');
+    if (modal) {
+      modal.classList.add('active');
+      document.body.style.overflow = 'hidden';
+      this.telehealthSeconds = 272;
+      this.startTelehealthTimer();
+    }
+  },
+
+  startTelehealthTimer() {
+    if (this.telehealthTimerInterval) clearInterval(this.telehealthTimerInterval);
+    const timerEl = document.getElementById('telehealthCallTimer');
+    this.telehealthTimerInterval = setInterval(() => {
+      this.telehealthSeconds++;
+      const mins = String(Math.floor(this.telehealthSeconds / 60)).padStart(2, '0');
+      const secs = String(this.telehealthSeconds % 60).padStart(2, '0');
+      if (timerEl) timerEl.textContent = `00:${mins}:${secs}`;
+    }, 1000);
+  },
+
+  toggleCallMute(btn) {
+    if (!btn) return;
+    if (btn.textContent.includes('Mute')) {
+      btn.textContent = '🔇 Unmute';
+      btn.style.color = '#ef4444';
+      this.showToast('Microphone muted', 'info');
+    } else {
+      btn.textContent = '🎤 Mute';
+      btn.style.color = '#fff';
+      this.showToast('Microphone unmuted', 'info');
+    }
+  },
+
+  toggleCallVideo(btn) {
+    if (!btn) return;
+    if (btn.textContent.includes('Stop')) {
+      btn.textContent = '📹 Start Video';
+      btn.style.color = '#ef4444';
+      this.showToast('Camera turned off', 'info');
+    } else {
+      btn.textContent = '📷 Stop Video';
+      btn.style.color = '#fff';
+      this.showToast('Camera active', 'info');
+    }
+  },
+
+  endTelehealthCall() {
+    if (this.telehealthTimerInterval) {
+      clearInterval(this.telehealthTimerInterval);
+      this.telehealthTimerInterval = null;
+    }
+    this.closeAllModals();
+    this.showToast('Telehealth consultation concluded. Summary notes saved to your patient portal.', 'success');
+  },
+
+  // 15. Patient Feedback
+  openFeedbackModal() {
+    this.closeAllModals();
+    const modal = document.getElementById('feedbackModal');
+    if (modal) {
+      modal.classList.add('active');
+      document.body.style.overflow = 'hidden';
+    }
+  },
+
+  async handleFeedbackSubmit(event) {
+    if (event) event.preventDefault();
+    const name = document.getElementById('fbPatientName')?.value.trim();
+    const comments = document.getElementById('fbComments')?.value.trim();
+    const ratingRadio = document.querySelector('input[name="ratingOverall"]:checked');
+    const rating = ratingRadio ? Number(ratingRadio.value) : 5;
+
+    if (!name) {
+      this.showToast('Please enter your name.', 'warning');
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/feedback/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          patientName: name,
+          ratingOverall: rating,
+          ratingDoctor: rating,
+          ratingCleanliness: 5,
+          comments
+        })
+      });
+      const data = await res.json();
+      if (data.success) {
+        this.closeAllModals();
+        this.showToast('Thank you! Your feedback has been received and approved.', 'success');
+        this.renderTestimonials();
+      } else {
+        this.showToast(data.error || 'Feedback submission failed.', 'error');
+      }
+    } catch (e) {
+      this.showToast('Error submitting review: ' + e.message, 'error');
+    }
   }
 };
 

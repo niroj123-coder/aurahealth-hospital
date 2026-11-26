@@ -1,18 +1,18 @@
-# 🏥 Darwin City Hospital — Master Healthcare Web Platform
+# 🏥 Darwin City Hospital — Advanced Digital Healthcare Platform
 
 > **Educational & Professional Portfolio Project**  
-> **Location:** Darwin, Northern Territory, Australia  
-> **Australian Emergency:** Dial 000 | **Outpatient Desk:** (08) 8999 0000  
+> **Location:** Darwin, Northern Territory, Australia (Rocklands Drive, Tiwi NT 0810)  
+> **Australian Emergency:** Dial 000 | **Hospital Desk:** (08) 8999 0000  
 > **Timezone:** Australian Central Standard Time (ACST • UTC+9:30)  
-> **Live Local Web Server:** [http://localhost:3000](http://localhost:3000)
+> **Live Web Server:** [http://localhost:3000](http://localhost:3000)
 
 ---
 
 ## 🌟 Executive Summary
 
-**Darwin City Hospital (DCH)** is an enterprise-grade hospital web application engineered as a realistic, modern, and comprehensive platform for a fictional tertiary referral medical centre and Level-1 Trauma Centre in Darwin, Northern Territory.
+**Darwin City Hospital (DCH)** is an enterprise-grade digital healthcare management system engineered as a realistic, modern, and comprehensive platform for a fictional tertiary referral medical centre and Level-1 Trauma Centre in Darwin, Northern Territory.
 
-Developed using modern full-stack web standards, the system features a zero-dependency **Node.js HTTP & REST API server**, a persistent **SQLite relational database** (powered by Node.js built-in `node:sqlite`), an interactive **7-Step Appointment Booking System**, **3 distinct role-based dashboards** (Patient, Doctor, Admin with Chart.js), and a fully accessible, WCAG 2.2 AA compliant healthcare design system.
+Developed using modern full-stack web standards, the system features a zero-dependency **Node.js HTTP & REST API server**, a persistent **SQLite relational database** (powered by Node.js built-in `node:sqlite`), real **Nodemailer Gmail SMTP 2FA/OTP email verification**, an interactive **7-Step Appointment Booking System**, **3 distinct role-based dashboards** (Patient, Doctor, Admin with Chart.js), **Contactless Digital Check-in**, **Live De-Identified Outpatient Queue Display**, **Telehealth Virtual Clinic Simulator**, **Digital Patient ID Card with QR Verification**, **Stripe Consultation Payment & Medicare Rebate Simulation**, **Multi-Language Support (English, Nepali, Hindi)**, and a fully accessible, WCAG 2.2 AA compliant healthcare design system.
 
 ---
 
@@ -30,7 +30,8 @@ The platform is built with a trustworthy, clean healthcare aesthetic adhering to
 | **Emergency Red** | `#DC2626` | Emergency 000 call badges, trauma indicators, critical alerts |
 
 - **Typography:** `Inter` for crisp body legibility and `Poppins` for authoritative medical headings.
-- **Accessibility:** Built-in font size scaler (`A-` / `A+`), Dark / Light mode toggle, and ARIA labels.
+- **Icons:** Professional `Lucide Icons` throughout all components, replacing emojis.
+- **Accessibility:** Built-in font size scaler (`A-` / `A+`), Dark / Light mode toggle, keyboard navigation, and ARIA labels conforming to WCAG 2.2 AA.
 
 ---
 
@@ -40,44 +41,57 @@ The platform is built with a trustworthy, clean healthcare aesthetic adhering to
 flowchart TD
     subgraph Frontend["Frontend Client Layer"]
         HTML["HTML5 & Semantic Structure<br>(WCAG 2.2 AA Accessibility)"]
-        CSS["Modern Healthcare Design System<br>(Darwin Brand Tokens & Responsive Grid)"]
+        CSS["Modern Healthcare Design System<br>(Brand Tokens & Responsive Grid)"]
         JS["Modular ES6+ Controllers<br>(BookingWizard • PatientPortal • HospitalAdmin • App)"]
         Charts["Chart.js 4.x & Dynamic Canvas"]
+        QR["QRCode.js Canvas Generator"]
+        Lucide["Lucide Vector Medical Icons"]
     end
 
     subgraph Backend["Application Server Layer (Node.js)"]
         Server["Zero-Dependency HTTP Server<br>(Port 3000 • server.js)"]
-        REST["16 REST API Endpoints<br>(/api/departments, /api/doctors, /api/appointments)"]
-        Auth["Crypto Scrypt Hashing & Session Management"]
+        REST["38 REST API Endpoints<br>(/api/departments, /api/checkin, /api/queue, /api/payments)"]
+        Auth["Crypto Scrypt Hashing & 2FA/OTP Verification Engine"]
+        SMTP["Nodemailer Gmail SMTP Gateway (TLS/SSL)"]
+        Scheduler["Automated Appointment Reminders Engine (ACST UTC+9:30)"]
     end
 
     subgraph Database["Relational SQLite Database"]
         DB[("darwin_hospital.db<br>(node:sqlite DatabaseSync)")]
-        Tables["12 Relational Tables<br>(users, doctors, patients, appointments, etc.)"]
+        Tables["18 Relational Tables<br>(users, doctors, checkins, payments, families, etc.)"]
     end
 
     Frontend <-->|JSON REST API & Asynchronous Fetch| Backend
     Backend <-->|Parameterized SQL & Transactions| Database
+    Backend <-->|Direct SMTP TLS Connection| SMTP
 ```
 
 ---
 
-## 🗄️ Relational Database Schema (12 Tables)
+## 🗄️ Relational Database Schema (18 Tables)
 
-The database is powered by Node.js 26's built-in `node:sqlite` (`DatabaseSync`), requiring zero third-party C++ compilation:
+The database is powered by Node.js 26's built-in `node:sqlite` (`DatabaseSync`), requiring zero external native compilation dependencies:
 
 1. **`users`**: User authentication, role (`patient`, `doctor`, `admin`), cryptographic salt, and `scrypt` password hash.
-2. **`departments`**: All 14 clinical medical departments, description, treatments array, lead physician, room, operating hours.
+2. **`departments`**: 14 clinical medical departments, description, treatments array, lead physician, room, operating hours.
 3. **`doctors`**: 15 specialist doctor profiles, qualifications, experience, spoken languages, consultation fee in AUD, biography, room.
 4. **`patients`**: Extended medical profile, Medical Record Number (`DCH-MRN-XXXX`), blood group, Medicare number, emergency contact.
 5. **`doctor_availability`**: Timetables and open consultation slot duration (30 mins).
 6. **`appointments`**: Unique reference (`DCH-XXXXXX`), doctor ID, date, time slot, status (`confirmed`, `pending`, `completed`, `cancelled`), symptoms, fee. Includes atomic unique constraint on `(doctor_id, appointment_date, time_slot)` to prevent double booking.
-7. **`medical_records`**: Pathology panels, resting 12-lead ECG reports, diagnostic imaging summaries.
-8. **`prescriptions`**: Active e-prescriptions, dosage, frequency, refills remaining, pharmacy instructions.
-9. **`notifications`**: Patient alerts, test result notices, booking confirmation pings.
-10. **`contact_enquiries`**: General enquiries submitted via the contact form.
-11. **`health_articles`**: Medical guides and health education articles.
-12. **`audit_logs`**: Security logs tracking sensitive administrative and clinical events.
+7. **`email_otps`**: Secure 6-digit OTP verification codes, hashed token, 5-minute expiry, cooldown timestamp, verification status.
+8. **`email_logs`**: Full audit log of all outbound SMTP delivery attempts, recipient addresses, subjects, timestamps, and delivery statuses.
+9. **`medical_records`**: Pathology panels, resting 12-lead ECG reports, diagnostic imaging summaries.
+10. **`prescriptions`**: Active e-prescriptions, dosage, frequency, refills remaining, pharmacy instructions.
+11. **`notifications`**: Patient alerts, test result notices, booking confirmation pings.
+12. **`contact_enquiries`**: General enquiries submitted via the contact form with admin response tracking.
+13. **`health_articles`**: Medical guides and health education articles.
+14. **`audit_logs`**: Security logs tracking sensitive administrative and clinical events.
+15. **`checkins`**: Contactless arrivals, ticket numbers (`Q-041`), arrival timestamps, de-identified QR verification tokens, status (`checked-in`, `called`, `in-consultation`, `completed`).
+16. **`patient_families`**: Dependent family profiles linked to primary patient (spouses, children, elders) with DOB, blood group, and emergency contact details.
+17. **`payments`**: Simulated Stripe checkout intents, amounts in AUD, Medicare rebates, payment method details, and tax invoice receipts.
+18. **`patient_feedback`**: Doctor ratings (1-5 stars), verified patient comments, clinical quality feedback, and administrative moderation flags.
+19. **`doctor_favorites`**: Patient-curated bookmarks of preferred specialists.
+20. **`reminder_logs`**: Audit trail of automated appointment reminder emails and SMS alerts sent 24-48 hours before scheduled visits.
 
 ---
 
@@ -100,64 +114,67 @@ The database is powered by Node.js 26's built-in `node:sqlite` (`DatabaseSync`),
 
 ---
 
-## 👨‍⚕️ 15 Specialist Doctors & Consultants
+## 👨‍⚕️ 15 Specialist Doctors & Multi-Faceted Directory
 
-Every specialist profile includes full academic credentials, Australian fellowships, years of experience, spoken languages, room location, consultation fee in AUD, and interactive profile modals:
+Every specialist profile includes full academic credentials, Australian fellowships, years of experience, spoken languages, room location, consultation fee in AUD, and interactive profile modals. The directory features real-time multi-attribute filtering:
 
-- **Dr. Sarah Jenkins** — MBBS (Hons), FRACP, FCSANZ, FACC (Cardiology • 16 yrs exp • $220 AUD)
-- **Dr. Alexander Vance** — MD, PhD, FRACP (Neurology • 19 yrs exp • $240 AUD)
-- **Dr. Marcus Brody** — MBBS, MS Orth, FRACS (Orthopaedics • 14 yrs exp • $250 AUD)
-- **Dr. Emily Watson** — MBChB, FRACP Paed, DCH (Paediatrics • 12 yrs exp • $195 AUD)
-- **Dr. David K. Chen** — MBBS, FRACP, FACP (General Medicine • 22 yrs exp • $180 AUD)
-- **Dr. Rachel Green** — MBBS, FACEM (Emergency & Trauma • 11 yrs exp • $210 AUD)
-- **Dr. Olivia Taylor** — MBBS, FRANZCOG, CMFM (Maternity & Ob/Gyn • 15 yrs exp • $230 AUD)
-- **Dr. James Wilson** — MBBS, FACD (Dermatology • 13 yrs exp • $210 AUD)
-- **Dr. Kevin Patel** — MBBS, FRANZCR, EBIR (Radiology • 17 yrs exp • $225 AUD)
-- **Dr. Meera Nambiar** — MBBS, MD, FRACP Onc (Oncology • 14 yrs exp • $260 AUD)
-- **Liam O'Connor** — B.Physio, M.MuscPhysio, APAM (Physiotherapy • 9 yrs exp • $140 AUD)
-- **Dr. Hannah Scott** — MBBS, FRANZCP (Psychiatry & Mental Health • 16 yrs exp • $240 AUD)
-- **Dr. Anthony Ross** — BDS, MBBS, FRACDS OMS (Oral & Maxillofacial • 12 yrs exp • $190 AUD)
-- **Dr. Fiona Stewart** — MBBS, FRCPA, FIAC (Pathology • 18 yrs exp • $175 AUD)
-- **Dr. Nathan Blake** — MBBS, FANZCA, FCICM (ICU & Anaesthesia • 15 yrs exp • $235 AUD)
+- **Filter by Department:** Cardiology, Neurology, Orthopaedics, Paediatrics, etc.
+- **Filter by Spoken Language:** English, Nepali, Hindi, Mandarin, Spanish, French.
+- **Filter by Experience Level:** 10+ years, 15+ years, 20+ years of practice.
+- **Live Search:** Instant keyword matching across doctor names, subspecialties, and bio keywords.
+- **Doctor Favorites:** 1-click heart toggle to save preferred doctors to the patient profile.
 
 ---
 
-## 📅 7-Step Appointment Booking System
+## 📱 Advanced Platform Features
 
-The online booking system guides patients through seven strictly validated stages:
+### 1. Digital Patient ID Card
+- Unique Medical Record Number (`DCH-MRN-9021`).
+- Dynamically rendered QR Code via QRCode.js.
+- **Privacy First:** QR payload contains only a non-sensitive verification identifier token — zero medical histories or passwords exposed.
+- One-click print / download button for patient check-in at reception kiosks.
 
-1. **Step 1: Specialty Selection** — Choose from 14 clinical departments.
-2. **Step 2: Doctor Selection** — Select an attending specialist with live fee and credential preview.
-3. **Step 3: Date Picker** — Enforces Australian date format, accepts bookings up to 90 days ahead, and strictly rejects past dates.
-4. **Step 4: Time Slot Allocation** — Fetches live open slots from SQLite; locks out previously reserved slots.
-5. **Step 5: Patient Intake** — Collects full name, Australian phone, email, date of birth, Medicare number, and symptoms.
-6. **Step 6: Review Summary** — Consolidated review of all clinical and patient data before submission.
-7. **Step 7: Official Consultation Pass** — Commits record to the database, generates unique `DCH-XXXXXX` reference, provides 1-Click Save in Gmail, printable slip, and downloadable `.EML` email pass.
+### 2. Contactless Digital Check-in & Live Queue Board
+- Patients check in on arrival by entering their appointment reference (`DCH-XXXXXX`).
+- Generates a queue ticket (`Q-041`) and digital boarding token.
+- **Live Outpatient & Emergency Wait Times:** Publicly accessible live wait times board (`/api/queue/live`) displaying current ticket numbers, consulting doctors, consulting rooms, and estimated wait times.
+- **Privacy & Healthcare De-Identification:** Patient names and clinical diagnoses are completely excluded from public queue displays.
 
----
+### 3. Telehealth Virtual Consultation Simulator
+- Complete in-browser telehealth consultation suite.
+- Live camera video preview with picture-in-picture doctor stream.
+- In-call controls: Camera Toggle, Microphone Mute, Call End.
+- Elapsed call timer and real-time clinical chat simulator.
+- Post-consultation digital summary.
 
-## 👥 Multi-Role Portals & Dashboards
+### 4. Online Payment Simulation (Stripe & Medicare)
+- Consultation fee checkout with Medicare itemized rebate calculations (e.g. Standard Consult $220 AUD, Medicare Rebate $82.30 AUD, Out-of-Pocket $137.70 AUD).
+- Test-mode card payment simulator with instant tax invoice and receipt reference generation.
+- Complete payment history ledger accessible in the Patient Portal.
 
-The website includes 3 distinct dashboards accessible via the role switcher or login modal:
+### 5. Multilingual Localization (English, Nepali, Hindi)
+- Real-time language selector in the top bar (`English`, `नेपाली`, `हिन्दी`).
+- Instant client-side DOM translation without page reloading.
+- Backed by server-side translation endpoints (`/api/translations/:lang`).
 
-### 1. Patient Portal
-- Real-time view of scheduled visits, Medical Record Number (`DCH-MRN-9021`), and Medicare verification.
-- **Reschedule & Cancel Actions:** Modifies appointments dynamically with SQLite synchronization.
-- **Diagnostic Results:** View finalized pathology blood panels and resting 12-lead ECG reports.
-- **E-Prescriptions:** Active medications, dosages, and refill counts.
-- **Notification Center:** Clinical updates and test result alerts.
+### 6. Automated Appointment Reminders Engine
+- Server-side scheduler running on ACST timezone (UTC+9:30).
+- Automatically identifies appointments scheduled 24 to 48 hours ahead.
+- Dispatches email alerts and records an audit log in `reminder_logs`.
+- Manual on-demand reminder trigger available in the Admin Console.
 
-### 2. Doctor Portal
-- Today's appointment schedule and patient queue.
-- Consultation completion actions and clinical notes archiving.
-- Live consultation availability status.
+### 7. Patient Family Profiles & Dependent Management
+- Patients can register family members (children, spouses, parents) directly from their portal.
+- Tracks relationship, date of birth, gender, and blood group for family healthcare coordination.
 
-### 3. Administrator Console
-- **Hospital Operations KPIs:** Total doctors (15), patients, total appointments, and today's visits.
-- **Interactive Chart.js Analytics:** Monthly consultation trends line chart and specialty distribution doughnut chart.
-- **Live Bed Capacity Tracker:** Real-time occupancy for ICU, Trauma, Maternity, Paediatrics, and General Wards.
-- **Appointment Status Manager:** Update statuses (Confirmed, Pending, Completed, Cancelled).
-- **Patient Enquiries Viewer:** Review incoming messages submitted via the Contact form.
+### 8. Clinical Reports & e-Prescription Downloads
+- Download pathology panels, resting ECGs, and digital prescriptions.
+- Mandatory legal demonstration watermarks: `SAMPLE – NOT A VALID PRESCRIPTION` and `SAMPLE CLINICAL REPORT – DEMONSTRATION RECORD ONLY`.
+
+### 9. Admin Operational Tools & CSV Reporting
+- 1-Click CSV Export of all appointments and patient visits for administrative audits.
+- Full email delivery logs viewer for SMTP debugging.
+- Live hospital bed occupancy monitor across ICU, Trauma, Maternity, and General wards.
 
 ---
 
@@ -173,12 +190,31 @@ The website includes 3 distinct dashboards accessible via the role switcher or l
 
 ---
 
-## 🤖 Advanced Features
+## 🧪 Comprehensive Integration Test Suite (44 Tests, 100% Pass)
 
-- **Darwin CareBot Assistant:** Floating bottom-right assistant providing instant answers regarding visiting hours, clinics, location, and Medicare billing.
-- **Global Search (`Ctrl+K`):** Instant modal search across all 14 departments, 15 specialists, and clinical services.
-- **Accessibility Suite:** Font sizing buttons (`A-` / `A+`), Dark / Light theme toggle, and WCAG AA contrast compliance.
-- **Custom 404 Page:** Professional medical-themed error page for invalid URLs.
+An automated integration test suite is included in `tests/integration_test.js` validating all 16 platform subsystems:
+
+```bash
+node tests/integration_test.js
+```
+
+### Verified Test Suites:
+1. **SMTP Status Endpoint:** Configuration status verification.
+2. **Send OTP API Endpoint:** Live Gmail SMTP and input validation.
+3. **Database OTP Security & Rate Limiting:** Expiry, 60s cooldown, replay protection, token invalidation.
+4. **Appointment Booking API & Collision Prevention:** Double booking prevention, past date lockout, reference generation.
+5. **General Enquiry API:** Contact form submission and ticket generation.
+6. **Admin Management & Logs APIs:** Enquiry responses, appointment searches, email audit logs.
+7. **Digital Check-In & Live Queue APIs:** Arrival check-in, ticket generation, privacy de-identification.
+8. **Patient Family Profiles:** Adding and retrieving dependent profiles.
+9. **Online Stripe Payments:** Intent generation, payment confirmation, and receipt ledger.
+10. **Patient Feedback & Quality Ratings:** Submission and public review display.
+11. **Doctor Favorites API:** Specialist bookmarking and retrieval.
+12. **Digital Patient ID Card:** ID card data and non-sensitive QR payload.
+13. **Clinical Report & Prescription Downloads:** Watermarked HTML and prescription slips.
+14. **Multilingual Translation Endpoints:** English, Nepali, and Hindi dictionary validation.
+15. **Automated Reminders Scheduler:** ACST 24-48h appointment scan.
+16. **Admin CSV Export:** RFC 4180 CSV export generation.
 
 ---
 
@@ -187,16 +223,23 @@ The website includes 3 distinct dashboards accessible via the role switcher or l
 ### Prerequisites
 - Node.js version 22 or higher (Node.js 26 recommended for native `node:sqlite`).
 
-### Start the Server
-```bash
-npm start
+### 1. Configure Environment Variables
+Ensure `.env` contains your Gmail SMTP credentials (already pre-configured for demonstration):
+```env
+SMTP_USER=nirooj11@gmail.com
+SMTP_PASS=kfgp ivut cjvy oypv
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+PORT=3000
 ```
-*or*
+
+### 2. Start the Web Server
 ```bash
 node server.js
 ```
 
-Then open your web browser to:  
+### 3. Open the Application
+Navigate your browser to:  
 👉 **[http://localhost:3000](http://localhost:3000)**
 
 ---
