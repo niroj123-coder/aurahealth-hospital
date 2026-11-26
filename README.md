@@ -1,92 +1,193 @@
-# 🏥 AuraHealth International Hospital & Research Center Web Portal
+# 🏥 Darwin City Hospital — Master Healthcare Web Platform
 
-A world-class, full-featured hospital and healthcare web application designed with modern clinical precision, responsive UX, and accessible healthcare design standards.
+> **Educational & Professional Portfolio Project**  
+> **Location:** Darwin, Northern Territory, Australia  
+> **Australian Emergency:** Dial 000 | **Outpatient Desk:** (08) 8999 0000  
+> **Timezone:** Australian Central Standard Time (ACST • UTC+9:30)  
+> **Live Local Web Server:** [http://localhost:3000](http://localhost:3000)
 
 ---
 
-## 🌟 Key Features Included
+## 🌟 Executive Summary
 
-### 1. 24/7 Emergency Care & Ambulance SOS Dispatch
-- **Live ER Wait Time Ticker**: Displays real-time estimated door-to-doctor intake time (~11 mins) and active Level-1 trauma bay readiness.
-- **Interactive Ambulance SOS Dispatch Simulator**:
-  - One-click GPS-assisted ambulance dispatch request.
-  - Live animated tracking radar and countdown ETA timer (`Paramedic Unit Alpha-04`).
-  - Driver/paramedic direct contact hotline.
-  - Bystander safety and first-aid instructions (CPR, airway management, recovery positioning).
+**Darwin City Hospital (DCH)** is an enterprise-grade hospital web application engineered as a realistic, modern, and comprehensive platform for a fictional tertiary referral medical centre and Level-1 Trauma Centre in Darwin, Northern Territory.
 
-### 2. Clinical Symptom Checker & Triage Engine
-- Interactive symptom chips (Chest Pain, Thunderclap Headache, High Fever, Joint Trauma, Shortness of Breath, etc.).
-- Real-time clinical evaluation rules that assess severity and guide patients:
-  - **Critical Emergency**: Alerts patient to life-threatening risks with direct 1-click ambulance dispatch and emergency hotlines.
-  - **Specialist Care**: Connects patient directly to the appropriate department with pre-filtered physician scheduling.
+Developed using modern full-stack web standards, the system features a zero-dependency **Node.js HTTP & REST API server**, a persistent **SQLite relational database** (powered by Node.js built-in `node:sqlite`), an interactive **7-Step Appointment Booking System**, **3 distinct role-based dashboards** (Patient, Doctor, Admin with Chart.js), and a fully accessible, WCAG 2.2 AA compliant healthcare design system.
 
-### 3. Interactive Step-by-Step Appointment Booking System (with Strict Clinical & Temporal Validation)
-- **Step 1: Specialist & Department**: Filter physicians by specialty, review photos, credentials, rating, and consultation fees ($140 - $210). Supports both **In-Person Hospital Visit** and **Telehealth Video Consultation**.
-- **Step 2: Date & Available Slots (Strictly Validated)**:
-  - **Temporal Validation**: Strictly rejects any date in the past (e.g. 1 Jan 2026 when current date is in Nov 2026).
-  - **Booking Window**: Allows bookings only from today up to 60 days in advance.
-  - **Same-Day Slot Filter**: If booking for today, slots that have already passed in local time are flagged as `(Passed)` and disabled.
-  - Real-time inline feedback alerts user immediately if an invalid date is typed or chosen.
-- **Step 3: Patient Intake (Validated)**:
-  - **Date of Birth Protection**: Strictly rejects future birth dates (e.g. 2028) and dates prior to 1900. Automatically calculates and displays the patient's exact age in years (`🎂 Patient Age: X years old`).
-  - **Full Name**: Requires genuine alphabetic name (min 2 characters).
-  - **Phone Number**: Validates genuine contact number (8 to 15 digits).
-  - **Email Address**: RFC-standard email format validation.
-  - Insurance carrier selection (BlueCross, Aetna, Cigna, Medicare, etc.) and chief complaints.
-- **Step 4: Printable Appointment Pass**: Generates official hospital appointment slip with reference number, barcode, room instructions, and 1-click Print/Save as PDF or Add to Calendar. Automatically syncs with the Patient Portal.
+---
 
-### 4. "Find a Doctor" Searchable & Filterable Directory
-- Real-time search across doctor names, medical conditions, and specialties.
-- Filter by department dropdown.
-- Individual Doctor Profile Modal with complete biographical background, education, fellowships, awards, and reviews.
+## 🎨 Design System & Brand Palette
 
-### 5. Centers of Clinical Excellence (Departments)
-- **Cardiovascular Sciences & Heart Institute**
-- **Neurosciences & Stroke Institute**
-- **Orthopedics & Robotic Joint Reconstruction**
-- **Comprehensive Cancer Center (Oncology)**
-- **Pediatrics & Level-IV Neonatal Intensive Care (NICU)**
-- **Level-1 Trauma & Emergency Medicine**
-- **Obstetrics, Gynecology & Women's Health**
-- **Advanced Diagnostic Radiology & AI Imaging**
+The platform is built with a trustworthy, clean healthcare aesthetic adhering to strict accessibility contrast requirements:
 
-### 6. Interactive Patient Portal (Self-Service Dashboard with 2FA Verification Code)
-- **Secure 2FA OTP Login**:
-  - Authenticate using registered Email or Phone Number.
-  - Generates an authentic 6-digit one-time verification code (OTP) with real-time push notification and auto-fill helper.
-  - **Quick Booking Reference Lookup**: Patients can track their appointment directly using their `AH-XXXXXX` reference code.
-- **Personalized Patient Dashboard**:
-  - Dynamically loads the authenticated patient's actual name, contact info, and their personalized scheduled visits.
-- **My Appointments**: Active bookings list with "View Pass Slip", "View Received Email", "Add to Calendar", and "Cancel Visit" options.
-- **Laboratory & Diagnostic Reports**:
-  - Comprehensive Metabolic & Lipid Panel, Complete Blood Count (CBC) with biological reference ranges and pathology validation.
-  - "Download Official PDF" simulation.
-- **Digital Prescriptions**: Active hospital medications (Atorvastatin, Aspirin, CoQ10) with dosage, schedule, and **1-Click Refill** requests.
-- **Invoices & Billing**: Itemized bills, insurance coverage breakdown, and interactive **Pay Co-Pay** modal with instant receipt generation.
+| Element | Color Code | Purpose |
+| :--- | :--- | :--- |
+| **Primary Blue** | `#005B96` | Primary buttons, headers, active navigation states |
+| **Secondary Teal** | `#009688` | Specialty badges, clinical icons, success highlights |
+| **Dark Navy** | `#0F172A` | Top navigation, footer, dark cards, high-contrast headings |
+| **Light Canvas** | `#F4F8FB` | Main background surface, accessible reading contrast |
+| **Pure White** | `#FFFFFF` | Cards, modal containers, appointment passes |
+| **Emergency Red** | `#DC2626` | Emergency 000 call badges, trauma indicators, critical alerts |
 
-### 7. Real-Time Hospital Operations & Live Bed Tracker
-- Real-time bed occupancy stats for ICU, Trauma Resuscitation Bays, Maternity Birthing Suites, Pediatric Unit, and General Inpatient Wards.
-- **Blood Bank Reserves Inventory**: Live levels for O+, O-, A+, A-, B+, B-, AB+, and AB- blood units with critical shortage indicators.
+- **Typography:** `Inter` for crisp body legibility and `Poppins` for authoritative medical headings.
+- **Accessibility:** Built-in font size scaler (`A-` / `A+`), Dark / Light mode toggle, and ARIA labels.
 
-### 8. Preventive Health Checkup Packages
-- Executive Whole-Body Screen ($299, 72 parameters)
-- Cardiac Wellness & Heart Shield ($199)
-- Women's Wellness & Cancer Prevention ($249)
-- Senior Citizen Longevity Panel ($219)
-- Diabetes Care & Endocrine Comprehensive ($129)
+---
 
-### 9. Health Knowledge Hub, Patient Testimonials & FAQ
-- Verified patient recovery stories.
-- Clinician-authored medical wellness articles.
-- Expandable interactive accordion for visitor policies, insurance queries, and ER triage rules.
+## 🏗️ Technical Architecture
+
+```mermaid
+flowchart TD
+    subgraph Frontend["Frontend Client Layer"]
+        HTML["HTML5 & Semantic Structure<br>(WCAG 2.2 AA Accessibility)"]
+        CSS["Modern Healthcare Design System<br>(Darwin Brand Tokens & Responsive Grid)"]
+        JS["Modular ES6+ Controllers<br>(BookingWizard • PatientPortal • HospitalAdmin • App)"]
+        Charts["Chart.js 4.x & Dynamic Canvas"]
+    end
+
+    subgraph Backend["Application Server Layer (Node.js)"]
+        Server["Zero-Dependency HTTP Server<br>(Port 3000 • server.js)"]
+        REST["16 REST API Endpoints<br>(/api/departments, /api/doctors, /api/appointments)"]
+        Auth["Crypto Scrypt Hashing & Session Management"]
+    end
+
+    subgraph Database["Relational SQLite Database"]
+        DB[("darwin_hospital.db<br>(node:sqlite DatabaseSync)")]
+        Tables["12 Relational Tables<br>(users, doctors, patients, appointments, etc.)"]
+    end
+
+    Frontend <-->|JSON REST API & Asynchronous Fetch| Backend
+    Backend <-->|Parameterized SQL & Transactions| Database
+```
+
+---
+
+## 🗄️ Relational Database Schema (12 Tables)
+
+The database is powered by Node.js 26's built-in `node:sqlite` (`DatabaseSync`), requiring zero third-party C++ compilation:
+
+1. **`users`**: User authentication, role (`patient`, `doctor`, `admin`), cryptographic salt, and `scrypt` password hash.
+2. **`departments`**: All 14 clinical medical departments, description, treatments array, lead physician, room, operating hours.
+3. **`doctors`**: 15 specialist doctor profiles, qualifications, experience, spoken languages, consultation fee in AUD, biography, room.
+4. **`patients`**: Extended medical profile, Medical Record Number (`DCH-MRN-XXXX`), blood group, Medicare number, emergency contact.
+5. **`doctor_availability`**: Timetables and open consultation slot duration (30 mins).
+6. **`appointments`**: Unique reference (`DCH-XXXXXX`), doctor ID, date, time slot, status (`confirmed`, `pending`, `completed`, `cancelled`), symptoms, fee. Includes atomic unique constraint on `(doctor_id, appointment_date, time_slot)` to prevent double booking.
+7. **`medical_records`**: Pathology panels, resting 12-lead ECG reports, diagnostic imaging summaries.
+8. **`prescriptions`**: Active e-prescriptions, dosage, frequency, refills remaining, pharmacy instructions.
+9. **`notifications`**: Patient alerts, test result notices, booking confirmation pings.
+10. **`contact_enquiries`**: General enquiries submitted via the contact form.
+11. **`health_articles`**: Medical guides and health education articles.
+12. **`audit_logs`**: Security logs tracking sensitive administrative and clinical events.
+
+---
+
+## 🩺 14 Clinical Specialties & Departments
+
+1. **Cardiology & Heart Health** (Catheter lab, 24/7 angioplasty, Dr. Sarah Jenkins)
+2. **Neurology & Stroke Unit** (Acute stroke thrombolysis protocol, EEG, Dr. Alexander Vance)
+3. **Orthopaedics & Joint Surgery** (Mako robotic total joint replacement, Dr. Marcus Brody)
+4. **Paediatrics & Child Health** (Neonatal checks, child development, Dr. Emily Watson)
+5. **General & Internal Medicine** (Multisystem chronic disease, Dr. David K. Chen)
+6. **Emergency Medicine & Trauma** (24/7 Level-1 trauma resus, Dr. Rachel Green)
+7. **Maternity & Women's Health** (Birthing suites, antenatal, Dr. Olivia Taylor)
+8. **Dermatology & Skin Cancer** (Mohs surgery, melanoma screening, Dr. James Wilson)
+9. **Radiology & Diagnostic Imaging** (3T MRI, 128-slice CT, ultrasound, Dr. Kevin Patel)
+10. **Oncology & Cancer Care** (Day infusion lounge, genomics, Dr. Meera Nambiar)
+11. **Physiotherapy & Rehabilitation** (Heated hydrotherapy pool, sports rehab, Liam O'Connor)
+12. **Mental Health & Wellbeing** (Psychiatric evaluations, CBT, Dr. Hannah Scott)
+13. **Dental & Maxillofacial Care** (Surgical extractions, facial trauma, Dr. Anthony Ross)
+14. **Pathology & Clinical Laboratory** (NATA accredited stat lab, blood bank, Dr. Fiona Stewart)
+
+---
+
+## 👨‍⚕️ 15 Specialist Doctors & Consultants
+
+Every specialist profile includes full academic credentials, Australian fellowships, years of experience, spoken languages, room location, consultation fee in AUD, and interactive profile modals:
+
+- **Dr. Sarah Jenkins** — MBBS (Hons), FRACP, FCSANZ, FACC (Cardiology • 16 yrs exp • $220 AUD)
+- **Dr. Alexander Vance** — MD, PhD, FRACP (Neurology • 19 yrs exp • $240 AUD)
+- **Dr. Marcus Brody** — MBBS, MS Orth, FRACS (Orthopaedics • 14 yrs exp • $250 AUD)
+- **Dr. Emily Watson** — MBChB, FRACP Paed, DCH (Paediatrics • 12 yrs exp • $195 AUD)
+- **Dr. David K. Chen** — MBBS, FRACP, FACP (General Medicine • 22 yrs exp • $180 AUD)
+- **Dr. Rachel Green** — MBBS, FACEM (Emergency & Trauma • 11 yrs exp • $210 AUD)
+- **Dr. Olivia Taylor** — MBBS, FRANZCOG, CMFM (Maternity & Ob/Gyn • 15 yrs exp • $230 AUD)
+- **Dr. James Wilson** — MBBS, FACD (Dermatology • 13 yrs exp • $210 AUD)
+- **Dr. Kevin Patel** — MBBS, FRANZCR, EBIR (Radiology • 17 yrs exp • $225 AUD)
+- **Dr. Meera Nambiar** — MBBS, MD, FRACP Onc (Oncology • 14 yrs exp • $260 AUD)
+- **Liam O'Connor** — B.Physio, M.MuscPhysio, APAM (Physiotherapy • 9 yrs exp • $140 AUD)
+- **Dr. Hannah Scott** — MBBS, FRANZCP (Psychiatry & Mental Health • 16 yrs exp • $240 AUD)
+- **Dr. Anthony Ross** — BDS, MBBS, FRACDS OMS (Oral & Maxillofacial • 12 yrs exp • $190 AUD)
+- **Dr. Fiona Stewart** — MBBS, FRCPA, FIAC (Pathology • 18 yrs exp • $175 AUD)
+- **Dr. Nathan Blake** — MBBS, FANZCA, FCICM (ICU & Anaesthesia • 15 yrs exp • $235 AUD)
+
+---
+
+## 📅 7-Step Appointment Booking System
+
+The online booking system guides patients through seven strictly validated stages:
+
+1. **Step 1: Specialty Selection** — Choose from 14 clinical departments.
+2. **Step 2: Doctor Selection** — Select an attending specialist with live fee and credential preview.
+3. **Step 3: Date Picker** — Enforces Australian date format, accepts bookings up to 90 days ahead, and strictly rejects past dates.
+4. **Step 4: Time Slot Allocation** — Fetches live open slots from SQLite; locks out previously reserved slots.
+5. **Step 5: Patient Intake** — Collects full name, Australian phone, email, date of birth, Medicare number, and symptoms.
+6. **Step 6: Review Summary** — Consolidated review of all clinical and patient data before submission.
+7. **Step 7: Official Consultation Pass** — Commits record to the database, generates unique `DCH-XXXXXX` reference, provides 1-Click Save in Gmail, printable slip, and downloadable `.EML` email pass.
+
+---
+
+## 👥 Multi-Role Portals & Dashboards
+
+The website includes 3 distinct dashboards accessible via the role switcher or login modal:
+
+### 1. Patient Portal
+- Real-time view of scheduled visits, Medical Record Number (`DCH-MRN-9021`), and Medicare verification.
+- **Reschedule & Cancel Actions:** Modifies appointments dynamically with SQLite synchronization.
+- **Diagnostic Results:** View finalized pathology blood panels and resting 12-lead ECG reports.
+- **E-Prescriptions:** Active medications, dosages, and refill counts.
+- **Notification Center:** Clinical updates and test result alerts.
+
+### 2. Doctor Portal
+- Today's appointment schedule and patient queue.
+- Consultation completion actions and clinical notes archiving.
+- Live consultation availability status.
+
+### 3. Administrator Console
+- **Hospital Operations KPIs:** Total doctors (15), patients, total appointments, and today's visits.
+- **Interactive Chart.js Analytics:** Monthly consultation trends line chart and specialty distribution doughnut chart.
+- **Live Bed Capacity Tracker:** Real-time occupancy for ICU, Trauma, Maternity, Paediatrics, and General Wards.
+- **Appointment Status Manager:** Update statuses (Confirmed, Pending, Completed, Cancelled).
+- **Patient Enquiries Viewer:** Review incoming messages submitted via the Contact form.
+
+---
+
+## 🔐 Demonstration Login Credentials
+
+| Role | Email | Password |
+| :--- | :--- | :--- |
+| **Hospital Administrator** | `admin@darwinhospital.gov.au` | `DarwinAdmin2026!` |
+| **Specialist Doctor** | `dr.jenkins@darwinhospital.gov.au` | `DoctorPass2026!` |
+| **Patient** | `nirojkhattri33@gmail.com` | `PatientPass2026!` |
+
+*(You can also use the one-click Role Switcher buttons inside the Portal section to instantly evaluate all three dashboard views.)*
+
+---
+
+## 🤖 Advanced Features
+
+- **Darwin CareBot Assistant:** Floating bottom-right assistant providing instant answers regarding visiting hours, clinics, location, and Medicare billing.
+- **Global Search (`Ctrl+K`):** Instant modal search across all 14 departments, 15 specialists, and clinical services.
+- **Accessibility Suite:** Font sizing buttons (`A-` / `A+`), Dark / Light theme toggle, and WCAG AA contrast compliance.
+- **Custom 404 Page:** Professional medical-themed error page for invalid URLs.
 
 ---
 
 ## 🚀 How to Run the Website
 
-### Option 1: Using the Built-in Zero-Dependency Node.js Server (Recommended)
-You can launch the local server using standard Node.js (no external packages or `npm install` needed!):
+### Prerequisites
+- Node.js version 22 or higher (Node.js 26 recommended for native `node:sqlite`).
 
+### Start the Server
 ```bash
 npm start
 ```
@@ -95,60 +196,13 @@ npm start
 node server.js
 ```
 
-Open your browser and navigate to:
+Then open your web browser to:  
 👉 **[http://localhost:3000](http://localhost:3000)**
 
-### Option 2: Direct Browser Launch (No server required)
-Simply double-click on `index.html` or open it directly in Google Chrome, Microsoft Edge, Mozilla Firefox, or Safari!
-
 ---
 
-## 📁 Project Architecture
+## ⚠️ Portfolio & Emergency Disclaimer
 
-```
-ashim1/
-├── index.html              # Main application entry point & layout
-├── server.js               # Zero-dependency Node.js HTTP server (Standard Library)
-├── package.json            # Project configuration & npm start script
-├── README.md               # Documentation & feature roadmap
-├── css/
-│   └── styles.css          # Modern healthcare design system & responsive stylesheet
-└── js/
-    ├── data.js             # Hospital dataset: doctors, departments, packages, patient records
-    ├── email.js            # Universal email & OTP gateway (EmailJS, .EML, Node server relay)
-    ├── app.js              # Core UI controller, global search (Ctrl+K), toasts, modals
-    ├── booking.js          # 4-step appointment booking wizard & printable pass generator
-    ├── portal.js           # Patient portal: 2FA OTP login, health records, lab reports, refills
-    ├── triage.js           # Interactive symptom checker & triage risk calculator
-    ├── ambulance.js        # 24/7 Emergency ambulance SOS dispatch simulator with ETA
-    └── admin.js            # Live hospital operations & bed occupancy tracker
-```
-
----
-
-## ✉️ Real Gmail & Mobile Phone SMS Notifications
-
-### How to Get 100% Automated Background Emails in Your Gmail
-In web technology, no browser or static web file can push emails across the internet into Google's `@gmail.com` mailboxes without an email service key (otherwise spammers could abuse any website).
-
-To receive emails automatically in your inbox in the background without manually composing:
-
-1. **Option 1: Web3Forms (Takes 30 Seconds - Free & Zero Server)**
-   - Go to [web3forms.com](https://web3forms.com) (free 250 emails/month).
-   - Enter your email (`nirojkhattri33@gmail.com`) to get your free Access Key.
-   - Click **"⚙️ Notification & Delivery Settings"** in the portal, paste your Access Key into the box, and click **Save Settings**.
-   - Every booking pass and 2FA code will automatically arrive in your Gmail inbox!
-
-2. **Option 2: Direct 1-Click Send to Gmail**
-   - On the booking confirmation card, click **`🚀 Open & Save in My Gmail (1-Click)`**.
-   - Your Gmail app opens pre-populated with your confirmation pass, reference ID, doctor, and clinic instructions. Click Send, and it's in your inbox!
-
-3. **Option 3: Instant 1-Click Auto-Fill (Zero Waiting)**
-   - When logging in, your genuine 6-digit security code is generated and displayed on screen in the green card (e.g., `614 - 324`).
-   - Click **`⚡ Click to Auto-Fill & Log In`** to access your appointments and medical records immediately without waiting for any email.
-
----
-
-## 💡 Keyboard Shortcuts
-- **`Ctrl + K`** (or `Cmd + K`): Open instant global medical search for doctors, departments, and health packages.
-- **`Esc`**: Close any active modal dialog.
+> **PLEASE NOTE:** Darwin City Hospital is a fictional Australian healthcare platform designed for educational, portfolio, and technical demonstration purposes. It does not provide real medical treatment, consultations, or emergency dispatches.
+> 
+> **In Australia, in a genuine medical emergency, immediately dial `000` for emergency ambulance and police services.**

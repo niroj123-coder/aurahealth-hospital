@@ -3,90 +3,97 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AuraHealth International Hospital & Research Center | World-Class Healthcare</title>
-  <meta name="description" content="AuraHealth International Hospital is a premier multi-specialty healthcare provider and Level-1 Trauma Center. Book specialist appointments, access patient lab records, and emergency services 24/7.">
+  <title>Darwin City Hospital — Premier Healthcare & Level-1 Trauma Center | Darwin NT</title>
+  <meta name="description" content="Darwin City Hospital is a premier fictional tertiary healthcare provider and Level-1 Trauma Center in Darwin, Northern Territory, Australia. 14 medical departments, 15 specialist doctors, and online appointment booking.">
+  
+  <!-- Fonts: Inter & Poppins -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Chart.js CDN for Admin Analytics -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- Stylesheet -->
   <link rel="stylesheet" href="css/styles.css">
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%230284c7'><path d='M12 2L4 5v6.09c0 5.05 3.41 9.76 8 10.91 4.59-1.15 8-5.86 8-10.91V5l-8-3zm1 14h-2v-3H8v-2h3V8h2v3h3v2h-3v3z'/></svg>">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23005B96'><path d='M12 2L4 5v6.09c0 5.05 3.41 9.76 8 10.91 4.59-1.15 8-5.86 8-10.91V5l-8-3zm1 14h-2v-3H8v-2h3V8h2v3h3v2h-3v3z'/></svg>">
 </head>
 <body>
 
   <!-- =========================================================================
-       1. Top Emergency Ticker & 24/7 Hotline Bar
+       1. Top Emergency Ticker & Information Bar
        ========================================================================= -->
   <aside class="top-emergency-bar">
-    <div class="container top-bar-inner">
-      <div style="display: flex; align-items: center; gap: 0.75rem;">
-        <span class="er-status-badge">
-          <span class="pulse-dot"></span>
-          <span>ER Door-to-Doctor Time: <strong>~11 Mins</strong> (Trauma Level 1 Ready)</span>
+    <div class="top-bar-inner">
+      <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
+        <span class="emergency-call-badge">
+          <span>🚨 Australian Emergency: Dial 000</span>
         </span>
-        <span style="opacity: 0.8; font-size: 0.8rem; display: none;" class="desktop-only">
-          • 180+ Board-Certified Specialists On-Duty
+        <span style="opacity: 0.9; font-size: 0.8rem;">
+          🏥 Level-1 Regional Trauma Centre NT • 24/7 Resuscitation Ready
+        </span>
+        <span style="background: rgba(255,255,255,0.15); padding: 0.15rem 0.5rem; border-radius: 4px; font-size: 0.72rem; font-weight: 600;">
+          Portfolio Demonstration Project
         </span>
       </div>
 
-      <div class="top-hotlines">
-        <a href="tel:+18009112872" class="hotline-link" style="color: #ffedd5; font-weight: 700;">
-          🚑 Ambulance Hotline: <strong>+1 (800) 911-AURA</strong>
+      <div style="display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;">
+        <a href="tel:0889990000" style="color: #e0f0fa; font-weight: 600; font-size: 0.82rem;">
+          📞 Non-Emergency: <strong>(08) 8999 0000</strong>
         </a>
-        <a href="tel:+18005552273" class="hotline-link">
-          📞 24/7 General Care: <strong>+1 (800) 555-CARE</strong>
-        </a>
-        <button type="button" class="btn btn-emergency" style="font-size: 0.75rem; padding: 0.25rem 0.65rem;" onclick="AmbulanceSOS.open()">
-          🚨 SOS Emergency
-        </button>
+        <div style="display: flex; align-items: center; gap: 0.3rem;">
+          <button type="button" class="btn btn-outline" style="padding: 0.15rem 0.45rem; font-size: 0.72rem; color: #fff; border-color: rgba(255,255,255,0.3);" onclick="App.adjustFontSize(-5)" title="Decrease Font Size">A-</button>
+          <button type="button" class="btn btn-outline" style="padding: 0.15rem 0.45rem; font-size: 0.72rem; color: #fff; border-color: rgba(255,255,255,0.3);" onclick="App.adjustFontSize(5)" title="Increase Font Size">A+</button>
+          <button type="button" class="btn btn-outline" style="padding: 0.15rem 0.55rem; font-size: 0.72rem; color: #fff; border-color: rgba(255,255,255,0.3);" onclick="App.toggleTheme()" title="Toggle Dark/Light Mode">🌓 Theme</button>
+        </div>
       </div>
     </div>
   </aside>
 
   <!-- =========================================================================
-       2. Main Navigation Header
+       2. Sticky Navigation Header
        ========================================================================= -->
-  <header class="site-header">
-    <div class="container header-inner">
-      <!-- Brand Logo -->
-      <a href="#home" class="brand-logo">
-        <div class="brand-icon-wrapper">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 2v20M2 12h20M7 7l10 10M17 7L7 17"/>
-          </svg>
+  <header class="site-header" style="position: sticky; top: 0; background: var(--bg-surface); z-index: 100; box-shadow: var(--shadow-sm); border-bottom: 1px solid var(--border);">
+    <div class="container header-inner" style="display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 1rem;">
+      <!-- Hospital Logo -->
+      <a href="#home" class="brand-logo" style="display: flex; align-items: center; gap: 0.75rem; text-decoration: none;">
+        <div style="background: var(--primary); color: white; width: 42px; height: 42px; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: 800; box-shadow: 0 4px 10px rgba(0, 91, 150, 0.3);">
+          +
         </div>
         <div>
-          <span>AuraHealth</span>
-          <span class="brand-text-sub">International Hospital</span>
+          <span style="font-size: 1.25rem; font-weight: 800; color: var(--dark-navy); letter-spacing: -0.5px; display: block; line-height: 1.1;">Darwin City Hospital</span>
+          <span style="font-size: 0.72rem; color: var(--secondary); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Northern Territory • Australia</span>
         </div>
       </a>
 
       <!-- Desktop Nav Links -->
-      <nav class="main-nav">
-        <a href="#triage" class="nav-link">Symptom Checker</a>
-        <a href="#doctors" class="nav-link">Find a Doctor</a>
-        <a href="#departments" class="nav-link">Specialties</a>
-        <a href="#packages" class="nav-link">Health Packages</a>
-        <a href="#patient-portal" class="nav-link">Patient Portal</a>
-        <a href="#operations" class="nav-link">Bed Tracker</a>
-        <a href="#contact" class="nav-link">Contact</a>
+      <nav class="main-nav" style="display: flex; gap: 1.2rem; font-size: 0.9rem; font-weight: 600;">
+        <a href="#home" class="nav-link">Home</a>
+        <a href="#about" class="nav-link">About Us</a>
+        <a href="#departments" class="nav-link">Departments</a>
+        <a href="#doctors" class="nav-link">Our Doctors</a>
+        <a href="#emergency-info" class="nav-link" style="color: var(--emergency);">Emergency (000)</a>
+        <a href="#visitors" class="nav-link">Patient & Visitors</a>
+        <a href="#health-news" class="nav-link">Health Info</a>
+        <a href="#contact" class="nav-link">Contact Us</a>
       </nav>
 
-      <!-- Header Actions -->
-      <div class="header-actions">
-        <button type="button" class="btn btn-outline" style="padding: 0.5rem 0.8rem;" onclick="App.openSearchModal()" title="Search doctors and services (Ctrl+K)">
+      <!-- Action Buttons -->
+      <div style="display: flex; align-items: center; gap: 0.6rem;">
+        <button type="button" class="btn btn-outline" style="padding: 0.5rem 0.75rem; font-size: 0.82rem;" onclick="App.openSearchModal()" title="Search clinical services (Ctrl+K)">
           <span>🔍</span>
-          <span style="font-size: 0.75rem; color: var(--text-muted); background: var(--bg-alt); padding: 0.1rem 0.4rem; border-radius: 4px;">Ctrl+K</span>
+          <span style="font-size: 0.7rem; color: var(--text-muted); background: var(--bg-alt); padding: 0.1rem 0.35rem; border-radius: 4px; margin-left: 0.25rem;">Ctrl+K</span>
         </button>
 
-        <button type="button" class="btn btn-secondary" id="portalAuthNavBtn" onclick="PatientPortal.openLoginModal()">
-          👤 Patient Login (2FA)
+        <button type="button" class="btn btn-secondary" id="portalAuthNavBtn" style="font-size: 0.85rem; padding: 0.5rem 0.9rem;" onclick="PatientPortal.openLoginModal()">
+          👤 Portal Login
         </button>
 
-        <button type="button" class="btn btn-primary" onclick="BookingWizard.open()">
+        <button type="button" class="btn btn-primary" style="font-size: 0.85rem; padding: 0.5rem 1rem;" onclick="BookingWizard.open()">
           📅 Book Appointment
         </button>
 
-        <button type="button" class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Toggle navigation">
+        <button type="button" class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Toggle navigation" style="display: none; background: none; border: 1px solid var(--border); padding: 0.4rem 0.6rem; border-radius: var(--radius-sm); font-size: 1.2rem; cursor: pointer;">
           ☰
         </button>
       </div>
@@ -94,145 +101,68 @@
   </header>
 
   <!-- Mobile Drawer -->
-  <div id="mobileNavDrawer" style="display: none; position: fixed; top: 120px; left: 0; right: 0; background: white; z-index: 49; padding: 1.5rem; border-bottom: 2px solid var(--primary); box-shadow: var(--shadow-xl);">
-    <div style="display: flex; flex-direction: column; gap: 1rem; font-weight: 700;">
-      <a href="#triage" onclick="App.closeAllModals()">🩺 Symptom Checker</a>
-      <a href="#doctors" onclick="App.closeAllModals()">👨‍⚕️ Find a Doctor</a>
-      <a href="#departments" onclick="App.closeAllModals()">🏥 Medical Specialties</a>
-      <a href="#packages" onclick="App.closeAllModals()">📦 Health Checkup Packages</a>
-      <a href="#patient-portal" onclick="App.closeAllModals()">👤 Patient Portal</a>
-      <a href="#operations" onclick="App.closeAllModals()">📊 Live Bed Availability</a>
-      <a href="#contact" onclick="App.closeAllModals()">📍 Location & Contact</a>
-      <button class="btn btn-primary" style="margin-top: 0.5rem;" onclick="App.closeAllModals(); BookingWizard.open()">
+  <div id="mobileNavDrawer" style="display: none; position: fixed; top: 110px; left: 0; right: 0; background: var(--bg-surface); z-index: 99; padding: 1.5rem; border-bottom: 2px solid var(--primary); box-shadow: var(--shadow-xl);">
+    <div style="display: flex; flex-direction: column; gap: 1rem; font-weight: 700; font-size: 1rem;">
+      <a href="#home" onclick="document.getElementById('mobileNavDrawer').style.display='none'">🏠 Home</a>
+      <a href="#about" onclick="document.getElementById('mobileNavDrawer').style.display='none'">🏥 About Us</a>
+      <a href="#departments" onclick="document.getElementById('mobileNavDrawer').style.display='none'">🩺 14 Medical Departments</a>
+      <a href="#doctors" onclick="document.getElementById('mobileNavDrawer').style.display='none'">👨‍⚕️ Specialist Doctors Directory</a>
+      <a href="#emergency-info" onclick="document.getElementById('mobileNavDrawer').style.display='none'" style="color: var(--emergency);">🚨 Emergency Services (000)</a>
+      <a href="#visitors" onclick="document.getElementById('mobileNavDrawer').style.display='none'">👥 Patient & Visitors Guide</a>
+      <a href="#patient-portal" onclick="document.getElementById('mobileNavDrawer').style.display='none'">👤 Patient & Doctor Portal</a>
+      <a href="#health-news" onclick="document.getElementById('mobileNavDrawer').style.display='none'">📰 Health Information Blog</a>
+      <a href="#contact" onclick="document.getElementById('mobileNavDrawer').style.display='none'">📍 Location & Contact Us</a>
+      <button class="btn btn-primary" style="margin-top: 0.5rem;" onclick="document.getElementById('mobileNavDrawer').style.display='none'; BookingWizard.open()">
         📅 Book Appointment Now
-      </button>
-      <button class="btn btn-emergency" onclick="App.closeAllModals(); AmbulanceSOS.open()">
-        🚨 Request Emergency Ambulance
       </button>
     </div>
   </div>
 
   <main>
     <!-- =======================================================================
-         3. Hero Section & Emergency Hub
+         3. Hero Section
          ======================================================================= -->
-    <section class="hero-section" id="home">
-      <div class="hero-backdrop-pattern"></div>
-      <div class="container hero-grid">
-        <!-- Hero Left -->
+    <section class="hero-section" id="home" style="background: linear-gradient(135deg, #F4F8FB 0%, #e0f0fa 100%); padding: 4.5rem 1rem; position: relative;">
+      <div class="container hero-grid" style="display: grid; grid-template-columns: 1.15fr 0.85fr; gap: 3rem; align-items: center;">
         <div>
-          <div class="hero-pill-badge">
-            <span>🏆 JCI Accredited Hospital</span>
-            <span>•</span>
-            <span>Level-1 Trauma & Emergency Center</span>
+          <div style="display: inline-flex; align-items: center; gap: 0.5rem; background: var(--primary-light); color: var(--primary); padding: 0.35rem 0.85rem; border-radius: var(--radius-full); font-weight: 700; font-size: 0.82rem; margin-bottom: 1.25rem;">
+            <span>🇦🇺 Premier Australian Hospital & Level-1 Trauma Centre</span>
           </div>
 
-          <h1 class="hero-title">
-            World-Class Healthcare, <br>
-            <span class="highlight-gradient">Healing With Compassion.</span>
+          <h1 class="hero-title" style="font-family: var(--font-heading); font-size: 3.2rem; font-weight: 800; color: var(--dark-navy); line-height: 1.15; margin-bottom: 1.25rem;">
+            Your Health, <br>
+            <span style="color: var(--primary);">Our Priority.</span>
           </h1>
 
-          <p class="hero-description">
-            AuraHealth brings together international medical specialists, robotic-assisted surgical theaters, and 24/7 rapid emergency trauma response. Personalized care designed around your life.
+          <p style="font-size: 1.1rem; color: var(--text-secondary); line-height: 1.65; margin-bottom: 2rem; max-width: 580px;">
+            Darwin City Hospital provides world-class tertiary referral healthcare across the Top End of Australia. From 24/7 Level-1 trauma resuscitation and robotic surgery to compassionate family medicine, our 180+ qualified specialists are dedicated to your wellbeing.
           </p>
 
-          <div class="hero-cta-group">
-            <button type="button" class="btn btn-primary" style="font-size: 1.05rem; padding: 0.8rem 1.6rem;" onclick="BookingWizard.open()">
-              📅 Schedule Consultation
+          <div style="display: flex; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 2rem;">
+            <button type="button" class="btn btn-primary" style="font-size: 1rem; padding: 0.85rem 1.6rem;" onclick="BookingWizard.open()">
+              📅 Book an Appointment
             </button>
-            <button type="button" class="btn btn-outline" style="font-size: 1.05rem; padding: 0.8rem 1.5rem;" onclick="document.getElementById('doctors').scrollIntoView({behavior: 'smooth'})">
-              👨‍⚕️ Explore Specialists
+            <button type="button" class="btn btn-outline" style="font-size: 1rem; padding: 0.85rem 1.5rem;" onclick="document.getElementById('doctors').scrollIntoView({behavior: 'smooth'})">
+              👨‍⚕️ Find a Doctor
             </button>
-            <button type="button" class="btn btn-emergency" style="font-size: 1.05rem; padding: 0.8rem 1.5rem;" onclick="AmbulanceSOS.open()">
-              🚑 24/7 SOS Ambulance
-            </button>
+            <a href="tel:000" class="btn btn-emergency" style="font-size: 1rem; padding: 0.85rem 1.5rem; text-decoration: none; display: inline-flex; align-items: center; gap: 0.4rem;">
+              🚨 Emergency (000)
+            </a>
           </div>
 
-          <!-- Quick Metrics -->
-          <div class="hero-stats-row">
-            <div class="stat-item">
-              <h4>180+</h4>
-              <p>Top Physicians</p>
-            </div>
-            <div class="stat-item">
-              <h4>99.6%</h4>
-              <p>Recovery Rate</p>
-            </div>
-            <div class="stat-item">
-              <h4>500k+</h4>
-              <p>Patients Healed</p>
-            </div>
-            <div class="stat-item">
-              <h4>24/7</h4>
-              <p>Emergency Care</p>
-            </div>
+          <div style="display: flex; gap: 1.5rem; font-size: 0.85rem; color: var(--text-muted); flex-wrap: wrap;">
+            <div>✓ Medicare Bulk-Billing Available</div>
+            <div>✓ Darwin ACST Timezone Aware</div>
+            <div>✓ ACHS Accredited Standards (Demo)</div>
           </div>
         </div>
 
-        <!-- Hero Right: Quick Action Hub -->
         <div>
-          <div class="hero-hub-card">
-            <div class="hub-card-header">
-              <h3>
-                <span>⚡</span>
-                <span>Immediate Patient Actions</span>
-              </h3>
-              <span class="badge badge-success">Online 24/7</span>
-            </div>
-
-            <div class="quick-action-cards">
-              <!-- Tile 1 -->
-              <div class="action-tile tile-blue" onclick="BookingWizard.open()">
-                <div class="tile-icon">📅</div>
-                <div>
-                  <h4>Book Appointment</h4>
-                  <p>In-person or virtual telehealth video consultation</p>
-                </div>
-              </div>
-
-              <!-- Tile 2 -->
-              <div class="action-tile tile-emerald" onclick="document.getElementById('doctors').scrollIntoView({behavior: 'smooth'})">
-                <div class="tile-icon">👨‍⚕️</div>
-                <div>
-                  <h4>Find a Specialist</h4>
-                  <p>Filter by specialty, language, and immediate availability</p>
-                </div>
-              </div>
-
-              <!-- Tile 3 -->
-              <div class="action-tile tile-red" onclick="AmbulanceSOS.open()">
-                <div class="tile-icon">🚑</div>
-                <div>
-                  <h4>Emergency SOS</h4>
-                  <p>Dispatch paramedic ambulance with live GPS tracking</p>
-                </div>
-              </div>
-
-              <!-- Tile 4 -->
-              <div class="action-tile tile-purple" onclick="document.getElementById('patient-portal').scrollIntoView({behavior: 'smooth'})">
-                <div class="tile-icon">📋</div>
-                <div>
-                  <h4>Patient Portal</h4>
-                  <p>Access validated lab reports, prescriptions, and billing</p>
-                </div>
-              </div>
-            </div>
-
-            <!-- Live ER Monitor Card -->
-            <div class="live-er-monitor-card">
-              <div class="er-monitor-info">
-                <h5>Emergency Department Status</h5>
-                <div class="er-time">~11 Minutes</div>
-                <p>Estimated door-to-physician initial intake time</p>
-              </div>
-              <div style="text-align: right;">
-                <span class="badge badge-danger" style="margin-bottom: 0.5rem;">4 Bays Open</span>
-                <div>
-                  <a href="tel:+18009112872" style="color: #38bdf8; font-size: 0.8rem; font-weight: 700; text-decoration: underline;">
-                    Call ER Direct →
-                  </a>
-                </div>
-              </div>
+          <div style="position: relative; border-radius: var(--radius-xl); overflow: hidden; box-shadow: var(--shadow-xl); border: 4px solid #fff;">
+            <img src="https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&q=80&w=800" alt="Darwin City Hospital Medical Team" style="width: 100%; height: 420px; object-fit: cover;">
+            <div style="position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(180deg, transparent 0%, rgba(15, 23, 42, 0.9) 100%); color: white; padding: 1.5rem;">
+              <div style="font-weight: 700; font-size: 1.05rem;">Darwin City Hospital Campus</div>
+              <div style="font-size: 0.82rem; opacity: 0.9;">Rocklands Drive, Tiwi NT 0810 • 24/7 Outpatient & Trauma Referral Center</div>
             </div>
           </div>
         </div>
@@ -240,1200 +170,1166 @@
     </section>
 
     <!-- =======================================================================
-         4. Clinical Triage & Symptom Assessment Tool
+         4. Quick Access Section (6 Interactive Cards)
          ======================================================================= -->
-    <section class="section-padding triage-section" id="triage">
+    <section class="section-padding" style="padding: 3rem 1rem; background: #fff; border-bottom: 1px solid var(--border);">
       <div class="container">
-        <div class="section-header">
-          <span class="section-subtitle">AI & Clinical Guidance</span>
-          <h2 class="section-title">Interactive Symptom Checker & Triage</h2>
-          <p class="section-description">
-            Experiencing discomfort or sudden symptoms? Select what you are feeling below to receive immediate clinical direction and connect with the appropriate specialist.
-          </p>
+        <div style="text-align: center; margin-bottom: 2rem;">
+          <h2 style="font-size: 1.75rem; font-weight: 800; color: var(--dark-navy);">Quick Access Services</h2>
+          <p style="color: var(--text-muted); font-size: 0.95rem;">Fast-track navigation to primary clinical workflows</p>
         </div>
 
-        <div class="triage-card">
-          <div class="triage-step-container">
-            <h3 style="font-size: 1.15rem; font-weight: 800; margin-bottom: 1rem; color: var(--text-primary);">
-              Step 1: Select Your Current Symptoms
-            </h3>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1.25rem;">
+          <div class="quick-access-card" style="background: var(--bg-body); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.5rem; text-align: center; cursor: pointer; transition: var(--transition);" onclick="BookingWizard.open()">
+            <div style="font-size: 2.2rem; margin-bottom: 0.75rem;">📅</div>
+            <div style="font-weight: 700; color: var(--text-primary); margin-bottom: 0.25rem;">Book Appointment</div>
+            <div style="font-size: 0.78rem; color: var(--text-muted);">7-step online scheduler</div>
+          </div>
 
-            <!-- Symptom Chips (Populated via JS) -->
-            <div class="symptom-chips-grid" id="symptomChipsContainer"></div>
+          <div class="quick-access-card" style="background: var(--bg-body); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.5rem; text-align: center; cursor: pointer; transition: var(--transition);" onclick="document.getElementById('doctors').scrollIntoView({behavior: 'smooth'})">
+            <div style="font-size: 2.2rem; margin-bottom: 0.75rem;">👨‍⚕️</div>
+            <div style="font-weight: 700; color: var(--text-primary); margin-bottom: 0.25rem;">Find a Doctor</div>
+            <div style="font-size: 0.78rem; color: var(--text-muted);">15 credentialed specialists</div>
+          </div>
 
-            <div id="triageResultContainer">
-              <div style="text-align: center; padding: 2rem; color: var(--text-muted); font-size: 0.95rem;">
-                👆 Select one or more symptoms above to view clinical guidance and immediate medical recommendations.
-              </div>
-            </div>
+          <div class="quick-access-card" style="background: var(--emergency-light); border: 1px solid #fecaca; border-radius: var(--radius-lg); padding: 1.5rem; text-align: center; cursor: pointer; transition: var(--transition);" onclick="document.getElementById('emergency-info').scrollIntoView({behavior: 'smooth'})">
+            <div style="font-size: 2.2rem; margin-bottom: 0.75rem;">🚨</div>
+            <div style="font-weight: 700; color: var(--emergency); margin-bottom: 0.25rem;">Emergency Care</div>
+            <div style="font-size: 0.78rem; color: var(--emergency);">Dial 000 Australia</div>
+          </div>
+
+          <div class="quick-access-card" style="background: var(--bg-body); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.5rem; text-align: center; cursor: pointer; transition: var(--transition);" onclick="document.getElementById('patient-portal').scrollIntoView({behavior: 'smooth'})">
+            <div style="font-size: 2.2rem; margin-bottom: 0.75rem;">👤</div>
+            <div style="font-weight: 700; color: var(--text-primary); margin-bottom: 0.25rem;">Patient Portal</div>
+            <div style="font-size: 0.78rem; color: var(--text-muted);">Results, MRN & History</div>
+          </div>
+
+          <div class="quick-access-card" style="background: var(--bg-body); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.5rem; text-align: center; cursor: pointer; transition: var(--transition);" onclick="document.getElementById('departments').scrollIntoView({behavior: 'smooth'})">
+            <div style="font-size: 2.2rem; margin-bottom: 0.75rem;">🩺</div>
+            <div style="font-weight: 700; color: var(--text-primary); margin-bottom: 0.25rem;">Medical Services</div>
+            <div style="font-size: 0.78rem; color: var(--text-muted);">14 Clinical Specialties</div>
+          </div>
+
+          <div class="quick-access-card" style="background: var(--bg-body); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.5rem; text-align: center; cursor: pointer; transition: var(--transition);" onclick="document.getElementById('contact').scrollIntoView({behavior: 'smooth'})">
+            <div style="font-size: 2.2rem; margin-bottom: 0.75rem;">📍</div>
+            <div style="font-weight: 700; color: var(--text-primary); margin-bottom: 0.25rem;">Contact Hospital</div>
+            <div style="font-size: 0.78rem; color: var(--text-muted);">Phone & Enquiries</div>
           </div>
         </div>
       </div>
     </section>
 
     <!-- =======================================================================
-         5. Find a Doctor Directory
+         5. Hospital Introduction & Mission
          ======================================================================= -->
-    <section class="section-padding doctors-section" id="doctors">
-      <div class="container">
-        <div class="section-header">
-          <span class="section-subtitle">Board-Certified Faculty</span>
-          <h2 class="section-title">Meet Our Medical Specialists</h2>
-          <p class="section-description">
-            Consult with internationally trained chief physicians and surgeons. Review credentials, patient ratings, consultation fees, and real-time appointment availability.
-          </p>
-        </div>
+    <section class="section-padding" style="padding: 4.5rem 1rem; background: var(--bg-body);">
+      <div class="container" style="max-width: 1000px; text-align: center;">
+        <span style="font-size: 0.82rem; text-transform: uppercase; font-weight: 800; color: var(--secondary); letter-spacing: 1px;">
+          Excellence in Regional & Tertiary Medicine
+        </span>
+        <h2 style="font-size: 2.3rem; font-weight: 800; color: var(--dark-navy); margin: 0.5rem 0 1.25rem;">
+          Welcome to Darwin City Hospital
+        </h2>
+        <p style="font-size: 1.05rem; color: var(--text-secondary); line-height: 1.7; margin-bottom: 2rem;">
+          Established in 1978, Darwin City Hospital serves as the premier public-private healthcare hub for Darwin, Palmerston, and broader Top End communities. Our state-of-the-art facility integrates 14 specialist clinical departments, a 24/7 Level-1 accredited trauma centre, and advanced diagnostic laboratories to deliver compassionate, culturally respectful, and evidence-based patient outcomes.
+        </p>
 
-        <!-- Filter Toolbar -->
-        <div class="doctors-filter-toolbar">
-          <div class="filter-search-input">
-            <span>🔍</span>
-            <input type="text" id="doctorSearchInput" placeholder="Search physician by name, specialty, or condition...">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; text-align: left;">
+          <div style="background: white; border-radius: var(--radius-md); padding: 1.5rem; border: 1px solid var(--border); border-top: 4px solid var(--primary);">
+            <h3 style="font-size: 1.1rem; font-weight: 700; color: var(--primary); margin-bottom: 0.5rem;">🎯 Our Mission</h3>
+            <p style="font-size: 0.9rem; color: var(--text-secondary); line-height: 1.5;">
+              To deliver safe, high-quality, patient-centred healthcare and emergency services to every resident and visitor across the Northern Territory, irrespective of background.
+            </p>
           </div>
 
-          <div class="filter-selects-group">
-            <label for="doctorDeptFilter" style="font-size: 0.85rem; font-weight: 700; color: var(--text-muted);">Specialty:</label>
-            <select id="doctorDeptFilter" class="filter-select">
-              <option value="all">All Medical Specialties</option>
-              <option value="cardiology">Cardiovascular Sciences</option>
-              <option value="neurology">Neurosciences & Stroke</option>
-              <option value="orthopedics">Orthopedics & Joint Surgery</option>
-              <option value="oncology">Comprehensive Cancer Care</option>
-              <option value="pediatrics">Pediatrics & Neonatal Care</option>
-              <option value="maternity">Obstetrics & Gynecology</option>
-              <option value="emergency">Emergency & Trauma Care</option>
-              <option value="radiology">Diagnostic Radiology</option>
-            </select>
+          <div style="background: white; border-radius: var(--radius-md); padding: 1.5rem; border: 1px solid var(--border); border-top: 4px solid var(--secondary);">
+            <h3 style="font-size: 1.1rem; font-weight: 700; color: var(--secondary); margin-bottom: 0.5rem;">🌟 Our Vision</h3>
+            <p style="font-size: 0.9rem; color: var(--text-secondary); line-height: 1.5;">
+              To be Australia's leading regional academic hospital, pioneering medical research, digital telemedicine, and advanced clinical training in tropical healthcare.
+            </p>
+          </div>
+
+          <div style="background: white; border-radius: var(--radius-md); padding: 1.5rem; border: 1px solid var(--border); border-top: 4px solid var(--dark-navy);">
+            <h3 style="font-size: 1.1rem; font-weight: 700; color: var(--dark-navy); margin-bottom: 0.5rem;">🛡️ Clinical Governance</h3>
+            <p style="font-size: 0.9rem; color: var(--text-secondary); line-height: 1.5;">
+              Rigorous peer review, multi-disciplinary team audits, and 100% adherence to Australian National Safety and Quality Health Service (NSQHS) standards.
+            </p>
           </div>
         </div>
-
-        <!-- Doctors Grid (Populated via JS) -->
-        <div class="doctors-grid" id="doctorsGrid"></div>
       </div>
     </section>
 
     <!-- =======================================================================
-         6. Clinical Departments & Centers of Excellence
+         6. Hospital Animated Statistics Section
          ======================================================================= -->
-    <section class="section-padding" id="departments">
+    <section class="section-padding" id="hospitalStatsRow" style="padding: 3.5rem 1rem; background: var(--dark-navy); color: white;">
       <div class="container">
-        <div class="section-header">
-          <span class="section-subtitle">Comprehensive Healthcare</span>
-          <h2 class="section-title">Centers of Clinical Excellence</h2>
-          <p class="section-description">
-            Equipped with state-of-the-art medical technology, specialized inpatient wings, and multi-disciplinary medical boards for holistic treatment.
-          </p>
+        <div style="text-align: center; margin-bottom: 2rem;">
+          <h2 style="font-size: 1.85rem; font-weight: 800; color: white;">Darwin City Hospital at a Glance</h2>
+          <p style="color: #94a3b8; font-size: 0.95rem;">Demonstration operational metrics and clinical capacity</p>
         </div>
 
-        <!-- Departments Grid (Populated via JS) -->
-        <div class="departments-grid" id="departmentsGrid"></div>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 2rem; text-align: center;">
+          <div>
+            <div style="font-size: 3rem; font-weight: 800; color: #38bdf8;" id="statCounterExp">48</div>
+            <div style="font-size: 0.9rem; color: #cbd5e1; font-weight: 600;">Years of Healthcare Experience</div>
+          </div>
+          <div>
+            <div style="font-size: 3rem; font-weight: 800; color: #4ade80;" id="statCounterDocs">180+</div>
+            <div style="font-size: 0.9rem; color: #cbd5e1; font-weight: 600;">Qualified Specialists & Doctors</div>
+          </div>
+          <div>
+            <div style="font-size: 3rem; font-weight: 800; color: #f59e0b;" id="statCounterBeds">520</div>
+            <div style="font-size: 0.9rem; color: #cbd5e1; font-weight: 600;">Hospital Inpatient Beds</div>
+          </div>
+          <div>
+            <div style="font-size: 3rem; font-weight: 800; color: #a78bfa;" id="statCounterDepts">14</div>
+            <div style="font-size: 0.9rem; color: #cbd5e1; font-weight: 600;">Specialist Medical Departments</div>
+          </div>
+          <div>
+            <div style="font-size: 3rem; font-weight: 800; color: #f472b6;" id="statCounterPatients">95,000+</div>
+            <div style="font-size: 0.9rem; color: #cbd5e1; font-weight: 600;">Annual Patient Consultations</div>
+          </div>
+        </div>
       </div>
     </section>
 
     <!-- =======================================================================
-         7. Preventive Health Checkup Packages
+         7. About Us Page / Section
          ======================================================================= -->
-    <section class="section-padding packages-section" id="packages">
+    <section class="section-padding" id="about" style="padding: 4.5rem 1rem; background: #fff;">
       <div class="container">
-        <div class="section-header">
-          <span class="section-subtitle">Early Detection & Longevity</span>
-          <h2 class="section-title">Preventive Health Checkup Packages</h2>
-          <p class="section-description">
-            Invest in your long-term wellness with comprehensive whole-body screenings. Transparent pricing, modern pathology diagnostics, and same-day physician consultation.
+        <div style="text-align: center; max-width: 800px; margin: 0 auto 3rem;">
+          <span style="font-size: 0.82rem; text-transform: uppercase; font-weight: 800; color: var(--primary); letter-spacing: 1px;">
+            About Our Medical Centre
+          </span>
+          <h2 style="font-size: 2.3rem; font-weight: 800; color: var(--dark-navy); margin: 0.5rem 0 1rem;">
+            A Legacy of Healing in the Top End
+          </h2>
+          <p style="font-size: 1rem; color: var(--text-secondary); line-height: 1.6;">
+            Darwin City Hospital has evolved from a pioneering regional hospital into a technologically sophisticated medical complex. Today, we stand as the Northern Territory's premier healthcare institution.
           </p>
         </div>
 
-        <!-- Packages Grid (Populated via JS) -->
-        <div class="packages-grid" id="packagesGrid"></div>
-      </div>
-    </section>
-
-    <!-- =======================================================================
-         8. Real-Time Hospital Operations & Live Bed Tracker
-         ======================================================================= -->
-    <section class="section-padding" id="operations" style="background: #0f172a; color: white;">
-      <div class="container">
-        <div style="text-align: center; max-width: 680px; margin: 0 auto;">
-          <span class="section-subtitle" style="background: rgba(2, 132, 199, 0.25); color: #38bdf8;">Transparency in Healthcare</span>
-          <h2 class="section-title" style="color: white;">Live Hospital Operations & Bed Availability</h2>
-          <p class="section-description" style="color: #94a3b8;">
-            AuraHealth publishes real-time bed capacity and blood bank reserves to ensure seamless emergency admissions and community healthcare coordination.
-          </p>
-        </div>
-
-        <div class="operations-tracker-card" style="margin-top: 2rem;">
-          <h3 style="font-size: 1.25rem; font-weight: 800; display: flex; align-items: center; justify-content: space-between;">
-            <span>🛏️ Live Inpatient & Intensive Care Bed Availability</span>
-            <span class="badge badge-success" style="font-size: 0.8rem;">Live Synced</span>
+        <!-- Leadership Team -->
+        <div style="margin-bottom: 3.5rem;">
+          <h3 style="font-size: 1.4rem; font-weight: 800; color: var(--dark-navy); margin-bottom: 1.5rem; text-align: center;">
+            Hospital Executive Leadership
           </h3>
-
-          <!-- Bed Grid (Populated via JS) -->
-          <div class="operations-grid" id="liveBedGrid"></div>
-
-          <!-- Blood Bank Inventory -->
-          <div style="margin-top: 3rem; border-top: 1px solid rgba(255, 255, 255, 0.1); padding-top: 2rem;">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-              <div>
-                <h4 style="font-size: 1.1rem; font-weight: 700; color: white;">🩸 AuraHealth Blood Bank Inventory Status</h4>
-                <p style="font-size: 0.8rem; color: #94a3b8;">Real-time reserve units available for emergency transfusions</p>
-              </div>
-              <button class="btn btn-outline" style="border-color: rgba(255, 255, 255, 0.2); color: white; font-size: 0.82rem;" onclick="App.showToast('Blood donation drive open daily 9 AM - 5 PM at Main Pavilion.', 'primary')">
-                Become a Blood Donor
-              </button>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem;">
+            <div style="background: var(--bg-body); border-radius: var(--radius-lg); padding: 1.5rem; text-align: center; border: 1px solid var(--border);">
+              <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=300" alt="Prof. Elizabeth Campbell" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; margin: 0 auto 0.75rem;">
+              <h4 style="font-size: 1.05rem; font-weight: 700; color: var(--text-primary); margin: 0;">Prof. Elizabeth Campbell</h4>
+              <div style="font-size: 0.8rem; color: var(--primary); font-weight: 600; margin: 0.2rem 0 0.5rem;">Chief Executive Officer</div>
+              <p style="font-size: 0.78rem; color: var(--text-muted); line-height: 1.4;">Over 25 years in health administration and clinical governance across Australia and the UK.</p>
             </div>
 
-            <div class="blood-bank-grid" id="bloodBankGrid"></div>
+            <div style="background: var(--bg-body); border-radius: var(--radius-lg); padding: 1.5rem; text-align: center; border: 1px solid var(--border);">
+              <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=300" alt="Dr. Robert Thorne" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; margin: 0 auto 0.75rem;">
+              <h4 style="font-size: 1.05rem; font-weight: 700; color: var(--text-primary); margin: 0;">Dr. Robert Thorne</h4>
+              <div style="font-size: 0.8rem; color: var(--primary); font-weight: 600; margin: 0.2rem 0 0.5rem;">Director of Medical Services</div>
+              <p style="font-size: 0.78rem; color: var(--text-muted); line-height: 1.4;">Fellow of the Royal Australasian College of Medical Administrators (FRACMA).</p>
+            </div>
+
+            <div style="background: var(--bg-body); border-radius: var(--radius-lg); padding: 1.5rem; text-align: center; border: 1px solid var(--border);">
+              <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=300" alt="Margaret O'Shea" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; margin: 0 auto 0.75rem;">
+              <h4 style="font-size: 1.05rem; font-weight: 700; color: var(--text-primary); margin: 0;">Margaret O'Shea, RN</h4>
+              <div style="font-size: 0.8rem; color: var(--primary); font-weight: 600; margin: 0.2rem 0 0.5rem;">Director of Nursing & Midwifery</div>
+              <p style="font-size: 0.78rem; color: var(--text-muted); line-height: 1.4;">Leader in evidence-based compassionate nursing care and patient safety frameworks.</p>
+            </div>
+
+            <div style="background: var(--bg-body); border-radius: var(--radius-lg); padding: 1.5rem; text-align: center; border: 1px solid var(--border);">
+              <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=300" alt="Craig Henderson" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; margin: 0 auto 0.75rem;">
+              <h4 style="font-size: 1.05rem; font-weight: 700; color: var(--text-primary); margin: 0;">Craig Henderson</h4>
+              <div style="font-size: 0.8rem; color: var(--primary); font-weight: 600; margin: 0.2rem 0 0.5rem;">Chief Operating Officer</div>
+              <p style="font-size: 0.78rem; color: var(--text-muted); line-height: 1.4;">Directs emergency preparedness, logistical infrastructure, and digital health operations.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Facilities Gallery Showcase -->
+        <div>
+          <h3 style="font-size: 1.4rem; font-weight: 800; color: var(--dark-navy); margin-bottom: 1.5rem; text-align: center;">
+            Modern Clinical Facilities
+          </h3>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.25rem;">
+            <div style="border-radius: var(--radius-md); overflow: hidden; box-shadow: var(--shadow-sm); border: 1px solid var(--border);">
+              <img src="https://images.unsplash.com/photo-1516549655169-df83a0774514?auto=format&fit=crop&q=80&w=600" alt="Robotic Surgical Theater" style="width: 100%; height: 180px; object-fit: cover;">
+              <div style="padding: 1rem; background: white;">
+                <strong style="color: var(--text-primary); font-size: 0.95rem;">12 Robotic Surgical Theatres</strong>
+                <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.25rem;">Equipped with Mako robotic arms and laminar airflow infection control.</p>
+              </div>
+            </div>
+
+            <div style="border-radius: var(--radius-md); overflow: hidden; box-shadow: var(--shadow-sm); border: 1px solid var(--border);">
+              <img src="https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&q=80&w=600" alt="Emergency Trauma Bays" style="width: 100%; height: 180px; object-fit: cover;">
+              <div style="padding: 1rem; background: white;">
+                <strong style="color: var(--text-primary); font-size: 0.95rem;">18 Level-1 Trauma Resuscitation Bays</strong>
+                <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.25rem;">Direct ambulance tarmac and 24/7 rooftop aeromedical heliport.</p>
+              </div>
+            </div>
+
+            <div style="border-radius: var(--radius-md); overflow: hidden; box-shadow: var(--shadow-sm); border: 1px solid var(--border);">
+              <img src="https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?auto=format&fit=crop&q=80&w=600" alt="3T MRI and CT Suite" style="width: 100%; height: 180px; object-fit: cover;">
+              <div style="padding: 1rem; background: white;">
+                <strong style="color: var(--text-primary); font-size: 0.95rem;">Advanced 3T MRI & 128-Slice CT Suite</strong>
+                <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.25rem;">Ultra-low radiation dose diagnostic imaging with subspecialist reporting.</p>
+              </div>
+            </div>
+
+            <div style="border-radius: var(--radius-md); overflow: hidden; box-shadow: var(--shadow-sm); border: 1px solid var(--border);">
+              <img src="https://images.unsplash.com/photo-1579684385127-1ef15d508118?auto=format&fit=crop&q=80&w=600" alt="Hydrotherapy Rehabilitation" style="width: 100%; height: 180px; object-fit: cover;">
+              <div style="padding: 1rem; background: white;">
+                <strong style="color: var(--text-primary); font-size: 0.95rem;">Hydrotherapy & Active Rehab Gym</strong>
+                <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.25rem;">Heated clinical pool for rapid post-operative and orthopaedic recovery.</p>
+              </div>
+            </div>
           </div>
         </div>
       </div>
     </section>
 
     <!-- =======================================================================
-         9. Interactive Patient Portal (Full Dashboard)
+         8. Clinical Departments Section (All 14 Specialties)
          ======================================================================= -->
-    <section class="section-padding portal-section" id="patient-portal">
+    <section class="section-padding" id="departments" style="padding: 4.5rem 1rem; background: var(--bg-body);">
       <div class="container">
-        <div class="section-header">
-          <span class="section-subtitle">Self-Service Healthcare</span>
-          <h2 class="section-title">AuraHealth Patient Portal</h2>
-          <p class="section-description">
-            Manage your medical records, review electronic lab results, download doctor prescriptions, and pay hospital invoices from one secure dashboard.
+        <div style="text-align: center; max-width: 800px; margin: 0 auto 3rem;">
+          <span style="font-size: 0.82rem; text-transform: uppercase; font-weight: 800; color: var(--primary); letter-spacing: 1px;">
+            Comprehensive Medical Disciplines
+          </span>
+          <h2 style="font-size: 2.3rem; font-weight: 800; color: var(--dark-navy); margin: 0.5rem 0 1rem;">
+            14 Specialist Medical Departments
+          </h2>
+          <p style="font-size: 1rem; color: var(--text-secondary); line-height: 1.6;">
+            Every department is staffed by credentialed Australian specialists, providing diagnostic accuracy, evidence-based treatments, and seamless referral pathways.
           </p>
         </div>
 
-        <div class="portal-container">
-          <!-- Sidebar -->
-          <aside class="portal-sidebar">
-            <div class="portal-user-profile">
-              <div class="portal-user-avatar" id="portalUserAvatar">AV</div>
-              <div class="portal-user-info" style="flex: 1;">
-                <h4 id="portalPatientName">Alexander Vance</h4>
-                <p id="portalPatientId">ID: AH-PT-98042 • O+</p>
-                <div style="display: flex; gap: 0.35rem; align-items: center; margin-top: 0.3rem;">
-                  <span class="badge badge-success" id="portalInsuranceBadge" style="font-size: 0.68rem;">Verified 2FA</span>
-                </div>
-                <button type="button" class="btn btn-outline" style="font-size: 0.72rem; padding: 0.25rem 0.5rem; color: #cbd5e1; border-color: rgba(255,255,255,0.25); margin-top: 0.5rem; width: 100%; text-align: center;" onclick="PatientPortal.openLoginModal()">
-                  🔑 Switch / 2FA Login
-                </button>
-              </div>
+        <!-- Departments Grid -->
+        <div id="departmentsGrid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(310px, 1fr)); gap: 1.5rem;">
+          <!-- Dynamically populated by App.renderDepartments() -->
+        </div>
+      </div>
+    </section>
+
+    <!-- =======================================================================
+         9. Specialist Doctors Directory (All 15 Profiles)
+         ======================================================================= -->
+    <section class="section-padding" id="doctors" style="padding: 4.5rem 1rem; background: #fff;">
+      <div class="container">
+        <div style="text-align: center; max-width: 800px; margin: 0 auto 2.5rem;">
+          <span style="font-size: 0.82rem; text-transform: uppercase; font-weight: 800; color: var(--secondary); letter-spacing: 1px;">
+            Our Medical Faculty
+          </span>
+          <h2 style="font-size: 2.3rem; font-weight: 800; color: var(--dark-navy); margin: 0.5rem 0 1rem;">
+            Specialist Doctors Directory
+          </h2>
+          <p style="font-size: 1rem; color: var(--text-secondary); line-height: 1.6;">
+            Explore our team of 15 senior consultants, surgeons, and physicians. Filter by medical specialty or search by name.
+          </p>
+        </div>
+
+        <!-- Filter Controls -->
+        <div style="display: flex; gap: 1rem; justify-content: center; margin-bottom: 2.5rem; flex-wrap: wrap;">
+          <div style="position: relative; min-width: 280px;">
+            <input type="text" id="doctorSearchInput" placeholder="Search doctor by name, specialty, or credentials..." style="width: 100%; padding: 0.75rem 1rem; border: 1px solid var(--border); border-radius: var(--radius-md); font-size: 0.9rem; outline: none;">
+          </div>
+          <select id="doctorDeptFilter" style="padding: 0.75rem 1.25rem; border: 1px solid var(--border); border-radius: var(--radius-md); font-size: 0.9rem; background: white; outline: none;">
+            <option value="all">All Departments (14)</option>
+            <option value="cardiology">Cardiology & Heart Health</option>
+            <option value="neurology">Neurology & Stroke Unit</option>
+            <option value="orthopaedics">Orthopaedics & Joint Surgery</option>
+            <option value="paediatrics">Paediatrics & Child Health</option>
+            <option value="general-medicine">General & Internal Medicine</option>
+            <option value="emergency">Emergency Medicine & Trauma</option>
+            <option value="maternity">Maternity & Women's Health</option>
+            <option value="dermatology">Dermatology & Skin Cancer</option>
+            <option value="radiology">Radiology & Diagnostic Imaging</option>
+            <option value="oncology">Oncology & Cancer Care</option>
+            <option value="physiotherapy">Physiotherapy & Rehabilitation</option>
+            <option value="mental-health">Mental Health & Wellbeing</option>
+            <option value="dental">Dental & Maxillofacial Care</option>
+            <option value="pathology">Pathology & Clinical Laboratory</option>
+          </select>
+        </div>
+
+        <!-- Doctors Grid -->
+        <div id="doctorsGrid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); gap: 1.5rem;">
+          <!-- Dynamically populated by App.renderDoctors() -->
+        </div>
+      </div>
+    </section>
+
+    <!-- =======================================================================
+         10. Why Choose Us Section
+         ======================================================================= -->
+    <section class="section-padding" style="padding: 4rem 1rem; background: var(--bg-body);">
+      <div class="container">
+        <div style="text-align: center; max-width: 700px; margin: 0 auto 3rem;">
+          <h2 style="font-size: 2.2rem; font-weight: 800; color: var(--dark-navy);">Why Choose Darwin City Hospital</h2>
+          <p style="color: var(--text-muted); font-size: 0.95rem;">Delivering international standards of clinical excellence</p>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;">
+          <div style="background: white; border-radius: var(--radius-md); padding: 1.5rem; border: 1px solid var(--border);">
+            <div style="font-size: 2rem; margin-bottom: 0.5rem;">👨‍⚕️</div>
+            <h4 style="font-size: 1.1rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.5rem;">Experienced Healthcare Professionals</h4>
+            <p style="font-size: 0.88rem; color: var(--text-secondary); line-height: 1.5;">Every consultant holds Royal Australasian College fellowships and extensive subspecialty clinical mastery.</p>
+          </div>
+
+          <div style="background: white; border-radius: var(--radius-md); padding: 1.5rem; border: 1px solid var(--border);">
+            <div style="font-size: 2rem; margin-bottom: 0.5rem;">🔬</div>
+            <h4 style="font-size: 1.1rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.5rem;">Modern Medical Equipment</h4>
+            <p style="font-size: 0.88rem; color: var(--text-secondary); line-height: 1.5;">State-of-the-art 3T MRI, 128-slice dual source CT scanners, and Mako robotic-assisted orthopedic surgery.</p>
+          </div>
+
+          <div style="background: white; border-radius: var(--radius-md); padding: 1.5rem; border: 1px solid var(--border);">
+            <div style="font-size: 2rem; margin-bottom: 0.5rem;">❤️</div>
+            <h4 style="font-size: 1.1rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.5rem;">Patient-Centred Healthcare</h4>
+            <p style="font-size: 0.88rem; color: var(--text-secondary); line-height: 1.5;">Holistic, compassionate treatment plans tailored to the cultural and personal needs of each individual.</p>
+          </div>
+
+          <div style="background: white; border-radius: var(--radius-md); padding: 1.5rem; border: 1px solid var(--border);">
+            <div style="font-size: 2rem; margin-bottom: 0.5rem;">🚨</div>
+            <h4 style="font-size: 1.1rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.5rem;">24/7 Level-1 Trauma Services</h4>
+            <p style="font-size: 0.88rem; color: var(--text-secondary); line-height: 1.5;">Always open for acute resuscitation, cardiac angioplasty, stroke interventions, and aeromedical transfers.</p>
+          </div>
+
+          <div style="background: white; border-radius: var(--radius-md); padding: 1.5rem; border: 1px solid var(--border);">
+            <div style="font-size: 2rem; margin-bottom: 0.5rem;">🧪</div>
+            <h4 style="font-size: 1.1rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.5rem;">Advanced Diagnostic Facilities</h4>
+            <p style="font-size: 0.88rem; color: var(--text-secondary); line-height: 1.5;">NATA-accredited automated pathology laboratory delivering stat analysis and full regional blood banking.</p>
+          </div>
+
+          <div style="background: white; border-radius: var(--radius-md); padding: 1.5rem; border: 1px solid var(--border);">
+            <div style="font-size: 2rem; margin-bottom: 0.5rem;">🌏</div>
+            <h4 style="font-size: 1.1rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.5rem;">Accessible Healthcare Services</h4>
+            <p style="font-size: 0.88rem; color: var(--text-secondary); line-height: 1.5;">Telehealth virtual consultations, wheelchair accessible facilities, and Medicare bulk-billing access.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =======================================================================
+         11. Dedicated Emergency Services Section
+         ======================================================================= -->
+    <section class="section-padding" id="emergency-info" style="padding: 4.5rem 1rem; background: #fff; border-top: 2px solid var(--emergency);">
+      <div class="container" style="max-width: 900px;">
+        <div style="text-align: center; margin-bottom: 2.5rem;">
+          <span class="emergency-call-badge" style="font-size: 0.9rem; padding: 0.4rem 1.2rem; margin-bottom: 1rem;">
+            🚨 AUSTRALIAN EMERGENCY NUMBER: 000
+          </span>
+          <h2 style="font-size: 2.3rem; font-weight: 800; color: var(--dark-navy); margin-top: 0.75rem;">
+            Emergency Medicine & Trauma Centre
+          </h2>
+          <p style="font-size: 1.05rem; color: var(--text-secondary); line-height: 1.6;">
+            Our Emergency Department at Rocklands Drive is open 24 hours a day, 365 days a year. No referral is necessary for life-threatening medical emergencies.
+          </p>
+        </div>
+
+        <div style="background: var(--emergency-light); border: 2px solid #f87171; border-radius: var(--radius-lg); padding: 2rem; margin-bottom: 2rem;">
+          <h3 style="font-size: 1.2rem; font-weight: 800; color: var(--emergency); margin-bottom: 1rem;">
+            ⚠️ When to Seek Immediate Emergency Care (Call 000):
+          </h3>
+          <ul style="list-style: none; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 0.75rem; font-size: 0.95rem; color: #7f1d1d;">
+            <li>• Crushing chest pain or pressure</li>
+            <li>• Signs of stroke (Face, Arm, Speech, Time)</li>
+            <li>• Severe shortness of breath or choking</li>
+            <li>• Major traumatic injuries or severe bleeding</li>
+            <li>• Sudden loss of consciousness or seizures</li>
+            <li>• Severe envenomation (snake/jellyfish bites)</li>
+          </ul>
+        </div>
+
+        <div style="background: var(--bg-body); border-radius: var(--radius-md); padding: 1.5rem; border: 1px solid var(--border); font-size: 0.85rem; color: var(--text-muted); line-height: 1.6; text-align: center;">
+          <strong>Educational Portfolio Disclaimer:</strong> This website is a fictional educational and professional portfolio simulation of Darwin City Hospital. It does not provide real clinical advice or process live emergency dispatches. In a genuine medical emergency in Australia, immediately dial <strong>000</strong>.
+        </div>
+      </div>
+    </section>
+
+    <!-- =======================================================================
+         12. Patient & Visitors Guide
+         ======================================================================= -->
+    <section class="section-padding" id="visitors" style="padding: 4.5rem 1rem; background: var(--bg-body);">
+      <div class="container">
+        <div style="text-align: center; max-width: 800px; margin: 0 auto 3rem;">
+          <span style="font-size: 0.82rem; text-transform: uppercase; font-weight: 800; color: var(--primary); letter-spacing: 1px;">
+            Visiting Information & Facilities
+          </span>
+          <h2 style="font-size: 2.3rem; font-weight: 800; color: var(--dark-navy); margin: 0.5rem 0 1rem;">
+            Patient & Visitors Guide
+          </h2>
+          <p style="font-size: 1rem; color: var(--text-secondary); line-height: 1.6;">
+            We aim to make every visit as comfortable and stress-free as possible. Below is essential guidance on visiting hours, parking, and amenities.
+          </p>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.5rem;">
+          <div style="background: white; border-radius: var(--radius-md); padding: 1.5rem; border: 1px solid var(--border);">
+            <h4 style="font-size: 1.05rem; font-weight: 700; color: var(--primary); margin-bottom: 0.5rem;">🕒 Visiting Hours</h4>
+            <div style="font-size: 0.88rem; color: var(--text-secondary); line-height: 1.5;">
+              <strong>General Wards:</strong> 10:00 AM – 8:00 PM daily<br>
+              <strong>Intensive Care Unit (ICU):</strong> 11:00 AM – 1:00 PM & 5:00 PM – 7:00 PM<br>
+              <strong>Maternity Birthing:</strong> 24 Hours for designated birth partners
+            </div>
+          </div>
+
+          <div style="background: white; border-radius: var(--radius-md); padding: 1.5rem; border: 1px solid var(--border);">
+            <h4 style="font-size: 1.05rem; font-weight: 700; color: var(--primary); margin-bottom: 0.5rem;">🚗 Parking & Transport</h4>
+            <div style="font-size: 0.88rem; color: var(--text-secondary); line-height: 1.5;">
+              Underground multi-deck parking accessible via Gate 1 on Rocklands Drive. Free 30-minute drop-off bays outside Emergency entrance. Direct Darwin bus routes 4 and 10 stop at main foyer.
+            </div>
+          </div>
+
+          <div style="background: white; border-radius: var(--radius-md); padding: 1.5rem; border: 1px solid var(--border);">
+            <h4 style="font-size: 1.05rem; font-weight: 700; color: var(--primary); margin-bottom: 0.5rem;">☕ Hospital Amenities</h4>
+            <div style="font-size: 0.88rem; color: var(--text-secondary); line-height: 1.5;">
+              Central Atrium Cafeteria (Mon-Sun 6:30am-7:00pm), full-service pharmacy, multi-faith prayer rooms, ATM facilities, and complimentary high-speed hospital Wi-Fi.
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =======================================================================
+         13. Multi-Role Portals (Patient, Doctor, Admin Dashboards)
+         ======================================================================= -->
+    <section class="section-padding" id="patient-portal" style="padding: 4.5rem 1rem; background: #fff;">
+      <div class="container">
+        <!-- Section Header with Role Quick Switcher -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+          <div>
+            <span style="font-size: 0.82rem; text-transform: uppercase; font-weight: 800; color: var(--primary); letter-spacing: 1px;">
+              Secure Hospital Management System
+            </span>
+            <h2 style="font-size: 2.2rem; font-weight: 800; color: var(--dark-navy); margin: 0.2rem 0 0;">
+              Hospital Portals & Dashboards
+            </h2>
+          </div>
+
+          <!-- Demonstration Role Switcher (For evaluators & users) -->
+          <div style="background: var(--bg-alt); padding: 0.4rem; border-radius: var(--radius-md); display: flex; gap: 0.3rem;">
+            <button class="btn btn-primary" style="font-size: 0.82rem; padding: 0.4rem 0.8rem;" onclick="PatientPortal.switchDemoRole('patient')">
+              👤 Patient Portal
+            </button>
+            <button class="btn btn-secondary" style="font-size: 0.82rem; padding: 0.4rem 0.8rem;" onclick="PatientPortal.switchDemoRole('doctor')">
+              🩺 Doctor Portal
+            </button>
+            <button class="btn btn-outline" style="font-size: 0.82rem; padding: 0.4rem 0.8rem;" onclick="PatientPortal.switchDemoRole('admin')">
+              ⚙️ Admin Console
+            </button>
+          </div>
+        </div>
+
+        <!-- 1. PATIENT DASHBOARD VIEW -->
+        <div id="patientDashboardView" class="dashboard-grid">
+          <aside class="dashboard-sidebar">
+            <div class="dashboard-user-card">
+              <div class="dashboard-user-avatar" id="portalUserAvatar">NK</div>
+              <h3 style="font-size: 1.1rem; font-weight: 700; color: var(--text-primary);" id="portalPatientName">Niroj Khattri</h3>
+              <div style="font-size: 0.78rem; color: var(--text-muted);" id="portalPatientId">MRN: DCH-MRN-9021 • Blood: O+</div>
+              <span class="badge badge-success" style="margin-top: 0.5rem;" id="portalInsuranceBadge">Medicare Verified</span>
             </div>
 
-            <nav class="portal-nav">
-              <button type="button" class="portal-tab-btn active" data-tab="overview">
-                <span>📊</span> <span>Dashboard Overview</span>
-              </button>
-              <button type="button" class="portal-tab-btn" data-tab="appointments">
-                <span>📅</span> <span>My Appointments</span>
-              </button>
-              <button type="button" class="portal-tab-btn" data-tab="lab">
-                <span>🔬</span> <span>Lab & Diagnostic Reports</span>
-              </button>
-              <button type="button" class="portal-tab-btn" data-tab="prescriptions">
-                <span>💊</span> <span>Digital Prescriptions</span>
-              </button>
-              <button type="button" class="portal-tab-btn" data-tab="billing">
-                <span>💳</span> <span>Invoices & Co-Pays</span>
-              </button>
+            <nav style="display: flex; flex-direction: column; gap: 0.3rem;">
+              <div class="dashboard-nav-item portal-tab-btn active" data-tab="overview">📊 Overview</div>
+              <div class="dashboard-nav-item portal-tab-btn" data-tab="appointments">📅 Appointments</div>
+              <div class="dashboard-nav-item portal-tab-btn" data-tab="records">🧪 Medical Records</div>
+              <div class="dashboard-nav-item portal-tab-btn" data-tab="prescriptions">💊 Prescriptions</div>
+              <div class="dashboard-nav-item portal-tab-btn" data-tab="notifications">🔔 Notifications</div>
+              <div class="dashboard-nav-item" style="color: var(--emergency); margin-top: 1rem;" onclick="PatientPortal.logout()">🚪 Logout</div>
             </nav>
-
-            <div style="margin-top: auto; padding-top: 1.5rem; border-top: 1px solid rgba(255, 255, 255, 0.1);">
-              <div style="font-size: 0.75rem; color: #94a3b8;">
-                Attending Physician:<br>
-                <strong style="color: white;">Dr. Sarah Jenkins (Cardiology)</strong>
-              </div>
-            </div>
           </aside>
 
-          <!-- Main Content Area -->
-          <div class="portal-main-content">
-            <!-- Tab 1: Overview -->
+          <section class="dashboard-content">
+            <!-- Tab: Overview -->
             <div class="portal-tab-pane active" id="portal-tab-overview">
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-                <h3 style="font-size: 1.4rem; font-weight: 800; color: var(--text-primary);">Health Summary & Alerts</h3>
-                <button class="btn btn-primary" onclick="BookingWizard.open()">+ Schedule New Appointment</button>
-              </div>
-
-              <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 2rem;">
-                <div style="background: var(--bg-subtle); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.25rem;">
-                  <div style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted);">BLOOD PRESSURE</div>
-                  <div style="font-size: 1.5rem; font-weight: 800; color: var(--primary-dark); margin-top: 0.2rem;">124 / 82 <span style="font-size: 0.8rem; font-weight: 600;">mmHg</span></div>
-                  <div style="font-size: 0.75rem; color: var(--success); font-weight: 600; margin-top: 0.2rem;">✓ Optimal Range</div>
+              <h3 style="font-size: 1.3rem; font-weight: 800; color: var(--dark-navy); margin-bottom: 1.25rem;">Patient Clinical Overview</h3>
+              <div class="kpi-cards-grid">
+                <div class="kpi-card">
+                  <div class="kpi-number">3</div>
+                  <div class="kpi-label">Total Appointments</div>
                 </div>
-
-                <div style="background: var(--bg-subtle); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.25rem;">
-                  <div style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted);">FASTING GLUCOSE</div>
-                  <div style="font-size: 1.5rem; font-weight: 800; color: var(--primary-dark); margin-top: 0.2rem;">94 <span style="font-size: 0.8rem; font-weight: 600;">mg/dL</span></div>
-                  <div style="font-size: 0.75rem; color: var(--success); font-weight: 600; margin-top: 0.2rem;">✓ Normal Fasting</div>
+                <div class="kpi-card success">
+                  <div class="kpi-number">2</div>
+                  <div class="kpi-label">Finalized Lab Reports</div>
                 </div>
-
-                <div style="background: var(--bg-subtle); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.25rem;">
-                  <div style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted);">CHOLESTEROL (TOTAL)</div>
-                  <div style="font-size: 1.5rem; font-weight: 800; color: var(--primary-dark); margin-top: 0.2rem;">178 <span style="font-size: 0.8rem; font-weight: 600;">mg/dL</span></div>
-                  <div style="font-size: 0.75rem; color: var(--success); font-weight: 600; margin-top: 0.2rem;">✓ Under Target &lt;200</div>
+                <div class="kpi-card warning">
+                  <div class="kpi-number">2</div>
+                  <div class="kpi-label">Active Prescriptions</div>
                 </div>
               </div>
 
-              <!-- Upcoming Visit Callout -->
-              <div style="background: #f0f9ff; border: 1.5px solid #bae6fd; border-radius: var(--radius-lg); padding: 1.5rem; margin-bottom: 2rem;">
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                  <div>
-                    <span class="badge badge-primary">Next Upcoming Visit</span>
-                    <h4 style="font-size: 1.2rem; font-weight: 800; color: var(--text-primary); margin: 0.5rem 0 0.2rem;">
-                      Dr. Sarah Jenkins — Cardiology Consultation
-                    </h4>
-                    <p style="font-size: 0.88rem; color: var(--text-secondary);">
-                      📅 Saturday, Nov 28, 2026 at 10:30 AM • 📍 Wing B, Level 3, Suite 304
-                    </p>
-                  </div>
-                  <button class="btn btn-outline" onclick="PatientPortal.switchTab('appointments')">Manage Visit</button>
+              <h4 style="font-size: 1.05rem; font-weight: 700; margin-bottom: 1rem; color: var(--text-primary);">Upcoming Specialist Appointments</h4>
+              <div id="portalAppointmentsList">
+                <!-- Loaded from SQLite DB -->
+              </div>
+            </div>
+
+            <!-- Tab: Appointments -->
+            <div class="portal-tab-pane" id="portal-tab-appointments" style="display: none;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+                <h3 style="font-size: 1.3rem; font-weight: 800; color: var(--dark-navy);">All Scheduled Appointments</h3>
+                <button class="btn btn-primary" onclick="BookingWizard.open()">+ Book New Appointment</button>
+              </div>
+              <div id="portalAppointmentsListFull">
+                <!-- Reuses appointment card renderer -->
+              </div>
+            </div>
+
+            <!-- Tab: Medical Records -->
+            <div class="portal-tab-pane" id="portal-tab-records" style="display: none;">
+              <h3 style="font-size: 1.3rem; font-weight: 800; color: var(--dark-navy); margin-bottom: 1.25rem;">Pathology, ECG & Diagnostic Imaging</h3>
+              <div id="portalLabReportsList">
+                <!-- Loaded from SQLite DB -->
+              </div>
+            </div>
+
+            <!-- Tab: Prescriptions -->
+            <div class="portal-tab-pane" id="portal-tab-prescriptions" style="display: none;">
+              <h3 style="font-size: 1.3rem; font-weight: 800; color: var(--dark-navy); margin-bottom: 1.25rem;">Active E-Prescriptions</h3>
+              <div id="portalPrescriptionsList">
+                <!-- Loaded from SQLite DB -->
+              </div>
+            </div>
+
+            <!-- Tab: Notifications -->
+            <div class="portal-tab-pane" id="portal-tab-notifications" style="display: none;">
+              <h3 style="font-size: 1.3rem; font-weight: 800; color: var(--dark-navy); margin-bottom: 1.25rem;">Hospital Notification Center</h3>
+              <div id="portalNotificationsList">
+                <!-- Loaded from SQLite DB -->
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <!-- 2. DOCTOR DASHBOARD VIEW -->
+        <div id="doctorDashboardView" class="dashboard-grid" style="display: none;">
+          <aside class="dashboard-sidebar">
+            <div class="dashboard-user-card">
+              <div class="dashboard-user-avatar" style="background: #e0f2f1; color: var(--secondary);">DR</div>
+              <h3 style="font-size: 1.1rem; font-weight: 700; color: var(--text-primary);" id="doctorDashboardName">Dr. Sarah Jenkins</h3>
+              <div style="font-size: 0.78rem; color: var(--secondary);" id="doctorDashboardDept">Cardiology & Heart Health</div>
+              <span class="badge badge-success" style="margin-top: 0.5rem;">On-Duty Consultant</span>
+            </div>
+            <nav style="display: flex; flex-direction: column; gap: 0.3rem;">
+              <div class="dashboard-nav-item active">📅 Today's Patients</div>
+              <div class="dashboard-nav-item" onclick="App.showToast('Availability schedule: Mon-Fri 9:00 AM - 4:30 PM (Active)', 'info')">⏱️ Manage Availability</div>
+              <div class="dashboard-nav-item" onclick="App.showToast('Doctor Profile updated.', 'info')">👤 Clinical Profile</div>
+              <div class="dashboard-nav-item" style="color: var(--emergency); margin-top: 1rem;" onclick="PatientPortal.logout()">🚪 Logout</div>
+            </nav>
+          </aside>
+
+          <section class="dashboard-content">
+            <h3 style="font-size: 1.3rem; font-weight: 800; color: var(--dark-navy); margin-bottom: 1rem;">Today's Patient Schedule & Queue</h3>
+            <div style="overflow-x: auto;">
+              <table style="width: 100%; border-collapse: collapse; font-size: 0.88rem;">
+                <thead>
+                  <tr style="border-bottom: 2px solid var(--border); text-align: left;">
+                    <th style="padding: 0.75rem;">Ref ID</th>
+                    <th style="padding: 0.75rem;">Patient Details</th>
+                    <th style="padding: 0.75rem;">Time Slot</th>
+                    <th style="padding: 0.75rem;">Status</th>
+                    <th style="padding: 0.75rem;">Action</th>
+                  </tr>
+                </thead>
+                <tbody id="doctorTodayQueueTable">
+                  <!-- Loaded from SQLite DB -->
+                </tbody>
+              </table>
+            </div>
+          </section>
+        </div>
+
+        <!-- 3. ADMIN DASHBOARD VIEW -->
+        <div id="adminDashboardView" class="dashboard-grid" style="display: none;">
+          <aside class="dashboard-sidebar">
+            <div class="dashboard-user-card">
+              <div class="dashboard-user-avatar" style="background: #fee2e2; color: var(--emergency);">AD</div>
+              <h3 style="font-size: 1.1rem; font-weight: 700; color: var(--text-primary);">Hospital Admin</h3>
+              <div style="font-size: 0.78rem; color: var(--text-muted);">Operations & Governance</div>
+              <span class="badge badge-primary" style="margin-top: 0.5rem;">Super Admin</span>
+            </div>
+            <nav style="display: flex; flex-direction: column; gap: 0.3rem;">
+              <div class="dashboard-nav-item admin-nav-item active" data-view="overview">📊 Overview & Charts</div>
+              <div class="dashboard-nav-item admin-nav-item" data-view="appointments">📅 Manage Appointments</div>
+              <div class="dashboard-nav-item admin-nav-item" data-view="enquiries">📩 Contact Enquiries</div>
+              <div class="dashboard-nav-item" style="color: var(--emergency); margin-top: 1rem;" onclick="PatientPortal.logout()">🚪 Logout</div>
+            </nav>
+          </aside>
+
+          <section class="dashboard-content">
+            <!-- Admin Pane: Overview -->
+            <div class="admin-view-pane" id="admin-view-overview">
+              <h3 style="font-size: 1.3rem; font-weight: 800; color: var(--dark-navy); margin-bottom: 1.25rem;">Hospital Operations & Analytics</h3>
+              
+              <!-- KPI Metrics -->
+              <div class="kpi-cards-grid">
+                <div class="kpi-card">
+                  <div class="kpi-number" id="adminKpiDoctors">15</div>
+                  <div class="kpi-label">Total Specialists</div>
+                </div>
+                <div class="kpi-card success">
+                  <div class="kpi-number" id="adminKpiPatients">1</div>
+                  <div class="kpi-label">Registered Patients</div>
+                </div>
+                <div class="kpi-card warning">
+                  <div class="kpi-number" id="adminKpiAppointments">3</div>
+                  <div class="kpi-label">Total Appointments</div>
+                </div>
+                <div class="kpi-card emergency">
+                  <div class="kpi-number" id="adminKpiToday">0</div>
+                  <div class="kpi-label">Today's Visits</div>
                 </div>
               </div>
 
-              <!-- Allergies & Notes -->
-              <div style="background: white; border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.5rem;">
-                <h4 style="font-size: 1rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.75rem;">
-                  ⚠️ Medical Alert & Documented Allergies
-                </h4>
-                <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
-                  <span class="badge badge-danger">Penicillin (Severe Rash)</span>
-                  <span class="badge badge-danger">Sulfa drugs</span>
-                  <span class="badge badge-primary">Blood Type: O Positive</span>
+              <!-- Chart.js Interactive Canvas -->
+              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+                <div style="background: white; border: 1px solid var(--border); border-radius: var(--radius-md); padding: 1.25rem; height: 320px;">
+                  <h4 style="font-size: 0.95rem; font-weight: 700; color: var(--primary); margin-bottom: 0.75rem;">📈 Monthly Consultation Volume</h4>
+                  <div style="height: 250px;"><canvas id="adminTrendsChart"></canvas></div>
+                </div>
+                <div style="background: white; border: 1px solid var(--border); border-radius: var(--radius-md); padding: 1.25rem; height: 320px;">
+                  <h4 style="font-size: 0.95rem; font-weight: 700; color: var(--secondary); margin-bottom: 0.75rem;">🍩 Department Distribution</h4>
+                  <div style="height: 250px;"><canvas id="adminDeptChart"></canvas></div>
                 </div>
               </div>
+
+              <!-- Live Bed Tracker Display -->
+              <div style="background: var(--dark-navy); border-radius: var(--radius-md); padding: 1.5rem; color: white; margin-bottom: 2rem;">
+                <h4 style="font-size: 1.05rem; font-weight: 700; color: #38bdf8; margin-bottom: 1rem;">🛏️ Real-Time Hospital Bed Capacity (Live Tracker)</h4>
+                <div id="liveBedGrid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;"></div>
+              </div>
             </div>
 
-            <!-- Tab 2: Appointments -->
-            <div class="portal-tab-pane" id="portal-tab-appointments">
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-                <h3 style="font-size: 1.4rem; font-weight: 800; color: var(--text-primary);">My Scheduled Consultations</h3>
-                <button class="btn btn-primary" onclick="BookingWizard.open()">+ Book Another Specialist</button>
+            <!-- Admin Pane: Manage Appointments -->
+            <div class="admin-view-pane" id="admin-view-appointments" style="display: none;">
+              <h3 style="font-size: 1.3rem; font-weight: 800; color: var(--dark-navy); margin-bottom: 1rem;">Recent Appointment Records</h3>
+              <div style="overflow-x: auto;">
+                <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem;">
+                  <thead>
+                    <tr style="border-bottom: 2px solid var(--border); text-align: left;">
+                      <th style="padding: 0.75rem;">Ref Code</th>
+                      <th style="padding: 0.75rem;">Patient</th>
+                      <th style="padding: 0.75rem;">Specialist</th>
+                      <th style="padding: 0.75rem;">Schedule</th>
+                      <th style="padding: 0.75rem;">Status</th>
+                      <th style="padding: 0.75rem;">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody id="adminRecentApptsTable"></tbody>
+                </table>
               </div>
-              <div id="portalApptsList"></div>
             </div>
 
-            <!-- Tab 3: Lab Reports -->
-            <div class="portal-tab-pane" id="portal-tab-lab">
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-                <h3 style="font-size: 1.4rem; font-weight: 800; color: var(--text-primary);">Electronic Laboratory Reports</h3>
-                <span class="badge badge-success">Hospital Pathologist Certified</span>
-              </div>
-              <div id="portalLabList"></div>
+            <!-- Admin Pane: Contact Enquiries -->
+            <div class="admin-view-pane" id="admin-view-enquiries" style="display: none;">
+              <h3 style="font-size: 1.3rem; font-weight: 800; color: var(--dark-navy); margin-bottom: 1rem;">Patient Contact Submissions</h3>
+              <div id="adminEnquiriesList"></div>
             </div>
-
-            <!-- Tab 4: Prescriptions -->
-            <div class="portal-tab-pane" id="portal-tab-prescriptions">
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-                <h3 style="font-size: 1.4rem; font-weight: 800; color: var(--text-primary);">Active Hospital Prescriptions</h3>
-                <button class="btn btn-outline" onclick="App.showToast('Refill requests sent directly to AuraHealth Central Pharmacy.', 'primary')">Pharmacy Hotline: Ext. 402</button>
-              </div>
-              <div id="portalRxList"></div>
-            </div>
-
-            <!-- Tab 5: Billing -->
-            <div class="portal-tab-pane" id="portal-tab-billing">
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-                <h3 style="font-size: 1.4rem; font-weight: 800; color: var(--text-primary);">Invoices, Insurance & Co-Pays</h3>
-                <span style="font-size: 0.85rem; font-weight: 600; color: var(--success);">All transactions 256-bit encrypted</span>
-              </div>
-              <div id="portalBillingList"></div>
-            </div>
-          </div>
+          </section>
         </div>
       </div>
     </section>
 
     <!-- =======================================================================
-         10. Patient Stories & Testimonials
+         14. Patient Testimonials
          ======================================================================= -->
-    <section class="section-padding" style="background: white;">
+    <section class="section-padding" style="padding: 4.5rem 1rem; background: var(--bg-body);">
       <div class="container">
-        <div class="section-header">
-          <span class="section-subtitle">Real Healing Journeys</span>
-          <h2 class="section-title">What Our Patients Say</h2>
-          <p class="section-description">
-            Over 500,000 families have trusted AuraHealth during their most vulnerable moments. Here are their recovery stories.
+        <div style="text-align: center; max-width: 800px; margin: 0 auto 3rem;">
+          <span style="font-size: 0.82rem; text-transform: uppercase; font-weight: 800; color: var(--secondary); letter-spacing: 1px;">
+            Patient Stories & Feedback
+          </span>
+          <h2 style="font-size: 2.3rem; font-weight: 800; color: var(--dark-navy); margin: 0.5rem 0 1rem;">
+            Trusted by the Top End Community
+          </h2>
+          <p style="font-size: 1rem; color: var(--text-secondary); line-height: 1.6;">
+            Fictional patient feedback demonstrating the breadth of care and recovery across our clinical specialties.
           </p>
         </div>
-
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.75rem;" id="testimonialsGrid"></div>
+        <div id="testimonialsGrid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem;"></div>
       </div>
     </section>
 
     <!-- =======================================================================
-         11. Health Knowledge Hub & Articles
+         15. Health News & Blog
          ======================================================================= -->
-    <section class="section-padding" style="background: var(--bg-body);">
+    <section class="section-padding" id="health-news" style="padding: 4.5rem 1rem; background: #fff;">
       <div class="container">
-        <div class="section-header">
-          <span class="section-subtitle">Physician Insights</span>
-          <h2 class="section-title">Health Knowledge & Wellness Hub</h2>
-          <p class="section-description">
-            Evidence-based medical advice written directly by our attending clinicians and research fellows.
+        <div style="text-align: center; max-width: 800px; margin: 0 auto 3rem;">
+          <span style="font-size: 0.82rem; text-transform: uppercase; font-weight: 800; color: var(--primary); letter-spacing: 1px;">
+            Health Education & Clinical Insights
+          </span>
+          <h2 style="font-size: 2.3rem; font-weight: 800; color: var(--dark-navy); margin: 0.5rem 0 1rem;">
+            Darwin Health News & Guidance
+          </h2>
+          <p style="font-size: 1rem; color: var(--text-secondary); line-height: 1.6;">
+            Practical prevention guides written by our senior specialists for residents living in Northern Australia's tropical climate.
           </p>
         </div>
-
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 2rem;" id="articlesGrid"></div>
+        <div id="articlesGrid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;"></div>
       </div>
     </section>
 
     <!-- =======================================================================
-         12. Frequently Asked Questions
+         16. Frequently Asked Questions
          ======================================================================= -->
-    <section class="section-padding" style="background: white;">
+    <section class="section-padding" id="faq" style="padding: 4.5rem 1rem; background: var(--bg-body);">
       <div class="container" style="max-width: 850px;">
-        <div class="section-header">
-          <span class="section-subtitle">Patient & Visitor Guide</span>
-          <h2 class="section-title">Frequently Asked Questions</h2>
-          <p class="section-description">
-            Everything you need to know about scheduling, emergency protocols, insurance coverage, and inpatient visiting hours.
-          </p>
+        <div style="text-align: center; margin-bottom: 2.5rem;">
+          <h2 style="font-size: 2.2rem; font-weight: 800; color: var(--dark-navy);">Frequently Asked Questions</h2>
+          <p style="color: var(--text-muted); font-size: 0.95rem;">Clear answers about hospital services, Medicare, visiting hours, and appointments</p>
         </div>
-
         <div id="faqsAccordion"></div>
       </div>
     </section>
 
     <!-- =======================================================================
-         13. Location, Maps & Contact Us
+         17. Contact Us Section (SQLite Stored Form)
          ======================================================================= -->
-    <section class="section-padding" id="contact" style="background: linear-gradient(180deg, #f8fafc 0%, #e0f2fe 100%);">
-      <div class="container">
-        <div class="section-header">
-          <span class="section-subtitle">24/7 Availability</span>
-          <h2 class="section-title">Visit or Contact Our Hospital</h2>
-          <p class="section-description">
-            Located in the heart of the Metro Health District with dedicated emergency trauma bays and multi-level patient parking.
+    <section class="section-padding" id="contact" style="padding: 4.5rem 1rem; background: #fff;">
+      <div class="container" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 3rem;">
+        <div>
+          <span style="font-size: 0.82rem; text-transform: uppercase; font-weight: 800; color: var(--primary); letter-spacing: 1px;">
+            Get In Touch
+          </span>
+          <h2 style="font-size: 2.2rem; font-weight: 800; color: var(--dark-navy); margin: 0.5rem 0 1rem;">
+            Contact Darwin City Hospital
+          </h2>
+          <p style="font-size: 1rem; color: var(--text-secondary); line-height: 1.6; margin-bottom: 1.5rem;">
+            Our outpatient concierge and administrative team are available to answer queries regarding referrals, clinics, and hospital access.
           </p>
+
+          <div style="display: flex; flex-direction: column; gap: 1rem; font-size: 0.95rem; color: var(--text-secondary); margin-bottom: 2rem;">
+            <div>📍 <strong>Address:</strong> Rocklands Drive, Tiwi NT 0810, Darwin Australia</div>
+            <div>📞 <strong>Phone:</strong> (08) 8999 0000 (Outpatient Desk)</div>
+            <div>🚨 <strong>Emergency:</strong> Dial 000 immediately</div>
+            <div>✉️ <strong>Email:</strong> care@darwinhospital.gov.au</div>
+            <div>🕒 <strong>Outpatient Hours:</strong> Mon - Sat: 8:00 AM - 6:00 PM (ACST)</div>
+          </div>
+
+          <div style="background: var(--bg-body); border-radius: var(--radius-md); padding: 1.25rem; border: 1px solid var(--border);">
+            <strong style="color: var(--text-primary); font-size: 0.9rem;">Demonstration Portfolio Note</strong>
+            <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.25rem;">
+              Enquiries submitted through this form are stored securely in the hospital's local SQLite database and viewable in the Admin Console.
+            </p>
+          </div>
         </div>
 
-        <div style="display: grid; grid-template-columns: 1fr 1.2fr; gap: 3rem; background: white; border-radius: var(--radius-xl); border: 1px solid var(--border); padding: 3rem; box-shadow: var(--shadow-lg);">
-          <!-- Info Column -->
-          <div>
-            <h3 style="font-size: 1.4rem; font-weight: 800; color: var(--text-primary); margin-bottom: 1.25rem;">
-              Campus Location & Hotlines
-            </h3>
+        <div>
+          <form id="hospitalContactForm" style="background: var(--bg-body); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 2rem; box-shadow: var(--shadow-sm);">
+            <h3 style="font-size: 1.25rem; font-weight: 800; color: var(--dark-navy); margin-bottom: 1.25rem;">Send a Medical Enquiry</h3>
 
-            <div style="display: flex; flex-direction: column; gap: 1.25rem; font-size: 0.95rem; color: var(--text-secondary);">
+            <div style="margin-bottom: 1rem;">
+              <label style="font-size: 0.85rem; font-weight: 700; color: var(--text-primary); display: block; margin-bottom: 0.35rem;">Full Name *</label>
+              <input type="text" id="contactFullName" required placeholder="e.g. Sarah MacIntyre" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 0.9rem;">
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
               <div>
-                <strong style="color: var(--text-primary);">📍 Hospital Address:</strong><br>
-                742 Medical Center Boulevard, Metro Health District, NY 10024
+                <label style="font-size: 0.85rem; font-weight: 700; color: var(--text-primary); display: block; margin-bottom: 0.35rem;">Email Address *</label>
+                <input type="email" id="contactEmail" required placeholder="name@example.com" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 0.9rem;">
               </div>
-
               <div>
-                <strong style="color: var(--emergency);">🚨 24/7 Emergency & Trauma Hotline:</strong><br>
-                <a href="tel:+18009112872" style="color: var(--emergency); font-weight: 800; font-size: 1.1rem;">+1 (800) 911-AURA</a>
-              </div>
-
-              <div>
-                <strong style="color: var(--primary);">📞 General Appointments & Inquiries:</strong><br>
-                <a href="tel:+18005552273" style="color: var(--primary); font-weight: 700;">+1 (800) 555-CARE</a>
-              </div>
-
-              <div>
-                <strong style="color: var(--text-primary);">🕒 Operating Hours:</strong><br>
-                Emergency & Trauma: <strong>Open 24/7/365</strong><br>
-                Outpatient Clinics: Mon – Sat: 7:30 AM – 8:00 PM<br>
-                Visiting Hours: Daily 10:00 AM – 8:00 PM
-              </div>
-
-              <div>
-                <strong style="color: var(--text-primary);">🚗 Valet Parking & Metro Access:</strong><br>
-                Free patient valet parking at Gate 2. Metro Blue Line connects directly to "Health District Station".
+                <label style="font-size: 0.85rem; font-weight: 700; color: var(--text-primary); display: block; margin-bottom: 0.35rem;">Phone Number</label>
+                <input type="tel" id="contactPhone" placeholder="+61 412 000 000" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 0.9rem;">
               </div>
             </div>
-          </div>
 
-          <!-- Contact Form Column -->
-          <div>
-            <h3 style="font-size: 1.3rem; font-weight: 800; color: var(--text-primary); margin-bottom: 1rem;">
-              Send an Inpatient or Care Inquiry
-            </h3>
+            <div style="margin-bottom: 1rem;">
+              <label style="font-size: 0.85rem; font-weight: 700; color: var(--text-primary); display: block; margin-bottom: 0.35rem;">Relevant Department</label>
+              <select id="contactDepartment" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 0.9rem; background: white;">
+                <option value="">General Clinical Enquiry</option>
+                <option value="cardiology">Cardiology & Heart Health</option>
+                <option value="neurology">Neurology & Stroke Unit</option>
+                <option value="orthopaedics">Orthopaedics & Joint Surgery</option>
+                <option value="paediatrics">Paediatrics & Child Health</option>
+                <option value="general-medicine">General Medicine</option>
+                <option value="emergency">Emergency Medicine</option>
+                <option value="maternity">Maternity & Women's Health</option>
+                <option value="dermatology">Dermatology</option>
+                <option value="radiology">Radiology & Imaging</option>
+                <option value="oncology">Oncology & Cancer Care</option>
+              </select>
+            </div>
 
-            <form id="hospitalContactForm">
-              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                <div class="form-group">
-                  <label class="form-label" for="contactFullName">Full Name *</label>
-                  <input type="text" id="contactFullName" class="form-control" required placeholder="Alexander Vance">
-                </div>
-                <div class="form-group">
-                  <label class="form-label" for="contactPhone">Phone Number *</label>
-                  <input type="tel" id="contactPhone" class="form-control" required placeholder="+1 (555) 000-0000">
-                </div>
-              </div>
+            <div style="margin-bottom: 1rem;">
+              <label style="font-size: 0.85rem; font-weight: 700; color: var(--text-primary); display: block; margin-bottom: 0.35rem;">Subject *</label>
+              <input type="text" id="contactSubject" required placeholder="Reason for contacting" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 0.9rem;">
+            </div>
 
-              <div class="form-group">
-                <label class="form-label" for="contactEmail">Email Address *</label>
-                <input type="email" id="contactEmail" class="form-control" required placeholder="alexander@example.com">
-              </div>
+            <div style="margin-bottom: 1.5rem;">
+              <label style="font-size: 0.85rem; font-weight: 700; color: var(--text-primary); display: block; margin-bottom: 0.35rem;">Your Message *</label>
+              <textarea id="contactMessage" rows="4" required placeholder="Describe your question or referral query..." style="width: 100%; padding: 0.75rem; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 0.9rem;"></textarea>
+            </div>
 
-              <div class="form-group">
-                <label class="form-label" for="contactDept">Interested Specialty</label>
-                <select id="contactDept" class="form-control">
-                  <option value="general">General Healthcare Inquiry</option>
-                  <option value="cardiology">Cardiovascular Sciences</option>
-                  <option value="neurology">Neurosciences</option>
-                  <option value="orthopedics">Orthopedics</option>
-                  <option value="oncology">Oncology Cancer Care</option>
-                  <option value="billing">Insurance & Billing Desk</option>
-                </select>
-              </div>
-
-              <div class="form-group">
-                <label class="form-label" for="contactMessage">Message or Medical Query *</label>
-                <textarea id="contactMessage" class="form-control" rows="4" required placeholder="Please describe how we can assist you or your family member..."></textarea>
-              </div>
-
-              <button type="submit" class="btn btn-primary" style="width: 100%; padding: 0.8rem;">
-                ✉️ Submit Medical Inquiry
-              </button>
-            </form>
-          </div>
+            <button type="submit" class="btn btn-primary" style="width: 100%; padding: 0.85rem; font-size: 0.95rem;">
+              Submit Clinical Enquiry 📨
+            </button>
+          </form>
         </div>
       </div>
     </section>
   </main>
 
   <!-- =========================================================================
-       14. Site Footer
+       18. Site Footer
        ========================================================================= -->
-  <footer class="site-footer">
-    <div class="container">
-      <div class="footer-grid">
-        <div class="footer-brand">
-          <a href="#home" class="brand-logo" style="color: white;">
-            <div class="brand-icon-wrapper">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M12 2v20M2 12h20M7 7l10 10M17 7L7 17"/>
-              </svg>
-            </div>
-            <div>
-              <span>AuraHealth</span>
-              <span class="brand-text-sub" style="color: #38bdf8;">International Hospital</span>
-            </div>
-          </a>
-          <p>
-            Advancing international medical science, robotic precision surgery, and compassionate patient care since 1998.
-          </p>
-          <div style="font-size: 0.8rem; color: #cbd5e1; margin-top: 1rem;">
-            🏆 Joint Commission International (JCI) Accredited<br>
-            🔒 HIPAA & GDPR Compliant Medical Records
-          </div>
+  <footer class="site-footer" style="background: var(--dark-navy); color: #cbd5e1; padding: 4rem 1rem 2rem; border-top: 4px solid var(--primary);">
+    <div class="container footer-grid" style="display: grid; grid-template-columns: 2fr 1fr 1fr 1.5fr; gap: 3rem; margin-bottom: 3rem;">
+      <div>
+        <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem;">
+          <div style="background: var(--primary); color: white; width: 36px; height: 36px; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; font-size: 1.3rem; font-weight: 800;">+</div>
+          <span style="font-size: 1.25rem; font-weight: 800; color: white;">Darwin City Hospital</span>
         </div>
-
-        <div class="footer-column">
-          <h4>Clinical Specialties</h4>
-          <ul class="footer-links">
-            <li><a href="#departments">Cardiology & Heart Center</a></li>
-            <li><a href="#departments">Neurosciences & Stroke</a></li>
-            <li><a href="#departments">Orthopedics & Joint Surgery</a></li>
-            <li><a href="#departments">Oncology Cancer Center</a></li>
-            <li><a href="#departments">Pediatric NICU & PICU</a></li>
-            <li><a href="#departments">Maternity & Women's Health</a></li>
-          </ul>
-        </div>
-
-        <div class="footer-column">
-          <h4>Patient Resources</h4>
-          <ul class="footer-links">
-            <li><a href="#patient-portal">Patient Portal Login</a></li>
-            <li><a href="#triage">Clinical Symptom Checker</a></li>
-            <li><a href="#packages">Executive Health Checkups</a></li>
-            <li><a href="#operations">Real-Time Bed Occupancy</a></li>
-            <li><a href="#contact">Visiting Hours & Guidelines</a></li>
-            <li><a href="#contact">Accepted Insurance Carriers</a></li>
-          </ul>
-        </div>
-
-        <div class="footer-column">
-          <h4>Emergency & Newsletter</h4>
-          <p style="font-size: 0.85rem; margin-bottom: 1rem;">
-            Subscribe to our weekly health digest for clinical research insights and preventive care tips.
-          </p>
-          <form id="newsletterForm" style="display: flex; gap: 0.4rem;">
-            <input type="email" placeholder="Your email..." required style="padding: 0.6rem 0.8rem; border-radius: var(--radius-md); border: 1px solid rgba(255, 255, 255, 0.2); background: rgba(255, 255, 255, 0.08); color: white; width: 100%; outline: none;">
-            <button type="submit" class="btn btn-primary" style="padding: 0.6rem 1rem;">Join</button>
-          </form>
-          <div style="margin-top: 1.5rem; font-size: 0.82rem;">
-            Emergency SOS: <strong style="color: #ef4444;">+1 (800) 911-AURA</strong>
-          </div>
+        <p style="font-size: 0.88rem; line-height: 1.6; color: #94a3b8; margin-bottom: 1.5rem;">
+          Premier fictional tertiary hospital providing 24/7 emergency trauma, 14 medical specialties, and academic healthcare leadership in the Northern Territory.
+        </p>
+        <div style="background: rgba(220, 38, 38, 0.2); border: 1px solid #dc2626; border-radius: var(--radius-sm); padding: 0.75rem; color: #fca5a5; font-size: 0.8rem;">
+          🚨 In a real medical emergency in Australia, immediately call <strong>000</strong>.
         </div>
       </div>
 
-      <div class="footer-bottom">
-        <div>© 2026 AuraHealth International Hospital & Research Center. All rights reserved.</div>
-        <div style="display: flex; gap: 1.5rem;">
-          <a href="#">Privacy Policy</a>
-          <a href="#">HIPAA Statement</a>
-          <a href="#">Terms of Care</a>
-          <a href="#">Patient Rights</a>
+      <div>
+        <h4 style="color: white; font-size: 1rem; font-weight: 700; margin-bottom: 1rem;">Clinical Services</h4>
+        <ul style="list-style: none; padding: 0; font-size: 0.85rem; display: flex; flex-direction: column; gap: 0.5rem;">
+          <li><a href="#departments">Cardiology & Heart Health</a></li>
+          <li><a href="#departments">Neurology & Stroke Unit</a></li>
+          <li><a href="#departments">Orthopaedics & Joint Surgery</a></li>
+          <li><a href="#departments">Paediatrics & Child Health</a></li>
+          <li><a href="#departments">Maternity & Women's Health</a></li>
+          <li><a href="#emergency-info">24/7 Level-1 Trauma Centre</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h4 style="color: white; font-size: 1rem; font-weight: 700; margin-bottom: 1rem;">Quick Links</h4>
+        <ul style="list-style: none; padding: 0; font-size: 0.85rem; display: flex; flex-direction: column; gap: 0.5rem;">
+          <li><a href="#about">About Darwin City Hospital</a></li>
+          <li><a href="#doctors">Our Specialist Doctors</a></li>
+          <li><a href="#visitors">Patient & Visitors Guide</a></li>
+          <li><a href="#patient-portal">Patient & Doctor Portal</a></li>
+          <li><a href="#health-news">Health Information Blog</a></li>
+          <li><a href="#contact">Contact & Location</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h4 style="color: white; font-size: 1rem; font-weight: 700; margin-bottom: 1rem;">Hospital Campus</h4>
+        <div style="font-size: 0.85rem; line-height: 1.6; color: #94a3b8;">
+          📍 Rocklands Drive, Tiwi NT 0810<br>
+          Darwin, Northern Territory, Australia<br>
+          📞 Phone: (08) 8999 0000<br>
+          🕒 Local Time: ACST (UTC+9:30)<br>
+          ✉️ care@darwinhospital.gov.au
         </div>
       </div>
+    </div>
+
+    <div class="container" style="border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1.5rem; text-align: center; font-size: 0.78rem; color: #64748b;">
+      © 2026 Darwin City Hospital. Fictional Australian healthcare platform developed for educational and portfolio demonstration. Built with Node.js & SQLite.
     </div>
   </footer>
 
   <!-- =========================================================================
-       15. Interactive Modals
+       19. 7-Step Appointment Booking Modal
        ========================================================================= -->
-
-  <!-- Modal 1: 4-Step Interactive Appointment Booking Wizard -->
-  <div class="modal-overlay" id="bookingModal">
-    <div class="modal-box">
-      <div class="modal-header">
-        <h3 style="font-size: 1.25rem; font-weight: 800; color: var(--text-primary);">
-          📅 Schedule Specialist Consultation
-        </h3>
-        <button type="button" class="modal-close-btn" onclick="BookingWizard.close()">×</button>
-      </div>
-
-      <div class="modal-body">
-        <!-- Stepper Indicator -->
-        <div class="stepper-nav">
-          <div class="step-node active" id="stepNode1">
-            <div class="step-circle">1</div>
-            <span class="step-label">Specialist</span>
-          </div>
-          <div class="step-node" id="stepNode2">
-            <div class="step-circle">2</div>
-            <span class="step-label">Date & Time</span>
-          </div>
-          <div class="step-node" id="stepNode3">
-            <div class="step-circle">3</div>
-            <span class="step-label">Patient Info</span>
-          </div>
-          <div class="step-node" id="stepNode4">
-            <div class="step-circle">4</div>
-            <span class="step-label">Confirmation</span>
-          </div>
-        </div>
-
-        <form id="bookingForm" onsubmit="event.preventDefault();">
-          <!-- Step 1 Pane: Department & Doctor -->
-          <div class="booking-step-pane" id="bookingStep1">
-            <div class="form-group">
-              <label class="form-label" for="bookDeptSelect">1. Choose Medical Specialty *</label>
-              <select id="bookDeptSelect" class="form-control" required></select>
-              <div class="field-error" id="bookDeptError"></div>
-            </div>
-
-            <div class="form-group">
-              <label class="form-label" for="bookDoctorSelect">2. Choose Specialist Physician *</label>
-              <select id="bookDoctorSelect" class="form-control" required>
-                <option value="">-- Please select a specialty first --</option>
-              </select>
-              <div class="field-error" id="bookDoctorError"></div>
-            </div>
-
-            <div id="selectedDoctorInfo" style="display: none; background: #f0f9ff; border: 1px solid #bae6fd; border-radius: var(--radius-md); padding: 1rem; margin-bottom: 1.25rem; align-items: center; gap: 1rem;"></div>
-
-            <div class="form-group">
-              <label class="form-label">Consultation Mode *</label>
-              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
-                <button type="button" class="btn btn-outline consult-type-btn selected" data-type="in-person">
-                  🏥 In-Person Hospital Visit
-                </button>
-                <button type="button" class="btn btn-outline consult-type-btn" data-type="telehealth">
-                  💻 Telehealth Video Call
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <!-- Step 2 Pane: Date & Slot -->
-          <div class="booking-step-pane" id="bookingStep2" style="display: none;">
-            <div class="form-group">
-              <label class="form-label" for="bookDate">Select Consultation Date *</label>
-              <input type="date" id="bookDate" class="form-control" required>
-              <div class="field-error" id="bookDateError"></div>
-              <span class="field-hint" id="bookDateHint">📅 Current system date: <strong id="todayDateDisplay"></strong> • Booking window: today through upcoming 60 days. Past dates are strictly rejected.</span>
-            </div>
-
-            <div class="form-group">
-              <label class="form-label">Available Time Slots for Selected Date *</label>
-              <div class="slot-grid" id="availableSlotsContainer"></div>
-              <div class="field-error" id="slotError"></div>
-              <span class="field-hint" id="slotHint"></span>
-            </div>
-          </div>
-
-          <!-- Step 3 Pane: Patient Info -->
-          <div class="booking-step-pane" id="bookingStep3" style="display: none;">
-            <div class="form-group">
-              <label class="form-label" for="patientName">Patient Full Name *</label>
-              <input type="text" id="patientName" class="form-control" placeholder="e.g., Alexander Vance" required autocomplete="name">
-              <div class="field-error" id="patientNameError"></div>
-            </div>
-
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-              <div class="form-group">
-                <label class="form-label" for="patientPhone">Contact Phone Number *</label>
-                <input type="tel" id="patientPhone" class="form-control" placeholder="+1 (555) 234-5678" required autocomplete="tel">
-                <div class="field-error" id="patientPhoneError"></div>
-              </div>
-              <div class="form-group">
-                <label class="form-label" for="patientEmail">Email Address *</label>
-                <input type="email" id="patientEmail" class="form-control" placeholder="alexander@example.com" required autocomplete="email">
-                <div class="field-error" id="patientEmailError"></div>
-              </div>
-            </div>
-
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-              <div class="form-group">
-                <label class="form-label" for="patientDob">Date of Birth *</label>
-                <input type="date" id="patientDob" class="form-control" required>
-                <div class="field-error" id="patientDobError"></div>
-                <div id="patientAgeDisplay"></div>
-                <span class="field-hint">Must be in the past (cannot be born in future dates).</span>
-              </div>
-              <div class="form-group">
-                <label class="form-label" for="patientGender">Gender *</label>
-                <select id="patientGender" class="form-control">
-                  <option value="Male">Male</option>
-                  <option value="Female">Female</option>
-                  <option value="Non-binary">Non-binary</option>
-                  <option value="Prefer not to say">Prefer not to say</option>
-                </select>
-              </div>
-            </div>
-
-            <div class="form-group">
-              <label class="form-label" for="patientInsurance">Insurance Carrier</label>
-              <select id="patientInsurance" class="form-control">
-                <option value="BlueCross BlueShield">BlueCross BlueShield</option>
-                <option value="Aetna Healthcare">Aetna Healthcare</option>
-                <option value="Cigna Health">Cigna Health</option>
-                <option value="Medicare">Medicare</option>
-                <option value="UnitedHealthcare">UnitedHealthcare</option>
-                <option value="Self-Pay / Cash">Self-Pay / International Cash</option>
-              </select>
-            </div>
-
-            <div class="form-group">
-              <label class="form-label" for="patientSymptoms">Chief Complaint / Reason for Visit</label>
-              <textarea id="patientSymptoms" class="form-control" rows="2" placeholder="Briefly describe your symptoms or reason for scheduling..."></textarea>
-            </div>
-          </div>
-
-          <!-- Step 4 Pane: Confirmation & Pass -->
-          <div class="booking-step-pane" id="bookingStep4" style="display: none;">
-            <div id="bookingConfirmationContainer"></div>
-          </div>
-
-          <!-- Step Actions Buttons -->
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 2rem; border-top: 1px solid var(--border); padding-top: 1.25rem;">
-            <button type="button" class="btn btn-outline" id="bookPrevBtn" style="display: none;" onclick="BookingWizard.prevStep()">
-              ← Back
-            </button>
-            <div style="margin-left: auto; display: flex; gap: 0.5rem;">
-              <button type="button" class="btn btn-primary" id="bookNextBtn" onclick="BookingWizard.nextStep()">
-                Continue →
-              </button>
-              <button type="button" class="btn btn-secondary" id="bookFinishBtn" style="display: none;" onclick="BookingWizard.close()">
-                Done / Close
-              </button>
-            </div>
-          </div>
-        </form>
-      </div>
-    </div>
-  </div>
-
-  <!-- Modal 2: 24/7 Emergency Ambulance SOS Dispatch Simulator -->
-  <div class="modal-overlay" id="ambulanceModal">
-    <div class="modal-box" style="border-top: 6px solid var(--emergency);">
-      <div class="modal-header">
-        <h3 style="font-size: 1.3rem; font-weight: 800; color: var(--emergency); display: flex; align-items: center; gap: 0.5rem;">
-          🚨 Emergency Ambulance SOS Dispatch
-        </h3>
-        <button type="button" class="modal-close-btn" onclick="AmbulanceSOS.close()">×</button>
-      </div>
-
-      <div class="modal-body">
-        <!-- Intake View -->
-        <div id="ambulanceIntakeView">
-          <div style="background: #fef2f2; border: 1.5px solid #fecaca; border-radius: var(--radius-md); padding: 1.25rem; margin-bottom: 1.5rem;">
-            <h4 style="font-size: 1rem; font-weight: 800; color: #991b1b; margin-bottom: 0.35rem;">
-              Critical Emergency Dispatch System
-            </h4>
-            <p style="font-size: 0.85rem; color: #b91c1c; line-height: 1.5;">
-              If you or someone nearby is experiencing acute chest pain, sudden paralysis/facial drooping, severe hemorrhaging, or unconsciousness, trigger immediate dispatch below.
-            </p>
-          </div>
-
-          <div class="form-group">
-            <label class="form-label" for="sosLocationInput">Current Location / Pickup Address *</label>
-            <input type="text" id="sosLocationInput" class="form-control" value="Detected via GPS: 742 Lexington Ave, Apt 4B" required>
-          </div>
-
-          <div class="form-group">
-            <label class="form-label" for="sosConditionSelect">Suspected Medical Emergency</label>
-            <select id="sosConditionSelect" class="form-control">
-              <option value="cardiac">Suspected Heart Attack / Acute Chest Pain</option>
-              <option value="stroke">Suspected Stroke / Slurred Speech / FAST</option>
-              <option value="trauma">Severe Trauma / Fall / Accident</option>
-              <option value="respiratory">Severe Breathing Difficulty / Anaphylaxis</option>
-              <option value="obstetric">Emergency Labor / Pregnancy Complication</option>
-              <option value="other">Other Unresponsive / Acute Condition</option>
-            </select>
-          </div>
-
-          <button type="button" class="btn btn-emergency" style="width: 100%; padding: 1rem; font-size: 1.15rem; font-weight: 800; margin-top: 1rem;" onclick="AmbulanceSOS.dispatchNow()">
-            🚑 DISPATCH AMBULANCE UNIT NOW
-          </button>
-
-          <div style="text-align: center; margin-top: 1.25rem; font-size: 0.85rem;">
-            Direct Emergency Line: <a href="tel:+18009112872" style="color: var(--emergency); font-weight: 800;">+1 (800) 911-AURA</a>
-          </div>
-        </div>
-
-        <!-- Live Tracker View -->
-        <div id="ambulanceLiveTrackerView" style="display: none; text-align: center;">
-          <div style="font-size: 3rem; margin-bottom: 0.5rem; animation: pulse 1s infinite;">🚑</div>
-          <span class="badge badge-danger" style="font-size: 0.85rem; padding: 0.35rem 0.85rem;">PARAMEDIC UNIT ALPHA-04 EN ROUTE</span>
-
-          <div style="margin: 1.5rem 0;">
-            <div style="font-size: 0.85rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Estimated Arrival Time</div>
-            <div id="ambulanceEtaTimer" style="font-size: 2.8rem; font-weight: 800; color: var(--emergency); letter-spacing: -0.02em;">
-              6:48 MINS
-            </div>
-          </div>
-
-          <div style="background: var(--bg-alt); height: 10px; border-radius: var(--radius-full); overflow: hidden; margin-bottom: 1.5rem;">
-            <div id="ambulanceProgressFill" style="background: var(--emergency); height: 100%; width: 15%; transition: width 1s linear;"></div>
-          </div>
-
-          <div style="background: #f8fafc; border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.25rem; text-align: left; margin-bottom: 1.5rem;">
-            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 0.75rem; margin-bottom: 0.75rem;">
-              <div>
-                <h4 style="font-size: 0.95rem; font-weight: 800; color: var(--text-primary);">Lead Paramedic: Robert Diaz, EMT-P</h4>
-                <p style="font-size: 0.78rem; color: var(--text-muted);">Vehicle: ICU Mobile Ambulance #A-104</p>
-              </div>
-              <a href="tel:+18009112872" class="btn btn-outline" style="font-size: 0.8rem; padding: 0.4rem 0.75rem;">
-                📞 Call Driver
-              </a>
-            </div>
-
-            <div style="font-size: 0.82rem; color: var(--text-secondary); line-height: 1.5;">
-              <strong>Bystander Safety Instructions:</strong>
-              <ul style="margin-left: 1.25rem; margin-top: 0.35rem;">
-                <li>Keep the patient calm and seated or lying in a recovery position.</li>
-                <li>Unlock the front door and turn on exterior porch lights for paramedics.</li>
-                <li>Gather any medications or recent hospital discharge papers.</li>
-                <li>If patient becomes unresponsive, begin chest compressions immediately (100-120 bpm).</li>
-              </ul>
-            </div>
-          </div>
-
-          <button type="button" class="btn btn-outline" onclick="AmbulanceSOS.close()">
-            Close Tracker Window (Ambulance will continue en route)
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Modal 3: Doctor Full Profile View -->
-  <div class="modal-overlay" id="doctorDetailModal">
-    <div class="modal-box">
-      <div class="modal-header">
-        <h3 style="font-size: 1.25rem; font-weight: 800; color: var(--text-primary);">Physician Profile</h3>
-        <button type="button" class="modal-close-btn" onclick="App.closeAllModals()">×</button>
-      </div>
-      <div class="modal-body" id="doctorDetailContent"></div>
-    </div>
-  </div>
-
-  <!-- Modal 4: Global Search Dialog (Ctrl+K) -->
-  <div class="modal-overlay" id="searchModal">
-    <div class="modal-box" style="max-width: 580px;">
-      <div class="modal-header" style="border-bottom: none; padding-bottom: 0;">
-        <div style="display: flex; align-items: center; gap: 0.75rem; width: 100%;">
-          <span style="font-size: 1.2rem;">🔍</span>
-          <input type="text" id="globalSearchInput" placeholder="Search doctors, departments, checkup packages..." style="width: 100%; border: none; outline: none; font-size: 1.1rem; color: var(--text-primary); font-family: inherit;" oninput="App.handleGlobalSearch(this.value)">
-        </div>
-        <button type="button" class="modal-close-btn" onclick="App.closeAllModals()">×</button>
-      </div>
-      <div class="modal-body" style="padding-top: 1rem;">
-        <div id="globalSearchResults" style="max-height: 380px; overflow-y: auto;">
-          <div style="text-align: center; padding: 2rem; color: var(--text-muted); font-size: 0.9rem;">
-            Type to search doctors, clinical specialties, health checkup packages, or symptoms...
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Modal 5: Official Email Confirmation Viewer -->
-  <div class="modal-overlay" id="emailPreviewModal">
-    <div class="modal-box" style="max-width: 680px; padding: 0;">
-      <div class="modal-header" style="background: #f8fafc; border-bottom: 1px solid var(--border);">
-        <div style="display: flex; align-items: center; gap: 0.6rem;">
-          <span style="font-size: 1.3rem;">📬</span>
-          <div>
-            <h3 style="font-size: 1.1rem; font-weight: 800; color: var(--text-primary);">Hospital Confirmation Email</h3>
-            <p style="font-size: 0.75rem; color: var(--text-muted);">Dispatched to patient inbox</p>
-          </div>
-        </div>
-        <button type="button" class="modal-close-btn" onclick="BookingWizard.closeEmailPreview()">×</button>
-      </div>
-
-      <div class="modal-body" style="padding: 1.5rem;">
-        <div class="email-client-card">
-          <div class="email-client-header">
-            <div class="email-meta-row">
-              <span class="email-meta-label">From:</span>
-              <span style="font-weight: 600; color: var(--text-primary);">AuraHealth Central Scheduling &lt;appointments@aurahealth.org&gt;</span>
-            </div>
-            <div class="email-meta-row">
-              <span class="email-meta-label">To:</span>
-              <span id="emailModalTo" style="font-weight: 700; color: var(--primary);">patient@example.com</span>
-            </div>
-            <div class="email-meta-row">
-              <span class="email-meta-label">Date:</span>
-              <span id="emailModalDate" style="color: var(--text-secondary);"></span>
-            </div>
-            <div class="email-meta-row">
-              <span class="email-meta-label">Subject:</span>
-              <span id="emailModalSubject" style="font-weight: 800; color: var(--text-primary);">Confirmed: Specialist Consultation [Ref: AH-XXXXXX]</span>
-            </div>
-          </div>
-
-          <div class="email-body-content" id="emailModalBody">
-            <!-- HTML email content injected by BookingWizard -->
-          </div>
-        </div>
-
-        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem; margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--border);">
-          <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
-            <button type="button" class="btn btn-primary" style="background: #ea4335; border-color: #ea4335;" onclick="BookingWizard.openInGmail()">
-              🚀 Open in Gmail (1-Click)
-            </button>
-            <button type="button" class="btn btn-secondary" onclick="BookingWizard.downloadEmlFile()">
-              📥 Download .EML (Outlook / Mail)
-            </button>
-            <button type="button" class="btn btn-outline" onclick="BookingWizard.openMailtoClient()">
-              ✉️ Open in Mail Client
-            </button>
-          </div>
-          <button type="button" class="btn btn-outline" onclick="BookingWizard.resendConfirmationEmail()">
-            🔄 Resend Pass
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Modal 6: Secure Patient Login with Verification Code (2FA OTP) & Booking Lookup -->
-  <div class="modal-overlay" id="patientLoginModal">
-    <div class="modal-box" style="max-width: 520px;">
-      <div class="modal-header">
+  <div class="modal-backdrop" id="bookingModal">
+    <div class="modal-box" style="max-width: 680px; width: 95%;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; border-bottom: 1px solid var(--border); padding-bottom: 0.75rem;">
         <div>
-          <span style="font-size: 0.75rem; font-weight: 800; text-transform: uppercase; color: var(--primary);">Patient Authentication</span>
-          <h3 style="font-size: 1.25rem; font-weight: 800; color: var(--text-primary);">Secure Patient Portal Login</h3>
+          <h3 style="font-size: 1.3rem; font-weight: 800; color: var(--dark-navy); margin: 0;">Schedule Specialist Consultation</h3>
+          <div style="font-size: 0.78rem; color: var(--text-muted);">Darwin City Hospital • 7-Step Online Clinical Booking</div>
         </div>
-        <button type="button" class="modal-close-btn" onclick="PatientPortal.closeLoginModal()">×</button>
+        <button type="button" class="modal-close-btn" onclick="BookingWizard.close()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">✕</button>
       </div>
 
-      <div class="modal-body">
-        <!-- Auth Tabs: OTP vs Booking Lookup -->
-        <div style="display: flex; border-bottom: 1px solid var(--border); margin-bottom: 1.5rem;">
-          <button type="button" class="auth-tab-btn active" id="authTabOtpBtn" onclick="PatientPortal.switchAuthTab('otp')">
-            🔒 2FA Verification Code
-          </button>
-          <button type="button" class="auth-tab-btn" id="authTabLookupBtn" onclick="PatientPortal.switchAuthTab('lookup')">
-            🔍 Booking Reference Lookup
-          </button>
+      <!-- 7-Step Horizontal Stepper -->
+      <div class="booking-stepper">
+        <div class="step-item active" data-step="1">
+          <div class="step-circle">1</div>
+          <span class="step-label">Specialty</span>
         </div>
-
-        <!-- Tab 1: OTP Login Flow -->
-        <div id="authPaneOtp">
-          <!-- Step 1: Request Code -->
-          <div id="otpStep1">
-            <p style="font-size: 0.88rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 1.25rem;">
-              Enter your registered patient email address or phone number. We will send a secure 6-digit one-time verification code (OTP) to authenticate your access.
-            </p>
-
-            <div class="form-group">
-              <label class="form-label" for="loginIdentifier">Email Address or Phone Number *</label>
-              <input type="text" id="loginIdentifier" class="form-control" placeholder="e.g., patient@example.com or +1 555 234 5678" required>
-              <div class="field-error" id="loginIdentifierError"></div>
-            </div>
-
-            <!-- Quick Fill Suggestions -->
-            <div style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 1.25rem; background: #f8fafc; padding: 0.6rem 0.8rem; border-radius: var(--radius-md); border: 1px solid var(--border);">
-              <strong>Quick Fill:</strong>
-              <button type="button" style="color: var(--primary); font-weight: 700; text-decoration: underline; margin-left: 0.35rem;" onclick="PatientPortal.fillQuickIdentifier('alexander@example.com')">
-                Demo: Alexander Vance
-              </button>
-              <span id="lastBookedQuickLink"></span>
-            </div>
-
-            <button type="button" class="btn btn-primary" id="sendOtpSubmitBtn" style="width: 100%; padding: 0.8rem;" onclick="PatientPortal.sendOtpCode()">
-              📲 Send 6-Digit Verification Code
-            </button>
-          </div>
-
-          <!-- Step 2: Verify Code -->
-          <div id="otpStep2" style="display: none;">
-            <!-- Real-World Delivery Status Box (Gmail & SMS dispatch feedback) -->
-            <div id="otpDeliveryStatusBox"></div>
-
-            <!-- Prominent On-Screen Delivery Notification & Auto-fill Card -->
-            <div style="background: #f0fdf4; border: 2px solid #22c55e; border-radius: var(--radius-md); padding: 1.25rem; margin-bottom: 1.25rem; box-shadow: var(--shadow-sm);">
-              <div style="display: flex; align-items: flex-start; gap: 0.75rem;">
-                <span style="font-size: 2rem;">🔑</span>
-                <div style="flex: 1;">
-                  <div style="font-size: 0.78rem; font-weight: 800; text-transform: uppercase; color: #15803d; letter-spacing: 0.05em;">
-                    Live Verification Code (Delivered on Screen)
-                  </div>
-                  <div style="font-size: 0.82rem; color: #166534; margin: 0.2rem 0 0.6rem; line-height: 1.4;">
-                    Your security code is also displayed below so you can proceed without waiting for email delivery:
-                  </div>
-                  <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
-                    <div style="font-size: 1.85rem; font-weight: 800; letter-spacing: 0.15em; font-family: monospace; background: white; padding: 0.4rem 1rem; border-radius: 6px; border: 2px solid #22c55e; color: #0f172a;" id="simulatedOtpCodeText">
-                      ------
-                    </div>
-                    <button type="button" class="btn btn-primary" style="font-size: 0.9rem; padding: 0.55rem 1.15rem; font-weight: 800; background: #16a34a; border-color: #15803d; box-shadow: 0 4px 12px rgba(22, 163, 74, 0.35);" onclick="PatientPortal.autofillOtp()">
-                      ⚡ Click to Auto-Fill & Log In
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              <div style="margin-top: 1rem; padding-top: 0.75rem; border-top: 1px dashed #86efac; display: flex; justify-content: space-between; align-items: center; font-size: 0.78rem; flex-wrap: wrap; gap: 0.5rem;">
-                <button type="button" style="color: var(--primary); font-weight: 700; text-decoration: underline;" onclick="EmailGateway.downloadOtpEml(PatientPortal.pendingIdentifier, PatientPortal.generatedOtp)">
-                  📥 Open in Desktop Outlook / Windows Mail (.eml)
-                </button>
-                <button type="button" style="color: var(--text-muted); text-decoration: underline; font-weight: 600;" onclick="EmailGateway.openSettingsModal()">
-                  ⚙️ Notification & Delivery Settings
-                </button>
-              </div>
-            </div>
-
-            <div style="margin-bottom: 0.5rem; font-size: 0.85rem; color: var(--text-secondary);">
-              Enter the 6-digit verification code for <strong id="otpSentToDisplay" style="color: var(--primary);">your account</strong>:
-            </div>
-
-            <div class="form-group">
-              <input type="text" id="loginOtpInput" class="otp-digit-input" maxlength="6" placeholder="• • • • • •" autocomplete="one-time-code">
-              <div class="field-error" id="loginOtpError"></div>
-            </div>
-
-            <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.8rem; margin-bottom: 1.25rem;">
-              <span style="color: var(--text-muted);" id="otpCountdownTimer">Code valid for: <strong>10:00</strong></span>
-              <button type="button" style="color: var(--primary); font-weight: 700; text-decoration: underline;" onclick="PatientPortal.sendOtpCode()">
-                Resend Code
-              </button>
-            </div>
-
-            <div style="display: flex; gap: 0.75rem;">
-              <button type="button" class="btn btn-outline" style="flex: 1;" onclick="PatientPortal.backToOtpStep1()">
-                ← Back
-              </button>
-              <button type="button" class="btn btn-primary" style="flex: 2; padding: 0.8rem;" onclick="PatientPortal.verifyOtpCode()">
-                ✓ Verify & Access Records
-              </button>
-            </div>
-          </div>
+        <div class="step-item" data-step="2">
+          <div class="step-circle">2</div>
+          <span class="step-label">Doctor</span>
         </div>
-
-        <!-- Tab 2: Quick Booking Lookup -->
-        <div id="authPaneLookup" style="display: none;">
-          <p style="font-size: 0.88rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 1.25rem;">
-            Have a booking reference code from your confirmation pass? Enter it below to directly view your scheduled appointment, doctor notes, and clinical preparation pass.
-          </p>
-
-          <div class="form-group">
-            <label class="form-label" for="lookupRefInput">Booking Reference Number *</label>
-            <input type="text" id="lookupRefInput" class="form-control" placeholder="e.g., AH-829104" required>
-            <div class="field-error" id="lookupRefError"></div>
-          </div>
-
-          <button type="button" class="btn btn-primary" style="width: 100%; padding: 0.8rem;" onclick="PatientPortal.lookupBooking()">
-            🔍 Track & Open My Booking
-          </button>
+        <div class="step-item" data-step="3">
+          <div class="step-circle">3</div>
+          <span class="step-label">Date</span>
+        </div>
+        <div class="step-item" data-step="4">
+          <div class="step-circle">4</div>
+          <span class="step-label">Slot</span>
+        </div>
+        <div class="step-item" data-step="5">
+          <div class="step-circle">5</div>
+          <span class="step-label">Patient</span>
+        </div>
+        <div class="step-item" data-step="6">
+          <div class="step-circle">6</div>
+          <span class="step-label">Review</span>
+        </div>
+        <div class="step-item" data-step="7">
+          <div class="step-circle">7</div>
+          <span class="step-label">Confirm</span>
         </div>
       </div>
-    </div>
-  </div>
 
-  <!-- Modal 7: Real Email & SMS Notification Center -->
-  <div class="modal-overlay" id="emailSettingsModal">
-    <div class="modal-box" style="max-width: 580px;">
-      <div class="modal-header">
-        <div style="display: flex; align-items: center; gap: 0.6rem;">
-          <span style="font-size: 1.3rem;">⚙️</span>
-          <div>
-            <h3 style="font-size: 1.15rem; font-weight: 800; color: var(--text-primary);">Notification & Live Delivery Settings</h3>
-            <p style="font-size: 0.75rem; color: var(--text-muted);">Real-world personal Gmail and mobile phone SMS dispatch</p>
-          </div>
-        </div>
-        <button type="button" class="modal-close-btn" onclick="EmailGateway.closeSettingsModal()">×</button>
-      </div>
-
-      <div class="modal-body">
-        <!-- Status of Active Delivery Channels -->
-        <div style="background: #f8fafc; border: 1.5px solid var(--border); border-radius: var(--radius-md); padding: 1rem; margin-bottom: 1.25rem;">
-          <div style="font-size: 0.82rem; font-weight: 800; color: var(--text-primary); margin-bottom: 0.5rem; text-transform: uppercase;">
-            Automated Delivery Gateway Status
-          </div>
-          <div style="display: flex; flex-direction: column; gap: 0.5rem; font-size: 0.82rem;">
-            <div style="display: flex; align-items: center; justify-content: space-between;">
-              <span>✉️ <strong>Direct Background Email to Gmail:</strong></span>
-              <span class="badge badge-primary">Requires Free Key Below</span>
-            </div>
-            <div style="display: flex; align-items: center; justify-content: space-between;">
-              <span>📱 <strong>Mobile Phone SMS (Australia/Intl):</strong></span>
-              <span class="badge badge-warning">Carrier API Required</span>
-            </div>
-            <div style="display: flex; align-items: center; justify-content: space-between;">
-              <span>⚡ <strong>Instant On-Screen Passcode:</strong></span>
-              <span class="badge badge-success">✓ Active (1-Click Auto-Fill)</span>
-            </div>
-            <div style="display: flex; align-items: center; justify-content: space-between;">
-              <span>🔔 <strong>Browser & OS Push Notifications:</strong></span>
-              <button type="button" class="btn btn-outline" style="font-size: 0.72rem; padding: 0.2rem 0.5rem;" onclick="EmailGateway.requestNotificationPermission()">
-                Enable Desktop Alerts
-              </button>
-            </div>
-          </div>
+      <!-- Stepper Form Panes -->
+      <form id="bookingForm" onsubmit="event.preventDefault();">
+        <!-- Step 1: Specialty -->
+        <div class="booking-step-pane" id="stepPane1">
+          <label style="font-weight: 700; font-size: 0.9rem; color: var(--text-primary); display: block; margin-bottom: 0.5rem;">
+            Step 1: Select Medical Department *
+          </label>
+          <select id="bookDeptSelect" class="form-control" style="width: 100%; padding: 0.85rem; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 0.95rem; background: white; margin-bottom: 0.5rem;"></select>
+          <div class="field-error" id="bookDeptError" style="color: var(--emergency); font-size: 0.8rem;"></div>
         </div>
 
-        <!-- EmailJS: Dispatches directly to Customer's Personal Gmail -->
-        <div style="background: #eff6ff; border: 1.5px solid #93c5fd; border-radius: var(--radius-md); padding: 1.25rem; margin-bottom: 1.25rem;">
-          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.4rem;">
-            <h4 style="font-size: 0.95rem; font-weight: 800; color: #1d4ed8; margin: 0;">
-              📬 Send Directly to Customer's Gmail (EmailJS)
-            </h4>
-            <span class="badge badge-primary">Customer Delivery</span>
+        <!-- Step 2: Doctor -->
+        <div class="booking-step-pane" id="stepPane2" style="display: none;">
+          <label style="font-weight: 700; font-size: 0.9rem; color: var(--text-primary); display: block; margin-bottom: 0.5rem;">
+            Step 2: Select Specialist Doctor *
+          </label>
+          <select id="bookDoctorSelect" class="form-control" style="width: 100%; padding: 0.85rem; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 0.95rem; background: white; margin-bottom: 0.5rem;"></select>
+          <div class="field-error" id="bookDoctorError" style="color: var(--emergency); font-size: 0.8rem; margin-bottom: 0.5rem;"></div>
+          <div id="selectedDoctorCard" style="display: none; margin-top: 0.5rem;"></div>
+        </div>
+
+        <!-- Step 3: Date -->
+        <div class="booking-step-pane" id="stepPane3" style="display: none;">
+          <label style="font-weight: 700; font-size: 0.9rem; color: var(--text-primary); display: block; margin-bottom: 0.5rem;">
+            Step 3: Select Consultation Date *
+          </label>
+          <input type="date" id="bookDate" class="form-control" style="width: 100%; padding: 0.85rem; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 0.95rem; margin-bottom: 0.5rem;">
+          <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.5rem;">* Darwin City Hospital accepts bookings up to 90 days in advance (Past dates restricted).</div>
+          <div class="field-error" id="bookDateError" style="color: var(--emergency); font-size: 0.8rem;"></div>
+        </div>
+
+        <!-- Step 4: Time Slot -->
+        <div class="booking-step-pane" id="stepPane4" style="display: none;">
+          <label style="font-weight: 700; font-size: 0.9rem; color: var(--text-primary); display: block; margin-bottom: 0.5rem;">
+            Step 4: Select Available Time Slot (ACST) *
+          </label>
+          <div id="availableSlotsContainer"></div>
+        </div>
+
+        <!-- Step 5: Patient Details -->
+        <div class="booking-step-pane" id="stepPane5" style="display: none;">
+          <h4 style="font-size: 1rem; font-weight: 700; color: var(--text-primary); margin-bottom: 1rem;">
+            Step 5: Patient Identification & Clinical Details
+          </h4>
+          <div style="margin-bottom: 0.75rem;">
+            <label style="font-size: 0.85rem; font-weight: 600; display: block; margin-bottom: 0.25rem;">Full Name *</label>
+            <input type="text" id="patientName" required placeholder="e.g. Niroj Khattri" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 0.9rem;">
+            <div class="field-error" id="patientNameError" style="color: var(--emergency); font-size: 0.78rem;"></div>
           </div>
-          <p style="font-size: 0.8rem; color: #1e40af; line-height: 1.45; margin-bottom: 0.85rem;">
-            To send confirmation emails directly to whichever Gmail the <strong>customer</strong> enters:
-            <br>1. Create a free account at <a href="https://www.emailjs.com" target="_blank" style="text-decoration: underline; font-weight: 800; color: #1d4ed8;">emailjs.com</a> (Free 200 emails/month).
-            <br>2. In EmailJS: Connect your Gmail under <strong>Email Services</strong>, and create a template with <code>To Email: {{to_email}}</code>.
-            <br>3. Paste your keys below and click <strong>Save Settings</strong>:
-          </p>
 
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 0.75rem;">
-            <div class="form-group" style="margin-bottom: 0;">
-              <label class="form-label" for="emailJsServiceIdInput" style="font-size: 0.78rem;">EmailJS Service ID</label>
-              <input type="text" id="emailJsServiceIdInput" class="form-control" placeholder="e.g. service_xxxxxxx">
+            <div>
+              <label style="font-size: 0.85rem; font-weight: 600; display: block; margin-bottom: 0.25rem;">Phone Number *</label>
+              <input type="tel" id="patientPhone" required placeholder="+61 412 663 7298" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 0.9rem;">
+              <div class="field-error" id="patientPhoneError" style="color: var(--emergency); font-size: 0.78rem;"></div>
             </div>
-            <div class="form-group" style="margin-bottom: 0;">
-              <label class="form-label" for="emailJsTemplateIdInput" style="font-size: 0.78rem;">EmailJS Template ID</label>
-              <input type="text" id="emailJsTemplateIdInput" class="form-control" placeholder="e.g. template_xxxxxxx">
+            <div>
+              <label style="font-size: 0.85rem; font-weight: 600; display: block; margin-bottom: 0.25rem;">Email Address *</label>
+              <input type="email" id="patientEmail" required placeholder="nirojkhattri33@gmail.com" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 0.9rem;">
+              <div class="field-error" id="patientEmailError" style="color: var(--emergency); font-size: 0.78rem;"></div>
             </div>
           </div>
-          <div class="form-group" style="margin-bottom: 0.5rem;">
-            <label class="form-label" for="emailJsPublicKeyInput" style="font-size: 0.78rem;">EmailJS Public Key</label>
-            <input type="text" id="emailJsPublicKeyInput" class="form-control" placeholder="e.g. xxxxxxxxxxxxxxxx">
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 0.75rem;">
+            <div>
+              <label style="font-size: 0.85rem; font-weight: 600; display: block; margin-bottom: 0.25rem;">Date of Birth *</label>
+              <input type="date" id="patientDob" required style="width: 100%; padding: 0.75rem; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 0.9rem;">
+              <div class="field-error" id="patientDobError" style="color: var(--emergency); font-size: 0.78rem;"></div>
+            </div>
+            <div>
+              <label style="font-size: 0.85rem; font-weight: 600; display: block; margin-bottom: 0.25rem;">Medicare Number (Demo)</label>
+              <input type="text" id="patientMedicare" placeholder="2893 48123 1" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 0.9rem;">
+            </div>
+          </div>
+
+          <div style="margin-bottom: 0.75rem;">
+            <label style="font-size: 0.85rem; font-weight: 600; display: block; margin-bottom: 0.25rem;">Reason for Consultation / Symptoms</label>
+            <input type="text" id="patientSymptoms" placeholder="Briefly describe symptoms or referral purpose..." style="width: 100%; padding: 0.75rem; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 0.9rem;">
           </div>
         </div>
 
-        <!-- Web3Forms: Admin Notification -->
-        <div style="background: #f8fafc; border: 1.5px solid var(--border); border-radius: var(--radius-md); padding: 1rem; margin-bottom: 1.25rem;">
-          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.35rem;">
-            <h4 style="font-size: 0.88rem; font-weight: 700; color: var(--text-primary); margin: 0;">
-              🏥 Hospital Admin Alert Key (Web3Forms)
-            </h4>
-            <span class="badge badge-success">Hospital Alerts</span>
-          </div>
-          <p style="font-size: 0.76rem; color: var(--text-muted); margin-bottom: 0.5rem; line-height: 1.4;">
-            Web3Forms sends a copy of every booking directly to <strong>YOU (the hospital admin)</strong>.
-          </p>
-          <div class="form-group" style="margin-bottom: 0;">
-            <input type="text" id="web3FormsAccessKeyInput" class="form-control" placeholder="Web3Forms Access Key (for admin notifications)">
-          </div>
-        </div>
-
-        <!-- Live Delivery Test Center -->
-        <div style="background: #f0f9ff; border: 1.5px solid #bae6fd; border-radius: var(--radius-md); padding: 1.25rem; margin-bottom: 1.25rem;">
-          <h4 style="font-size: 0.95rem; font-weight: 800; color: #0369a1; margin-bottom: 0.4rem;">
-            🧪 Test Live Delivery to Your Personal Devices
+        <!-- Step 6: Review Summary -->
+        <div class="booking-step-pane" id="stepPane6" style="display: none;">
+          <h4 style="font-size: 1rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.75rem;">
+            Step 6: Review Appointment Details
           </h4>
-          <p style="font-size: 0.8rem; color: #0284c7; line-height: 1.4; margin-bottom: 1rem;">
-            Test sending a live message to your actual Gmail address or physical smartphone:
-          </p>
-
-          <!-- Test Gmail -->
-          <div style="margin-bottom: 1rem;">
-            <label class="form-label" style="font-size: 0.78rem;" for="testEmailInput">Send Test Message to Gmail / Email</label>
-            <div style="display: flex; gap: 0.5rem;">
-              <input type="email" id="testEmailInput" class="form-control" placeholder="e.g. nirooj11@gmail.com" value="nirooj11@gmail.com" style="flex: 1; font-size: 0.85rem;">
-              <button type="button" class="btn btn-primary" style="font-size: 0.82rem; white-space: nowrap; padding: 0.5rem 0.9rem;" onclick="EmailGateway.testSendEmail(document.getElementById('testEmailInput').value)">
-                ✉️ Send to Gmail
-              </button>
-            </div>
-            <div style="font-size: 0.74rem; color: #0284c7; margin-top: 0.3rem;">
-              * Note: Check your Gmail Inbox and Spam folder. FormSubmit may request a 1-click confirmation on first use.
-            </div>
-          </div>
-
-          <!-- Test Mobile SMS -->
-          <div>
-            <label class="form-label" style="font-size: 0.78rem;" for="testPhoneInput">Send Test SMS to Mobile Phone</label>
-            <div style="display: flex; gap: 0.5rem;">
-              <input type="text" id="testPhoneInput" class="form-control" placeholder="e.g. +61 412 345 678 or +1 555 123 4567" style="flex: 1; font-size: 0.85rem;">
-              <button type="button" class="btn btn-secondary" style="font-size: 0.82rem; white-space: nowrap; padding: 0.5rem 0.9rem;" onclick="EmailGateway.testSendSms(document.getElementById('testPhoneInput').value)">
-                📱 Send SMS
-              </button>
-            </div>
-            <div style="font-size: 0.74rem; color: #0284c7; margin-top: 0.3rem;">
-              * Requires full international format including country code (e.g., +1 for USA, +61 for Australia, etc.).
-            </div>
-          </div>
+          <div id="bookingReviewSummary"></div>
         </div>
 
-        <!-- Optional Custom EmailJS Configuration -->
-        <details style="margin-bottom: 1rem; border: 1px solid var(--border); border-radius: var(--radius-md); padding: 0.75rem;">
-          <summary style="font-size: 0.85rem; font-weight: 700; color: var(--text-primary); cursor: pointer;">
-            ⚙️ Advanced: Connect Dedicated Custom EmailJS / Domain
-          </summary>
-          <div style="margin-top: 0.85rem;">
-            <div class="form-group">
-              <label class="form-label" for="emailServiceModeSelect">Preferred Primary Mode</label>
-              <select id="emailServiceModeSelect" class="form-control" onchange="EmailGateway.handleServiceModeChange(this.value)">
-                <option value="auto">Multi-Channel Auto (FormSubmit + Textbelt SMS + Push + On-Screen)</option>
-                <option value="emailjs">Custom EmailJS Dedicated Account</option>
-                <option value="simulation">Local Simulation Only</option>
-              </select>
-            </div>
+        <!-- Step 7: Confirmation Pass -->
+        <div class="booking-step-pane" id="stepPane7" style="display: none;">
+          <div id="bookingConfirmationContainer"></div>
+        </div>
 
-            <div id="emailJsCredentialsGroup" style="display: none;">
-              <div class="form-group">
-                <label class="form-label" for="emailJsServiceIdInput">EmailJS Service ID</label>
-                <input type="text" id="emailJsServiceIdInput" class="form-control" placeholder="e.g., service_xyz123">
-              </div>
-              <div class="form-group">
-                <label class="form-label" for="emailJsTemplateIdInput">EmailJS Template ID</label>
-                <input type="text" id="emailJsTemplateIdInput" class="form-control" placeholder="e.g., template_abc456">
-              </div>
-              <div class="form-group">
-                <label class="form-label" for="emailJsPublicKeyInput">EmailJS Public Key</label>
-                <input type="text" id="emailJsPublicKeyInput" class="form-control" placeholder="e.g., user_key123">
-              </div>
+        <!-- Stepper Control Buttons -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1.5rem; border-top: 1px solid var(--border); padding-top: 1rem;">
+          <button type="button" class="btn btn-outline" id="bookPrevBtn" style="display: none;" onclick="BookingWizard.prevStep()">
+            ← Previous
+          </button>
+          <div style="margin-left: auto;">
+            <button type="button" class="btn btn-primary" id="bookNextBtn" onclick="BookingWizard.nextStep()">
+              Next Step →
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       20. Department Detail Modal
+       ========================================================================= -->
+  <div class="modal-backdrop" id="departmentDetailModal">
+    <div class="modal-box" style="max-width: 680px; width: 95%;">
+      <div id="departmentModalContent"></div>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       21. Doctor Detail Modal
+       ========================================================================= -->
+  <div class="modal-backdrop" id="doctorDetailModal">
+    <div class="modal-box" style="max-width: 680px; width: 95%;">
+      <div id="doctorModalContent"></div>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       22. Authentication Modal (Login & Register with Password Strength)
+       ========================================================================= -->
+  <div class="modal-backdrop" id="portalLoginModal">
+    <div class="modal-box" style="max-width: 440px; width: 95%;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+        <h3 id="authModalTitle" style="font-size: 1.25rem; font-weight: 800; color: var(--dark-navy); margin: 0;">Sign In to Hospital Portal</h3>
+        <button type="button" class="modal-close-btn" onclick="PatientPortal.closeLoginModal()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">✕</button>
+      </div>
+
+      <!-- Login Form Container -->
+      <div id="loginFormContainer">
+        <form onsubmit="PatientPortal.handleLogin(event)">
+          <div style="margin-bottom: 1rem;">
+            <label style="font-size: 0.85rem; font-weight: 700; color: var(--text-primary); display: block; margin-bottom: 0.35rem;">Email Address</label>
+            <input type="email" id="loginEmail" required value="nirojkhattri33@gmail.com" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 0.9rem;">
+          </div>
+
+          <div style="margin-bottom: 1.25rem;">
+            <label style="font-size: 0.85rem; font-weight: 700; color: var(--text-primary); display: block; margin-bottom: 0.35rem;">Password</label>
+            <div style="position: relative;">
+              <input type="password" id="loginPassword" required value="PatientPass2026!" style="width: 100%; padding: 0.75rem 2.5rem 0.75rem 0.75rem; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 0.9rem;">
+              <button type="button" onclick="PatientPortal.togglePasswordVisibility('loginPassword', this)" style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; font-size: 1rem;">👁️</button>
             </div>
           </div>
-        </details>
 
-        <div style="display: flex; gap: 0.75rem; justify-content: flex-end;">
-          <button type="button" class="btn btn-outline" onclick="EmailGateway.closeSettingsModal()">Close</button>
-          <button type="button" class="btn btn-primary" onclick="EmailGateway.saveSettingsFromForm()">Save Settings</button>
+          <button type="submit" class="btn btn-primary" style="width: 100%; padding: 0.85rem; font-size: 0.95rem; margin-bottom: 1rem;">
+            Sign In Securely 🔒
+          </button>
+        </form>
+
+        <div style="text-align: center; font-size: 0.85rem; color: var(--text-muted);">
+          New patient? <a href="javascript:void(0)" onclick="PatientPortal.switchAuthMode('register')" style="color: var(--primary); font-weight: 700;">Create an account</a>
+        </div>
+      </div>
+
+      <!-- Register Form Container -->
+      <div id="registerFormContainer" style="display: none;">
+        <form onsubmit="PatientPortal.handleRegister(event)">
+          <div style="margin-bottom: 0.75rem;">
+            <label style="font-size: 0.85rem; font-weight: 700; color: var(--text-primary); display: block; margin-bottom: 0.25rem;">Full Name *</label>
+            <input type="text" id="regName" required placeholder="Niroj Khattri" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 0.9rem;">
+          </div>
+          <div style="margin-bottom: 0.75rem;">
+            <label style="font-size: 0.85rem; font-weight: 700; color: var(--text-primary); display: block; margin-bottom: 0.25rem;">Email Address *</label>
+            <input type="email" id="regEmail" required placeholder="nirojkhattri33@gmail.com" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 0.9rem;">
+          </div>
+          <div style="margin-bottom: 0.75rem;">
+            <label style="font-size: 0.85rem; font-weight: 700; color: var(--text-primary); display: block; margin-bottom: 0.25rem;">Phone Number</label>
+            <input type="tel" id="regPhone" placeholder="+61 412 663 7298" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 0.9rem;">
+          </div>
+          <div style="margin-bottom: 1rem;">
+            <label style="font-size: 0.85rem; font-weight: 700; color: var(--text-primary); display: block; margin-bottom: 0.25rem;">Choose Password *</label>
+            <div style="position: relative;">
+              <input type="password" id="regPassword" required oninput="PatientPortal.checkPasswordStrength(this.value)" style="width: 100%; padding: 0.75rem 2.5rem 0.75rem 0.75rem; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 0.9rem;">
+              <button type="button" onclick="PatientPortal.togglePasswordVisibility('regPassword', this)" style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; font-size: 1rem;">👁️</button>
+            </div>
+            <!-- Password Strength Meter -->
+            <div style="height: 4px; background: #e2e8f0; border-radius: 2px; margin-top: 0.4rem; overflow: hidden;">
+              <div id="pwdStrengthBar" style="width: 0%; height: 100%; transition: width 0.3s; background: #dc2626;"></div>
+            </div>
+            <div style="display: flex; justify-content: space-between; font-size: 0.72rem; color: var(--text-muted); margin-top: 0.25rem;">
+              <span>Strength: <strong id="pwdStrengthLabel">None</strong></span>
+              <span>Min. 8 chars, 1 uppercase, 1 number</span>
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary" style="width: 100%; padding: 0.85rem; font-size: 0.95rem; margin-bottom: 1rem;">
+            Register Account 🚀
+          </button>
+        </form>
+
+        <div style="text-align: center; font-size: 0.85rem; color: var(--text-muted);">
+          Already have an account? <a href="javascript:void(0)" onclick="PatientPortal.switchAuthMode('login')" style="color: var(--primary); font-weight: 700;">Sign in here</a>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Toast Notifications Container -->
-  <div class="toast-container" id="toastContainer"></div>
+  <!-- =========================================================================
+       23. Global Quick Search (Ctrl+K) Modal
+       ========================================================================= -->
+  <div class="search-modal-backdrop" id="globalSearchModal" onclick="if(event.target === this) App.closeAllModals()">
+    <div class="search-modal-box">
+      <input type="text" id="globalSearchInput" class="search-modal-input" placeholder="Search 14 departments, 15 doctors, or clinical services (Press Esc to close)..." oninput="App.runGlobalSearch(this.value)">
+      <div class="search-modal-results" id="globalSearchResults"></div>
+    </div>
+  </div>
 
-  <!-- JavaScript Scripts -->
-  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+  <!-- =========================================================================
+       24. Floating Darwin CareBot Assistant
+       ========================================================================= -->
+  <button type="button" class="carebot-trigger" id="careBotTrigger" onclick="App.toggleCareBot()" title="Open Darwin CareBot Assistant" aria-label="Open Hospital Assistant">
+    💬
+  </button>
+
+  <div class="carebot-window" id="careBotWindow">
+    <div class="carebot-header">
+      <div style="display: flex; align-items: center; gap: 0.5rem;">
+        <span style="font-size: 1.25rem;">🏥</span>
+        <div>
+          <strong style="font-size: 0.95rem; display: block;">Darwin CareBot</strong>
+          <span style="font-size: 0.72rem; opacity: 0.85;">Hospital Concierge • Non-Diagnostic</span>
+        </div>
+      </div>
+      <button type="button" onclick="App.toggleCareBot()" style="background: none; border: none; color: white; font-size: 1.2rem; cursor: pointer;">✕</button>
+    </div>
+
+    <div class="carebot-messages" id="careBotMessages">
+      <div class="carebot-msg bot">
+        G'day! I am Darwin CareBot, your hospital navigation concierge. I can answer questions about visiting hours, specialist departments, emergency 000, or guide you through online booking. How can I help today?
+      </div>
+    </div>
+
+    <div class="carebot-input-row">
+      <input type="text" id="careBotInput" placeholder="Ask about clinics, visiting hours, location..." style="flex: 1; padding: 0.5rem 0.75rem; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 0.85rem;" onkeydown="if(event.key==='Enter') App.sendCareBotMessage()">
+      <button type="button" class="btn btn-primary" style="padding: 0.5rem 0.75rem; font-size: 0.85rem;" onclick="App.sendCareBotMessage()">Send</button>
+    </div>
+  </div>
+
+  <!-- Application Scripts -->
   <script src="js/data.js"></script>
   <script src="js/email.js"></script>
   <script src="js/booking.js"></script>
   <script src="js/portal.js"></script>
-  <script src="js/triage.js"></script>
-  <script src="js/ambulance.js"></script>
   <script src="js/admin.js"></script>
   <script src="js/app.js"></script>
 </body>
