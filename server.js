@@ -3,11 +3,14 @@
  * Fictional Australian Healthcare Web Platform & Educational Portfolio Project
  * Powered by Node.js built-in HTTP module & SQLite Database Core
  */
+require('dotenv').config();
 const http = require('http');
 const https = require('https');
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
 const DarwinDB = require('./database/db');
+const Mailer = require('./services/mailer');
 
 const PORT = process.env.PORT || 3000;
 const PUBLIC_DIR = __dirname;
@@ -226,13 +229,28 @@ const server = http.createServer(async (req, res) => {
     try {
       const body = await readBody(req);
       if (!body.doctor_id || !body.department_id || !body.appointment_date || !body.time_slot || !body.patient_name || !body.patient_email) {
-        return sendJson(res, 400, { success: false, error: 'Missing required appointment fields' });
+        return sendJson(res, 400, { success: false, error: 'Missing required appointment fields.' });
+      }
+
+      // Email format validation
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(body.patient_email)) {
+        return sendJson(res, 400, { success: false, error: 'Please enter a valid patient email address.' });
       }
 
       // Past date validation
       const today = new Date().toISOString().split('T')[0];
       if (body.appointment_date < today) {
         return sendJson(res, 400, { success: false, error: 'Cannot book an appointment for a past date.' });
+      }
+
+      // Verify OTP verification token
+      const isVerified = DarwinDB.validateAndConsumeVerifiedToken(body.patient_email, 'booking', body.verifiedToken);
+      if (!isVerified) {
+        return sendJson(res, 403, {
+          success: false,
+          error: 'Email verification required. Please verify your email with the 6-digit verification code before booking.'
+        });
       }
 
       // Check or create patient record for email
@@ -260,6 +278,8 @@ const server = http.createServer(async (req, res) => {
       }
 
       body.patient_id = patientId;
+
+      // 1. Save Appointment in SQLite Database FIRST (Collision-safe transaction)
       const refCode = DarwinDB.createAppointment(body);
 
       // Audit log
@@ -268,17 +288,81 @@ const server = http.createServer(async (req, res) => {
         VALUES ('BOOK_APPOINTMENT', 'appointments', ?, ?)
       `).run(`Reference: ${refCode}, Doctor: ${body.doctor_id}`, req.socket.remoteAddress || '127.0.0.1');
 
+      // 2. Fetch Doctor & Department details for the official confirmation email
+      const doc = DarwinDB.getDoctorById(body.doctor_id);
+      const dept = DarwinDB.getDepartmentById(body.department_id);
+
+      const apptEmailData = {
+        id: refCode,
+        patient_name: body.patient_name,
+        patient_email: body.patient_email,
+        patient_phone: body.patient_phone,
+        doctor_name: doc ? doc.name : body.doctor_id,
+        doctor_room: doc ? doc.room : 'Wing A, Specialist Suites',
+        department_name: dept ? dept.name : body.department_id,
+        appointment_date: body.appointment_date,
+        time_slot: body.time_slot,
+        consultation_type: body.consultation_type || 'In-Person Consultation',
+        fee_aud: body.fee_aud || (doc ? doc.fee_aud : 220)
+      };
+
+      // 3. Dispatch Professional Confirmation Email via Nodemailer Gmail SMTP
+      let emailDispatched = false;
+      let emailMessage = 'Confirmation email dispatched.';
+      try {
+        if (Mailer.isSmtpConfigured()) {
+          await Mailer.sendAppointmentConfirmationEmail(apptEmailData);
+          emailDispatched = true;
+          DarwinDB.logEmailDelivery(
+            body.patient_email,
+            'appointment_confirmation',
+            `Darwin City Hospital – Appointment Confirmation [Ref: ${refCode}]`,
+            'sent',
+            null,
+            refCode
+          );
+        } else {
+          emailMessage = 'Gmail SMTP credentials are not configured in .env. Email delivery was skipped.';
+          DarwinDB.logEmailDelivery(
+            body.patient_email,
+            'appointment_confirmation',
+            `Darwin City Hospital – Appointment Confirmation [Ref: ${refCode}]`,
+            'failed',
+            'Gmail SMTP credentials unconfigured in .env',
+            refCode
+          );
+        }
+      } catch (emailErr) {
+        console.error('[Darwin Mailer] Confirmation email error:', emailErr.message);
+        emailMessage = 'Appointment saved in database, but confirmation email could not be sent: ' + emailErr.message;
+        DarwinDB.logEmailDelivery(
+          body.patient_email,
+          'appointment_confirmation',
+          `Darwin City Hospital – Appointment Confirmation [Ref: ${refCode}]`,
+          'failed',
+          emailErr.message,
+          refCode
+        );
+      }
+
       return sendJson(res, 201, {
         success: true,
         referenceId: refCode,
         message: 'Appointment successfully confirmed and registered at Darwin City Hospital.',
+        emailStatus: {
+          dispatched: emailDispatched,
+          info: emailMessage
+        },
         appointment: {
           reference: refCode,
           doctor_id: body.doctor_id,
+          doctor_name: doc ? doc.name : body.doctor_id,
+          department_id: body.department_id,
+          department_name: dept ? dept.name : body.department_id,
           date: body.appointment_date,
           time: body.time_slot,
           consultation_type: body.consultation_type || 'In-Person Consultation',
-          fee_aud: body.fee_aud || 220
+          fee_aud: body.fee_aud || (doc ? doc.fee_aud : 220)
         }
       });
     } catch (err) {
@@ -454,99 +538,310 @@ const server = http.createServer(async (req, res) => {
     }
   }
 
-  // 15. Send Confirmation (Email / SMS Gateway Dispatch)
-  if (req.method === 'POST' && pathname === '/api/send-confirmation') {
+  // 15. Send OTP Email Verification: POST /api/auth/send-otp
+  if (req.method === 'POST' && pathname === '/api/auth/send-otp') {
     try {
-      const payload = await readBody(req);
-      const to = payload.to || 'patient';
-      const ref = payload.refCode || 'DCH-XXXXXX';
-      const doc = payload.doctorName || 'Specialist Physician';
-      const date = payload.date || 'Scheduled Date';
-      const time = payload.time || 'Scheduled Time';
+      const body = await readBody(req);
+      const email = (body.email || '').trim().toLowerCase();
+      const purpose = body.purpose || 'booking'; // 'booking' or 'enquiry'
 
-      console.log('----------------------------------------------------');
-      console.log(`[Darwin City Hospital Dispatch] ✉️ OUTGOING CONFIRMATION`);
-      console.log(` > Recipient:  ${to}`);
-      console.log(` > Subject:    Confirmed: Darwin City Hospital Consultation with ${doc} [${ref}]`);
-      console.log(` > Schedule:   ${date} at ${time}`);
-      console.log(` > Status:     DISPATCHED (Delivered to SMTP queue)`);
-      console.log('----------------------------------------------------');
+      if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        return sendJson(res, 400, { success: false, error: 'A valid email address is required.' });
+      }
 
-      const emailSubject = `🩺 Confirmed: Darwin City Hospital Appointment with ${doc} [Ref: ${ref}]`;
-      const emailHtml = `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #bae6fd; border-radius: 8px; overflow: hidden;">
-          <div style="background: #005B96; color: white; padding: 20px; text-align: center;">
-            <h2 style="margin: 0;">🏥 Darwin City Hospital</h2>
-            <p style="margin: 4px 0 0; font-size: 13px; opacity: 0.9;">Official Clinical Consultation Pass • Darwin, NT</p>
-          </div>
-          <div style="padding: 24px; color: #0F172A;">
-            <p>Dear Patient,</p>
-            <p>Your appointment has been confirmed. Below are your clinical consultation details:</p>
-            <div style="background: #F4F8FB; padding: 16px; border-radius: 6px; margin: 16px 0; border: 1px solid #e0f0fa;">
-              <div><strong>Reference ID:</strong> ${ref}</div>
-              <div><strong>Specialist:</strong> ${doc}</div>
-              <div><strong>Schedule:</strong> ${date} at ${time} (ACST)</div>
-              <div><strong>Location:</strong> Darwin City Hospital, Specialist Suites</div>
-            </div>
-            <p style="font-size: 12px; color: #64748B;">Please arrive 15 minutes before your consultation. Non-Emergency: (08) 8999 0000 | Emergency: 000</p>
-          </div>
-        </div>
-      `;
-      sendResendEmail(to, emailSubject, emailHtml);
+      if (!['booking', 'enquiry'].includes(purpose)) {
+        return sendJson(res, 400, { success: false, error: 'Invalid verification purpose.' });
+      }
+
+      // Check if SMTP is configured with Gmail credentials
+      if (!Mailer.isSmtpConfigured()) {
+        return sendJson(res, 503, {
+          success: false,
+          error: 'Gmail SMTP credentials are not configured on the server. Please set your Gmail address (SMTP_USER) and 16-character Google App Password (SMTP_PASS) in the server .env file to enable live verification code emails.'
+        });
+      }
+
+      // Generate secure 6-digit random code
+      const otp = crypto.randomInt(100000, 1000000).toString();
+
+      // Store in SQLite with salt, hash, 5-minute expiry, and 60-second rate-limiting cooldown
+      const dbResult = DarwinDB.saveOtpVerification(email, purpose, otp);
+      if (!dbResult.success) {
+        return sendJson(res, 429, {
+          success: false,
+          rateLimited: true,
+          waitSeconds: dbResult.waitSeconds,
+          error: dbResult.error
+        });
+      }
+
+      // Send real email via Nodemailer Gmail SMTP
+      await Mailer.sendVerificationOtpEmail(email, otp);
+
+      // Log successful email delivery
+      DarwinDB.logEmailDelivery(
+        email,
+        'otp_verification',
+        'Darwin City Hospital – Email Verification',
+        'sent',
+        null,
+        null
+      );
 
       return sendJson(res, 200, {
         success: true,
-        status: 'dispatched',
-        recipient: to,
-        reference: ref,
-        message: `Appointment confirmation pass dispatched to ${to}.`
+        message: `A 6-digit verification code has been dispatched to ${email}. Valid for 5 minutes.`,
+        expiresAt: dbResult.expiresAt
       });
     } catch (err) {
-      return sendJson(res, 400, { success: false, error: err.message });
+      console.error('[Darwin Auth] Error sending verification OTP:', err.message);
+      DarwinDB.logEmailDelivery(
+        'unknown',
+        'otp_verification',
+        'Darwin City Hospital – Email Verification',
+        'failed',
+        err.message,
+        null
+      );
+      return sendJson(res, 500, { success: false, error: 'Failed to dispatch verification code: ' + err.message });
     }
   }
 
-  // 16. Send 2FA OTP: POST /api/send-otp
-  if (req.method === 'POST' && pathname === '/api/send-otp') {
+  // 16. Verify OTP Code: POST /api/auth/verify-otp
+  if (req.method === 'POST' && pathname === '/api/auth/verify-otp') {
     try {
-      const payload = await readBody(req);
-      const to = payload.to || 'patient';
-      const otp = payload.otp || '000000';
+      const body = await readBody(req);
+      const email = (body.email || '').trim().toLowerCase();
+      const purpose = body.purpose || 'booking';
+      const otp = (body.otp || '').toString().trim();
 
-      console.log('----------------------------------------------------');
-      console.log(`[Darwin City Hospital Gateway] 🔒 2FA VERIFICATION CODE`);
-      console.log(` > Recipient:  ${to}`);
-      console.log(` > 6-Digit Code: ${otp}`);
-      console.log(` > Status:     DISPATCHED (Delivered via SMS/Email)`);
-      console.log('----------------------------------------------------');
+      if (!email || !otp) {
+        return sendJson(res, 400, { success: false, error: 'Email and 6-digit verification code are required.' });
+      }
 
-      if (to.includes('@')) {
-        const otpSubject = `🔒 Darwin City Hospital Security Code: ${otp}`;
-        const otpHtml = `
-          <div style="font-family: Arial, sans-serif; max-width: 500px; padding: 20px; border: 1px solid #e2e8f0; border-radius: 8px;">
-            <h2 style="color: #005B96; margin-top: 0;">🏥 Darwin City Hospital</h2>
-            <p>Your one-time 6-digit security verification code is:</p>
-            <div style="font-size: 28px; font-weight: bold; letter-spacing: 4px; color: #005B96; background: #f0f7fc; padding: 12px; border-radius: 6px; text-align: center; font-family: monospace;">
-              ${otp}
-            </div>
-            <p style="font-size: 12px; color: #64748b; margin-top: 12px;">Valid for 10 minutes. If you did not request this, please disregard.</p>
-          </div>
-        `;
-        sendResendEmail(to, otpSubject, otpHtml);
-      } else if (to.replace(/\D/g, '').length >= 8) {
-        sendTwilioSms(to, `Darwin City Hospital Security: Your verification code is ${otp}. Valid for 10 minutes.`);
+      if (!/^\d{6}$/.test(otp)) {
+        return sendJson(res, 400, { success: false, error: 'Verification code must be exactly 6 digits.' });
+      }
+
+      const verifyRes = DarwinDB.verifyOtpCode(email, purpose, otp);
+      if (!verifyRes.success) {
+        return sendJson(res, 400, { success: false, error: verifyRes.error });
       }
 
       return sendJson(res, 200, {
         success: true,
-        status: 'dispatched',
-        recipient: to,
-        otp: otp,
-        message: `Security code has been dispatched to ${to}.`
+        message: 'Email address verified successfully.',
+        verifiedToken: verifyRes.verifiedToken
       });
     } catch (err) {
-      return sendJson(res, 400, { success: false, error: err.message });
+      return sendJson(res, 500, { success: false, error: err.message });
     }
+  }
+
+  // 17. Submit General Enquiry: POST /api/enquiries/submit
+  if (req.method === 'POST' && pathname === '/api/enquiries/submit') {
+    try {
+      const body = await readBody(req);
+      if (!body.fullName || !body.email || !body.subject || !body.message) {
+        return sendJson(res, 400, { success: false, error: 'Full name, email, subject, and message are required.' });
+      }
+
+      // Email format validation
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(body.email)) {
+        return sendJson(res, 400, { success: false, error: 'Please provide a valid email address.' });
+      }
+
+      // Check verified token
+      const isVerified = DarwinDB.validateAndConsumeVerifiedToken(body.email, 'enquiry', body.verifiedToken);
+      if (!isVerified) {
+        return sendJson(res, 403, {
+          success: false,
+          error: 'Email verification is required before submitting your enquiry. Please verify your email with the 6-digit code.'
+        });
+      }
+
+      // Persist enquiry in SQLite database
+      const enquiry = DarwinDB.createGeneralEnquiry(body);
+
+      // Audit log
+      DarwinDB.db.prepare(`
+        INSERT INTO audit_logs (action, resource, details, ip_address)
+        VALUES ('SUBMIT_ENQUIRY', 'general_enquiries', ?, ?)
+      `).run(`Reference: ${enquiry.id}, From: ${enquiry.email}`, req.socket.remoteAddress || '127.0.0.1');
+
+      // Send Acknowledgement to Patient and Alert to Admin
+      let emailStatus = 'dispatched';
+      if (Mailer.isSmtpConfigured()) {
+        try {
+          await Mailer.sendEnquiryAcknowledgementEmail(enquiry);
+          DarwinDB.logEmailDelivery(
+            enquiry.email,
+            'enquiry_acknowledgement',
+            `Darwin City Hospital – General Enquiry Received [Ref: ${enquiry.id}]`,
+            'sent',
+            null,
+            enquiry.id
+          );
+        } catch (e) {
+          console.error('[Darwin Enquiry] Acknowledgement email error:', e.message);
+          DarwinDB.logEmailDelivery(
+            enquiry.email,
+            'enquiry_acknowledgement',
+            `Darwin City Hospital – General Enquiry Received [Ref: ${enquiry.id}]`,
+            'failed',
+            e.message,
+            enquiry.id
+          );
+        }
+
+        try {
+          await Mailer.sendAdminEnquiryAlertEmail(enquiry);
+          DarwinDB.logEmailDelivery(
+            Mailer.SMTP_CONFIG.adminEmail,
+            'admin_enquiry_alert',
+            `[Admin Alert] New Enquiry: ${enquiry.subject} [Ref: ${enquiry.id}]`,
+            'sent',
+            null,
+            enquiry.id
+          );
+        } catch (e) {
+          console.error('[Darwin Enquiry] Admin alert email error:', e.message);
+        }
+      } else {
+        emailStatus = 'smtp_unconfigured';
+        DarwinDB.logEmailDelivery(
+          enquiry.email,
+          'enquiry_acknowledgement',
+          `Darwin City Hospital – General Enquiry Received [Ref: ${enquiry.id}]`,
+          'failed',
+          'Gmail SMTP credentials unconfigured in .env',
+          enquiry.id
+        );
+      }
+
+      return sendJson(res, 201, {
+        success: true,
+        referenceId: enquiry.id,
+        emailStatus,
+        message: `Your enquiry [${enquiry.id}] has been submitted. A confirmation email has been dispatched.`,
+        enquiry
+      });
+    } catch (err) {
+      return sendJson(res, 500, { success: false, error: err.message });
+    }
+  }
+
+  // 18. Admin Enquiries List: GET /api/admin/enquiries
+  if (req.method === 'GET' && pathname === '/api/admin/enquiries') {
+    try {
+      const category = parsedUrl.searchParams.get('category');
+      const status = parsedUrl.searchParams.get('status');
+      const list = DarwinDB.getAllGeneralEnquiries(category, status);
+      return sendJson(res, 200, { success: true, count: list.length, data: list });
+    } catch (err) {
+      return sendJson(res, 500, { success: false, error: err.message });
+    }
+  }
+
+  // 19. Admin Respond to Enquiry: POST /api/admin/enquiries/respond
+  if (req.method === 'POST' && pathname === '/api/admin/enquiries/respond') {
+    try {
+      const body = await readBody(req);
+      if (!body.enquiryId || !body.responseMessage) {
+        return sendJson(res, 400, { success: false, error: 'enquiryId and responseMessage are required.' });
+      }
+
+      const updated = DarwinDB.updateGeneralEnquiryStatus(body.enquiryId, body.status || 'resolved', body.responseMessage);
+      if (!updated) {
+        return sendJson(res, 404, { success: false, error: 'Enquiry not found.' });
+      }
+
+      // Send Response Email to Customer
+      if (Mailer.isSmtpConfigured()) {
+        try {
+          await Mailer.sendAdminResponseEmail(updated, body.responseMessage);
+          DarwinDB.logEmailDelivery(
+            updated.email,
+            'admin_response',
+            `Darwin City Hospital – Response to Your Enquiry [Ref: ${updated.id}]`,
+            'sent',
+            null,
+            updated.id
+          );
+        } catch (e) {
+          console.error('[Darwin Admin] Response email error:', e.message);
+          DarwinDB.logEmailDelivery(
+            updated.email,
+            'admin_response',
+            `Darwin City Hospital – Response to Your Enquiry [Ref: ${updated.id}]`,
+            'failed',
+            e.message,
+            updated.id
+          );
+        }
+      }
+
+      return sendJson(res, 200, {
+        success: true,
+        message: 'Response recorded and customer notification dispatched.',
+        enquiry: updated
+      });
+    } catch (err) {
+      return sendJson(res, 500, { success: false, error: err.message });
+    }
+  }
+
+  // 20. Admin Appointments Filtered List: GET /api/admin/appointments
+  if (req.method === 'GET' && pathname === '/api/admin/appointments') {
+    try {
+      const status = parsedUrl.searchParams.get('status');
+      const search = parsedUrl.searchParams.get('search');
+      const appointments = DarwinDB.getAllAppointmentsFiltered(status, search);
+      return sendJson(res, 200, { success: true, count: appointments.length, data: appointments });
+    } catch (err) {
+      return sendJson(res, 500, { success: false, error: err.message });
+    }
+  }
+
+  // 21. Admin Update Appointment Status: POST /api/admin/appointments/update-status
+  if (req.method === 'POST' && pathname === '/api/admin/appointments/update-status') {
+    try {
+      const body = await readBody(req);
+      if (!body.appointmentId || !body.status) {
+        return sendJson(res, 400, { success: false, error: 'appointmentId and status required.' });
+      }
+      DarwinDB.updateAppointmentStatus(body.appointmentId, body.status);
+      return sendJson(res, 200, { success: true, message: `Appointment ${body.appointmentId} status updated to ${body.status}.` });
+    } catch (err) {
+      return sendJson(res, 500, { success: false, error: err.message });
+    }
+  }
+
+  // 22. Admin Email Delivery Logs: GET /api/admin/email-logs
+  if (req.method === 'GET' && pathname === '/api/admin/email-logs') {
+    try {
+      const limit = parseInt(parsedUrl.searchParams.get('limit') || '50', 10);
+      const logs = DarwinDB.getEmailDeliveryLogs(limit);
+      return sendJson(res, 200, { success: true, count: logs.length, data: logs });
+    } catch (err) {
+      return sendJson(res, 500, { success: false, error: err.message });
+    }
+  }
+
+  // 23. SMTP Status Check: GET /api/smtp/status
+  if (req.method === 'GET' && pathname === '/api/smtp/status') {
+    const isConfigured = Mailer.isSmtpConfigured();
+    return sendJson(res, 200, {
+      success: true,
+      configured: isConfigured,
+      host: Mailer.SMTP_CONFIG.host,
+      port: Mailer.SMTP_CONFIG.port,
+      user: Mailer.SMTP_CONFIG.user ? Mailer.SMTP_CONFIG.user.replace(/(.{3})(.*)(@.*)/, '$1***$3') : null,
+      adminEmail: Mailer.SMTP_CONFIG.adminEmail,
+      note: isConfigured
+        ? 'Gmail SMTP is configured and operational.'
+        : 'Gmail SMTP credentials are unconfigured. Update SMTP_USER and SMTP_PASS (Google App Password) in your .env file.'
+    });
   }
 
   // =========================================================================

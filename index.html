@@ -93,7 +93,7 @@
           📅 Book Appointment
         </button>
 
-        <button type="button" class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Toggle navigation" style="display: none; background: none; border: 1px solid var(--border); padding: 0.4rem 0.6rem; border-radius: var(--radius-sm); font-size: 1.2rem; cursor: pointer;">
+        <button type="button" class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Toggle navigation" style="background: none; border: 1px solid var(--border); padding: 0.4rem 0.6rem; border-radius: var(--radius-sm); font-size: 1.2rem; cursor: pointer;">
           ☰
         </button>
       </div>
@@ -754,13 +754,15 @@
             <nav style="display: flex; flex-direction: column; gap: 0.3rem;">
               <div class="dashboard-nav-item admin-nav-item active" data-view="overview">📊 Overview & Charts</div>
               <div class="dashboard-nav-item admin-nav-item" data-view="appointments">📅 Manage Appointments</div>
-              <div class="dashboard-nav-item admin-nav-item" data-view="enquiries">📩 Contact Enquiries</div>
+              <div class="dashboard-nav-item admin-nav-item" data-view="enquiries">📩 General Enquiries</div>
+              <div class="dashboard-nav-item admin-nav-item" data-view="email-logs">📨 Email Delivery Logs</div>
+              <div class="dashboard-nav-item admin-nav-item" data-view="smtp-config">⚙️ Gmail SMTP Settings</div>
               <div class="dashboard-nav-item" style="color: var(--emergency); margin-top: 1rem;" onclick="PatientPortal.logout()">🚪 Logout</div>
             </nav>
           </aside>
 
           <section class="dashboard-content">
-            <!-- Admin Pane: Overview -->
+            <!-- Admin Pane 1: Overview -->
             <div class="admin-view-pane" id="admin-view-overview">
               <h3 style="font-size: 1.3rem; font-weight: 800; color: var(--dark-navy); margin-bottom: 1.25rem;">Hospital Operations & Analytics</h3>
               
@@ -803,19 +805,34 @@
               </div>
             </div>
 
-            <!-- Admin Pane: Manage Appointments -->
+            <!-- Admin Pane 2: Manage Appointments -->
             <div class="admin-view-pane" id="admin-view-appointments" style="display: none;">
-              <h3 style="font-size: 1.3rem; font-weight: 800; color: var(--dark-navy); margin-bottom: 1rem;">Recent Appointment Records</h3>
-              <div style="overflow-x: auto;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.75rem;">
+                <h3 style="font-size: 1.3rem; font-weight: 800; color: var(--dark-navy); margin: 0;">Clinical Appointments Directory</h3>
+                <div style="display: flex; gap: 0.5rem; align-items: center;">
+                  <input type="text" id="adminApptSearch" placeholder="Search ref, patient, doctor..." oninput="HospitalAdmin.loadFilteredAppointments()" style="padding: 0.45rem 0.75rem; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 0.85rem; width: 220px;">
+                  <select id="adminApptStatusFilter" onchange="HospitalAdmin.loadFilteredAppointments()" style="padding: 0.45rem 0.75rem; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 0.85rem; background: white;">
+                    <option value="all">All Statuses</option>
+                    <option value="confirmed">Confirmed</option>
+                    <option value="pending">Pending</option>
+                    <option value="completed">Completed</option>
+                    <option value="cancelled">Cancelled</option>
+                  </select>
+                  <button type="button" class="btn btn-primary" style="font-size: 0.8rem; padding: 0.45rem 0.75rem;" onclick="BookingWizard.open()">
+                    + Book New
+                  </button>
+                </div>
+              </div>
+              <div style="overflow-x: auto; background: white; border: 1px solid var(--border); border-radius: var(--radius-md);">
                 <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem;">
                   <thead>
-                    <tr style="border-bottom: 2px solid var(--border); text-align: left;">
+                    <tr style="background: #F8FAFC; border-bottom: 2px solid var(--border); text-align: left;">
                       <th style="padding: 0.75rem;">Ref Code</th>
-                      <th style="padding: 0.75rem;">Patient</th>
-                      <th style="padding: 0.75rem;">Specialist</th>
-                      <th style="padding: 0.75rem;">Schedule</th>
+                      <th style="padding: 0.75rem;">Patient Details</th>
+                      <th style="padding: 0.75rem;">Specialist & Clinic</th>
+                      <th style="padding: 0.75rem;">Schedule (ACST)</th>
                       <th style="padding: 0.75rem;">Status</th>
-                      <th style="padding: 0.75rem;">Action</th>
+                      <th style="padding: 0.75rem;">Actions</th>
                     </tr>
                   </thead>
                   <tbody id="adminRecentApptsTable"></tbody>
@@ -823,10 +840,78 @@
               </div>
             </div>
 
-            <!-- Admin Pane: Contact Enquiries -->
+            <!-- Admin Pane 3: General Enquiries -->
             <div class="admin-view-pane" id="admin-view-enquiries" style="display: none;">
-              <h3 style="font-size: 1.3rem; font-weight: 800; color: var(--dark-navy); margin-bottom: 1rem;">Patient Contact Submissions</h3>
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.75rem;">
+                <h3 style="font-size: 1.3rem; font-weight: 800; color: var(--dark-navy); margin: 0;">Patient General Enquiries</h3>
+                <div style="display: flex; gap: 0.5rem;">
+                  <select id="adminEnquiryStatusFilter" onchange="HospitalAdmin.loadEnquiriesList()" style="padding: 0.45rem 0.75rem; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 0.85rem; background: white;">
+                    <option value="all">All Statuses</option>
+                    <option value="new">New</option>
+                    <option value="in_progress">In Progress</option>
+                    <option value="resolved">Resolved</option>
+                  </select>
+                  <button type="button" class="btn btn-outline" style="font-size: 0.8rem; padding: 0.45rem 0.75rem;" onclick="HospitalAdmin.loadEnquiriesList()">
+                    🔄 Refresh
+                  </button>
+                </div>
+              </div>
               <div id="adminEnquiriesList"></div>
+            </div>
+
+            <!-- Admin Pane 4: Email Delivery Logs -->
+            <div class="admin-view-pane" id="admin-view-email-logs" style="display: none;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.75rem;">
+                <div>
+                  <h3 style="font-size: 1.3rem; font-weight: 800; color: var(--dark-navy); margin: 0;">Live Email Delivery Status & Audit Logs</h3>
+                  <div style="font-size: 0.78rem; color: var(--text-muted);">Real-time dispatch tracking across OTP, Confirmations & Enquiries</div>
+                </div>
+                <button type="button" class="btn btn-outline" style="font-size: 0.8rem; padding: 0.45rem 0.75rem;" onclick="HospitalAdmin.loadEmailLogs()">
+                  🔄 Refresh Logs
+                </button>
+              </div>
+              <div style="overflow-x: auto; background: white; border: 1px solid var(--border); border-radius: var(--radius-md);">
+                <table style="width: 100%; border-collapse: collapse; font-size: 0.82rem;">
+                  <thead>
+                    <tr style="background: #F8FAFC; border-bottom: 2px solid var(--border); text-align: left;">
+                      <th style="padding: 0.65rem 0.75rem;">Recipient</th>
+                      <th style="padding: 0.65rem 0.75rem;">Type</th>
+                      <th style="padding: 0.65rem 0.75rem;">Subject</th>
+                      <th style="padding: 0.65rem 0.75rem;">Delivery Status</th>
+                      <th style="padding: 0.65rem 0.75rem;">Reference</th>
+                      <th style="padding: 0.65rem 0.75rem;">Timestamp</th>
+                    </tr>
+                  </thead>
+                  <tbody id="adminEmailLogsTable"></tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Admin Pane 5: Gmail SMTP Settings -->
+            <div class="admin-view-pane" id="admin-view-smtp-config" style="display: none;">
+              <h3 style="font-size: 1.3rem; font-weight: 800; color: var(--dark-navy); margin-bottom: 1rem;">Gmail SMTP Gateway Configuration</h3>
+              <div id="adminSmtpStatusCard" style="margin-bottom: 1.5rem;"></div>
+
+              <div style="background: white; border: 1px solid var(--border); border-radius: var(--radius-md); padding: 1.5rem;">
+                <h4 style="font-size: 1rem; font-weight: 700; color: var(--primary); margin-bottom: 0.75rem;">
+                  🔑 How to Configure Real Gmail Dispatch (Google App Password)
+                </h4>
+                <ol style="font-size: 0.88rem; line-height: 1.7; color: var(--text-secondary); padding-left: 1.25rem;">
+                  <li>Open your <strong>Google Account</strong> (myaccount.google.com) and navigate to the <strong>Security</strong> tab.</li>
+                  <li>Ensure <strong>2-Step Verification</strong> is switched ON.</li>
+                  <li>In the search box at the top, type <strong>"App passwords"</strong> (or navigate to <em>Security → 2-Step Verification → App passwords</em>).</li>
+                  <li>Enter an app name like <code>Darwin City Hospital</code> and click <strong>Create</strong>.</li>
+                  <li>Google will display a <strong>16-character password</strong> (e.g. <code>abcd efgh ijkl mnop</code>). Copy this password.</li>
+                  <li>Open the <code>.env</code> file in this project root and paste your credentials:
+                    <pre style="background: #0F172A; color: #38bdf8; padding: 0.75rem; border-radius: 6px; font-size: 0.82rem; margin: 0.5rem 0;">SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=your-actual-email@gmail.com
+SMTP_PASS=abcdefghijklmnop
+ADMIN_EMAIL=your-admin-email@gmail.com</pre>
+                  </li>
+                  <li>Save the <code>.env</code> file and restart the server. Emails will immediately dispatch live to real inboxes!</li>
+                </ol>
+              </div>
             </div>
           </section>
         </div>
@@ -919,55 +1004,98 @@
         </div>
 
         <div>
-          <form id="hospitalContactForm" style="background: var(--bg-body); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 2rem; box-shadow: var(--shadow-sm);">
-            <h3 style="font-size: 1.25rem; font-weight: 800; color: var(--dark-navy); margin-bottom: 1.25rem;">Send a Medical Enquiry</h3>
+          <form id="hospitalContactForm" onsubmit="App.handleEnquirySubmit(event)" style="background: var(--bg-body); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 2rem; box-shadow: var(--shadow-sm);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+              <h3 style="font-size: 1.25rem; font-weight: 800; color: var(--dark-navy); margin: 0;">Official Patient & Clinical Enquiry</h3>
+              <span class="badge badge-primary" style="font-size: 0.75rem;">Verified Delivery</span>
+            </div>
 
             <div style="margin-bottom: 1rem;">
               <label style="font-size: 0.85rem; font-weight: 700; color: var(--text-primary); display: block; margin-bottom: 0.35rem;">Full Name *</label>
               <input type="text" id="contactFullName" required placeholder="e.g. Sarah MacIntyre" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 0.9rem;">
             </div>
 
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
-              <div>
-                <label style="font-size: 0.85rem; font-weight: 700; color: var(--text-primary); display: block; margin-bottom: 0.35rem;">Email Address *</label>
-                <input type="email" id="contactEmail" required placeholder="name@example.com" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 0.9rem;">
+            <div style="margin-bottom: 1rem;">
+              <label style="font-size: 0.85rem; font-weight: 700; color: var(--text-primary); display: block; margin-bottom: 0.35rem;">Email Address (For Verification & Response) *</label>
+              <div style="display: flex; gap: 0.5rem;">
+                <input type="email" id="contactEmail" required placeholder="nirojkhattri33@gmail.com" oninput="App.onEnquiryEmailChanged()" style="flex: 1; padding: 0.75rem; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 0.9rem;">
+                <button type="button" class="btn btn-secondary" id="enquirySendOtpBtn" style="white-space: nowrap; font-size: 0.8rem; padding: 0.65rem 0.85rem;" onclick="App.sendEnquiryOtp()">
+                  Send OTP 📨
+                </button>
               </div>
+
+              <!-- Enquiry OTP Input Box -->
+              <div id="enquiryOtpBox" style="display: none; background: #F0F7FC; border: 1.5px dashed #005B96; border-radius: var(--radius-sm); padding: 0.85rem; margin-top: 0.65rem;">
+                <div style="font-size: 0.82rem; font-weight: 700; color: #005B96; margin-bottom: 0.35rem;">
+                  🔒 Enter 6-Digit Email Verification Code:
+                </div>
+                <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
+                  <input type="text" id="enquiryOtpCode" maxlength="6" placeholder="000000" style="width: 130px; text-align: center; font-family: monospace; font-size: 1.15rem; font-weight: 800; letter-spacing: 4px; padding: 0.5rem; border: 1px solid var(--border); border-radius: var(--radius-sm); background: white;">
+                  <button type="button" class="btn btn-primary" id="enquiryVerifyOtpBtn" style="font-size: 0.82rem; padding: 0.55rem 0.9rem;" onclick="App.verifyEnquiryOtp()">
+                    Verify Code ✓
+                  </button>
+                  <button type="button" class="btn btn-outline" id="enquiryResendOtpBtn" style="font-size: 0.78rem; padding: 0.55rem 0.75rem; display: none;" onclick="App.sendEnquiryOtp(true)">
+                    Resend Code (<span id="enquiryResendTimer">60</span>s)
+                  </button>
+                </div>
+                <div id="enquiryOtpFeedback" style="font-size: 0.78rem; margin-top: 0.4rem; color: #64748B;"></div>
+              </div>
+
+              <!-- Enquiry Verified Badge -->
+              <div id="enquiryVerifiedBadge" style="display: none; background: #DCFCE7; color: #166534; border: 1px solid #86EFAC; border-radius: var(--radius-sm); padding: 0.5rem 0.75rem; font-size: 0.82rem; font-weight: 700; margin-top: 0.5rem; align-items: center; gap: 0.5rem;">
+                <span>✓ Email Verified:</span>
+                <span id="enquiryVerifiedEmailLabel" style="font-weight: 800;"></span>
+              </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
               <div>
                 <label style="font-size: 0.85rem; font-weight: 700; color: var(--text-primary); display: block; margin-bottom: 0.35rem;">Phone Number</label>
                 <input type="tel" id="contactPhone" placeholder="+61 412 000 000" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 0.9rem;">
               </div>
-            </div>
-
-            <div style="margin-bottom: 1rem;">
-              <label style="font-size: 0.85rem; font-weight: 700; color: var(--text-primary); display: block; margin-bottom: 0.35rem;">Relevant Department</label>
-              <select id="contactDepartment" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 0.9rem; background: white;">
-                <option value="">General Clinical Enquiry</option>
-                <option value="cardiology">Cardiology & Heart Health</option>
-                <option value="neurology">Neurology & Stroke Unit</option>
-                <option value="orthopaedics">Orthopaedics & Joint Surgery</option>
-                <option value="paediatrics">Paediatrics & Child Health</option>
-                <option value="general-medicine">General Medicine</option>
-                <option value="emergency">Emergency Medicine</option>
-                <option value="maternity">Maternity & Women's Health</option>
-                <option value="dermatology">Dermatology</option>
-                <option value="radiology">Radiology & Imaging</option>
-                <option value="oncology">Oncology & Cancer Care</option>
-              </select>
+              <div>
+                <label style="font-size: 0.85rem; font-weight: 700; color: var(--text-primary); display: block; margin-bottom: 0.35rem;">Enquiry Category *</label>
+                <select id="contactCategory" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 0.9rem; background: white;">
+                  <option value="General Healthcare Enquiry">General Healthcare Enquiry</option>
+                  <option value="Specialist Clinic Consultation">Specialist Clinic Consultation</option>
+                  <option value="Appointments & Scheduling">Appointments & Scheduling</option>
+                  <option value="Billing & Health Insurance">Billing & Health Insurance</option>
+                  <option value="Pathology & Radiology Records">Pathology & Radiology Records</option>
+                  <option value="Patient & Visitor Support">Patient & Visitor Support</option>
+                </select>
+              </div>
             </div>
 
             <div style="margin-bottom: 1rem;">
               <label style="font-size: 0.85rem; font-weight: 700; color: var(--text-primary); display: block; margin-bottom: 0.35rem;">Subject *</label>
-              <input type="text" id="contactSubject" required placeholder="Reason for contacting" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 0.9rem;">
+              <input type="text" id="contactSubject" required placeholder="e.g. Inquiry regarding cardiology referral" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 0.9rem;">
             </div>
 
             <div style="margin-bottom: 1.5rem;">
               <label style="font-size: 0.85rem; font-weight: 700; color: var(--text-primary); display: block; margin-bottom: 0.35rem;">Your Message *</label>
-              <textarea id="contactMessage" rows="4" required placeholder="Describe your question or referral query..." style="width: 100%; padding: 0.75rem; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 0.9rem;"></textarea>
+              <textarea id="contactMessage" rows="4" required placeholder="Describe your question, referral, or clinic inquiry in detail..." style="width: 100%; padding: 0.75rem; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 0.9rem;"></textarea>
+              <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 0.25rem;">
+                * For safety, do not transmit sensitive passwords or urgent medical emergency information. Dial 000 for emergencies.
+              </div>
             </div>
 
-            <button type="submit" class="btn btn-primary" style="width: 100%; padding: 0.85rem; font-size: 0.95rem;">
+            <button type="submit" id="enquirySubmitBtn" class="btn btn-primary" style="width: 100%; padding: 0.85rem; font-size: 0.95rem;">
               Submit Clinical Enquiry 📨
             </button>
+
+            <!-- Success Box -->
+            <div id="enquirySuccessBox" style="display: none; background: #F0FDF4; border: 1.5px solid #86EFAC; border-radius: var(--radius-md); padding: 1.25rem; margin-top: 1.25rem;">
+              <div style="display: flex; align-items: center; gap: 0.5rem; color: #166534; font-weight: 800; font-size: 1rem; margin-bottom: 0.5rem;">
+                <span>✅ Enquiry Submitted Successfully</span>
+              </div>
+              <p style="font-size: 0.85rem; color: #166534; margin: 0 0 0.75rem; line-height: 1.5;">
+                Your enquiry reference is: <strong id="enquirySuccessRef" style="color: #005B96; font-size: 1rem;"></strong>.<br>
+                An acknowledgement email has been dispatched to <strong id="enquirySuccessEmail"></strong>.
+              </p>
+              <div style="font-size: 0.78rem; color: #4B5563;">
+                Our outpatient clinical concierge team will review your enquiry and respond within 1–2 business days.
+              </div>
+            </div>
           </form>
         </div>
       </div>
@@ -1036,7 +1164,7 @@
   <!-- =========================================================================
        19. 7-Step Appointment Booking Modal
        ========================================================================= -->
-  <div class="modal-backdrop" id="bookingModal">
+  <div class="modal-backdrop modal-overlay" id="bookingModal">
     <div class="modal-box" style="max-width: 680px; width: 95%;">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; border-bottom: 1px solid var(--border); padding-bottom: 0.75rem;">
         <div>
@@ -1135,9 +1263,37 @@
               <div class="field-error" id="patientPhoneError" style="color: var(--emergency); font-size: 0.78rem;"></div>
             </div>
             <div>
-              <label style="font-size: 0.85rem; font-weight: 600; display: block; margin-bottom: 0.25rem;">Email Address *</label>
-              <input type="email" id="patientEmail" required placeholder="nirojkhattri33@gmail.com" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 0.9rem;">
-              <div class="field-error" id="patientEmailError" style="color: var(--emergency); font-size: 0.78rem;"></div>
+              <label style="font-size: 0.85rem; font-weight: 600; display: block; margin-bottom: 0.25rem;">Email Address (For Verification & Confirmation) *</label>
+              <div style="display: flex; gap: 0.5rem;">
+                <input type="email" id="patientEmail" required placeholder="nirojkhattri33@gmail.com" oninput="BookingWizard.onEmailInputChanged()" style="flex: 1; padding: 0.75rem; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 0.9rem;">
+                <button type="button" class="btn btn-secondary" id="bookSendOtpBtn" style="white-space: nowrap; font-size: 0.8rem; padding: 0.65rem 0.85rem;" onclick="BookingWizard.sendVerificationOtp()">
+                  Send OTP Code 📨
+                </button>
+              </div>
+              <div class="field-error" id="patientEmailError" style="color: var(--emergency); font-size: 0.78rem; margin-top: 0.25rem;"></div>
+
+              <!-- OTP Verification Box -->
+              <div id="bookingOtpBox" style="display: none; background: #F0F7FC; border: 1.5px dashed #005B96; border-radius: var(--radius-sm); padding: 0.85rem; margin-top: 0.65rem;">
+                <div style="font-size: 0.82rem; font-weight: 700; color: #005B96; margin-bottom: 0.35rem;">
+                  🔒 Enter 6-Digit Verification Code:
+                </div>
+                <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
+                  <input type="text" id="bookingOtpCode" maxlength="6" placeholder="000000" style="width: 130px; text-align: center; font-family: monospace; font-size: 1.15rem; font-weight: 800; letter-spacing: 4px; padding: 0.5rem; border: 1px solid var(--border); border-radius: var(--radius-sm); background: white;">
+                  <button type="button" class="btn btn-primary" id="bookVerifyOtpBtn" style="font-size: 0.82rem; padding: 0.55rem 0.9rem;" onclick="BookingWizard.verifyOtpCode()">
+                    Verify Code ✓
+                  </button>
+                  <button type="button" class="btn btn-outline" id="bookResendOtpBtn" style="font-size: 0.78rem; padding: 0.55rem 0.75rem; display: none;" onclick="BookingWizard.sendVerificationOtp(true)">
+                    Resend Code (<span id="bookResendTimer">60</span>s)
+                  </button>
+                </div>
+                <div id="bookingOtpFeedback" style="font-size: 0.78rem; margin-top: 0.4rem; color: #64748B;"></div>
+              </div>
+
+              <!-- Verified Badge -->
+              <div id="bookingEmailVerifiedSuccess" style="display: none; background: #DCFCE7; color: #166534; border: 1px solid #86EFAC; border-radius: var(--radius-sm); padding: 0.5rem 0.75rem; font-size: 0.82rem; font-weight: 700; margin-top: 0.5rem; align-items: center; gap: 0.5rem;">
+                <span>✓ Email Verified:</span>
+                <span id="bookingVerifiedEmailLabel" style="font-weight: 800;"></span>
+              </div>
             </div>
           </div>
 
@@ -1190,7 +1346,7 @@
   <!-- =========================================================================
        20. Department Detail Modal
        ========================================================================= -->
-  <div class="modal-backdrop" id="departmentDetailModal">
+  <div class="modal-backdrop modal-overlay" id="departmentDetailModal">
     <div class="modal-box" style="max-width: 680px; width: 95%;">
       <div id="departmentModalContent"></div>
     </div>
@@ -1199,7 +1355,7 @@
   <!-- =========================================================================
        21. Doctor Detail Modal
        ========================================================================= -->
-  <div class="modal-backdrop" id="doctorDetailModal">
+  <div class="modal-backdrop modal-overlay" id="doctorDetailModal">
     <div class="modal-box" style="max-width: 680px; width: 95%;">
       <div id="doctorModalContent"></div>
     </div>
@@ -1208,7 +1364,7 @@
   <!-- =========================================================================
        22. Authentication Modal (Login & Register with Password Strength)
        ========================================================================= -->
-  <div class="modal-backdrop" id="portalLoginModal">
+  <div class="modal-backdrop modal-overlay" id="portalLoginModal">
     <div class="modal-box" style="max-width: 440px; width: 95%;">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
         <h3 id="authModalTitle" style="font-size: 1.25rem; font-weight: 800; color: var(--dark-navy); margin: 0;">Sign In to Hospital Portal</h3>

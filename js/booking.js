@@ -20,6 +20,10 @@ const BookingWizard = {
     symptoms: ''
   },
   lastConfirmedAppointment: null,
+  verifiedEmail: '',
+  verifiedToken: null,
+  otpCountdownTimer: null,
+  otpSecondsLeft: 0,
 
   getTodayStr() {
     const now = new Date();
@@ -108,8 +112,28 @@ const BookingWizard = {
       gender: 'Prefer not to say',
       symptoms: ''
     };
+    this.verifiedEmail = '';
+    this.verifiedToken = null;
+    if (this.otpCountdownTimer) {
+      clearInterval(this.otpCountdownTimer);
+      this.otpCountdownTimer = null;
+    }
+
     const form = document.getElementById('bookingForm');
     if (form) form.reset();
+
+    const otpBox = document.getElementById('bookingOtpBox');
+    if (otpBox) otpBox.style.display = 'none';
+
+    const verifiedBadge = document.getElementById('bookingEmailVerifiedSuccess');
+    if (verifiedBadge) verifiedBadge.style.display = 'none';
+
+    const sendBtn = document.getElementById('bookSendOtpBtn');
+    if (sendBtn) {
+      sendBtn.style.display = 'inline-flex';
+      sendBtn.disabled = false;
+      sendBtn.textContent = 'Send OTP Code 📨';
+    }
 
     document.querySelectorAll('.field-error').forEach(el => {
       el.textContent = '';
@@ -118,6 +142,221 @@ const BookingWizard = {
     document.querySelectorAll('.form-control').forEach(el => {
       el.classList.remove('is-invalid', 'is-valid');
     });
+  },
+
+  onEmailInputChanged() {
+    const emailInput = document.getElementById('patientEmail');
+    const currentVal = emailInput ? emailInput.value.trim().toLowerCase() : '';
+
+    if (this.verifiedEmail && currentVal !== this.verifiedEmail) {
+      this.verifiedToken = null;
+      this.verifiedEmail = '';
+
+      const badge = document.getElementById('bookingEmailVerifiedSuccess');
+      if (badge) badge.style.display = 'none';
+
+      const sendBtn = document.getElementById('bookSendOtpBtn');
+      if (sendBtn) {
+        sendBtn.style.display = 'inline-flex';
+        sendBtn.disabled = false;
+        sendBtn.textContent = 'Send OTP Code 📨';
+      }
+
+      const otpBox = document.getElementById('bookingOtpBox');
+      if (otpBox) otpBox.style.display = 'none';
+    }
+  },
+
+  async sendVerificationOtp(isResend = false) {
+    const emailInput = document.getElementById('patientEmail');
+    const emailVal = emailInput ? emailInput.value.trim().toLowerCase() : '';
+    const feedback = document.getElementById('bookingOtpFeedback');
+    const sendBtn = document.getElementById('bookSendOtpBtn');
+    const resendBtn = document.getElementById('bookResendOtpBtn');
+    const otpBox = document.getElementById('bookingOtpBox');
+
+    if (!emailVal || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailVal)) {
+      this.showError('patientEmail', 'patientEmailError', 'Please enter a valid email address first.');
+      return;
+    }
+    this.clearError('patientEmail', 'patientEmailError');
+
+    if (sendBtn) {
+      sendBtn.disabled = true;
+      sendBtn.textContent = 'Sending... ⏳';
+    }
+    if (feedback) {
+      feedback.style.color = '#005B96';
+      feedback.textContent = 'Contacting hospital mail server...';
+    }
+
+    try {
+      const res = await fetch('/api/auth/send-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: emailVal, purpose: 'booking' })
+      });
+
+      const data = await res.json();
+
+      if (!res.ok || !data.success) {
+        if (data.rateLimited) {
+          if (feedback) {
+            feedback.style.color = '#d97706';
+            feedback.textContent = data.error;
+          }
+          this.startOtpTimer(data.waitSeconds || 60);
+          return;
+        }
+
+        // Configuration error or dispatch failure
+        if (feedback) {
+          feedback.style.color = '#DC2626';
+          feedback.innerHTML = `⚠️ <strong>Email Error:</strong> ${data.error}`;
+        }
+        App.showToast(data.error, 'error');
+        if (sendBtn) {
+          sendBtn.disabled = false;
+          sendBtn.textContent = 'Send OTP Code 📨';
+        }
+        return;
+      }
+
+      // Successful dispatch
+      if (otpBox) otpBox.style.display = 'block';
+      if (sendBtn) sendBtn.style.display = 'none';
+      if (feedback) {
+        feedback.style.color = '#166534';
+        feedback.textContent = `✓ 6-digit verification code dispatched to ${emailVal}. Valid for 5 minutes.`;
+      }
+      App.showToast(`Verification code sent to ${emailVal}`, 'success');
+
+      // Start 60-second cooldown timer
+      this.startOtpTimer(60);
+
+      // Focus code input
+      const codeInput = document.getElementById('bookingOtpCode');
+      if (codeInput) {
+        codeInput.value = '';
+        codeInput.focus();
+      }
+    } catch (err) {
+      if (feedback) {
+        feedback.style.color = '#DC2626';
+        feedback.textContent = 'Network error contacting dispatch gateway: ' + err.message;
+      }
+      if (sendBtn) {
+        sendBtn.disabled = false;
+        sendBtn.textContent = 'Send OTP Code 📨';
+      }
+    }
+  },
+
+  startOtpTimer(seconds) {
+    if (this.otpCountdownTimer) {
+      clearInterval(this.otpCountdownTimer);
+    }
+    this.otpSecondsLeft = seconds;
+    const resendBtn = document.getElementById('bookResendOtpBtn');
+    const timerLabel = document.getElementById('bookResendTimer');
+
+    if (resendBtn) {
+      resendBtn.style.display = 'inline-flex';
+      resendBtn.disabled = true;
+    }
+    if (timerLabel) timerLabel.textContent = this.otpSecondsLeft;
+
+    this.otpCountdownTimer = setInterval(() => {
+      this.otpSecondsLeft--;
+      if (timerLabel) timerLabel.textContent = this.otpSecondsLeft;
+
+      if (this.otpSecondsLeft <= 0) {
+        clearInterval(this.otpCountdownTimer);
+        this.otpCountdownTimer = null;
+        if (resendBtn) {
+          resendBtn.disabled = false;
+          resendBtn.innerHTML = 'Resend Code 🔄';
+        }
+      }
+    }, 1000);
+  },
+
+  async verifyOtpCode() {
+    const emailInput = document.getElementById('patientEmail');
+    const emailVal = emailInput ? emailInput.value.trim().toLowerCase() : '';
+    const codeInput = document.getElementById('bookingOtpCode');
+    const codeVal = codeInput ? codeInput.value.trim() : '';
+    const feedback = document.getElementById('bookingOtpFeedback');
+    const verifyBtn = document.getElementById('bookVerifyOtpBtn');
+
+    if (!codeVal || !/^\d{6}$/.test(codeVal)) {
+      if (feedback) {
+        feedback.style.color = '#DC2626';
+        feedback.textContent = 'Please enter all 6 digits of the verification code.';
+      }
+      return;
+    }
+
+    if (verifyBtn) {
+      verifyBtn.disabled = true;
+      verifyBtn.textContent = 'Verifying... ⏳';
+    }
+
+    try {
+      const res = await fetch('/api/auth/verify-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: emailVal, purpose: 'booking', otp: codeVal })
+      });
+
+      const data = await res.json();
+
+      if (!res.ok || !data.success) {
+        if (feedback) {
+          feedback.style.color = '#DC2626';
+          feedback.textContent = data.error || 'Verification failed. Please try again.';
+        }
+        if (verifyBtn) {
+          verifyBtn.disabled = false;
+          verifyBtn.textContent = 'Verify Code ✓';
+        }
+        return;
+      }
+
+      // Success
+      this.verifiedToken = data.verifiedToken;
+      this.verifiedEmail = emailVal;
+      this.data.patientEmail = emailVal;
+
+      if (this.otpCountdownTimer) {
+        clearInterval(this.otpCountdownTimer);
+        this.otpCountdownTimer = null;
+      }
+
+      // Update UI: Hide OTP box, show verified badge
+      const otpBox = document.getElementById('bookingOtpBox');
+      if (otpBox) otpBox.style.display = 'none';
+
+      const sendBtn = document.getElementById('bookSendOtpBtn');
+      if (sendBtn) sendBtn.style.display = 'none';
+
+      const badge = document.getElementById('bookingEmailVerifiedSuccess');
+      const label = document.getElementById('bookingVerifiedEmailLabel');
+      if (label) label.textContent = emailVal;
+      if (badge) badge.style.display = 'flex';
+
+      this.clearError('patientEmail', 'patientEmailError');
+      App.showToast('✅ Email verified successfully! You may now proceed.', 'success');
+    } catch (err) {
+      if (feedback) {
+        feedback.style.color = '#DC2626';
+        feedback.textContent = 'Verification error: ' + err.message;
+      }
+      if (verifyBtn) {
+        verifyBtn.disabled = false;
+        verifyBtn.textContent = 'Verify Code ✓';
+      }
+    }
   },
 
   populateDepartments() {
@@ -330,6 +569,21 @@ const BookingWizard = {
       this.clearError('patientEmail', 'patientEmailError');
       this.data.patientEmail = email;
 
+      // REQUIRE EMAIL VERIFICATION BEFORE PROCEEDING
+      if (!this.verifiedToken || this.verifiedEmail !== email.toLowerCase()) {
+        this.showError(
+          'patientEmail',
+          'patientEmailError',
+          'Email verification required. Please click "Send OTP Code" and verify the 6-digit code sent to your inbox before proceeding.'
+        );
+        const otpBox = document.getElementById('bookingOtpBox');
+        if (otpBox) {
+          otpBox.style.display = 'block';
+          otpBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+        return;
+      }
+
       if (!dob) {
         this.showError('patientDob', 'patientDobError', 'Date of birth is required for clinical records.');
         return;
@@ -384,11 +638,13 @@ const BookingWizard = {
       if (this.currentStep === 6) {
         nextBtn.innerHTML = 'Confirm & Register Appointment 🩺';
         nextBtn.style.display = 'inline-flex';
+        nextBtn.disabled = false;
       } else if (this.currentStep === 7) {
         nextBtn.style.display = 'none';
       } else {
         nextBtn.innerHTML = 'Next Step →';
         nextBtn.style.display = 'inline-flex';
+        nextBtn.disabled = false;
       }
     }
   },
@@ -410,16 +666,16 @@ const BookingWizard = {
           <div><span style="color: var(--text-muted);">Consultation Date:</span> <strong>${this.formatDateAU(this.data.date)}</strong></div>
           <div><span style="color: var(--text-muted);">Time Slot:</span> <strong>${this.data.timeSlot} (ACST)</strong></div>
           <div><span style="color: var(--text-muted);">Location:</span> <strong>${doc.room || 'Darwin City Hospital'}</strong></div>
-          <div><span style="color: var(--text-muted);">Consultation Fee:</span> <strong>$${doc.fee} AUD</strong></div>
+          <div><span style="color: var(--text-muted);">Consultation Fee:</span> <strong>$${doc.fee || 220} AUD</strong></div>
         </div>
 
         <h4 style="font-size: 1rem; font-weight: 700; color: var(--primary); margin: 1rem 0 0.5rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem;">
-          👤 Patient Information
+          👤 Patient Information (Verified)
         </h4>
         <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem; font-size: 0.88rem;">
           <div><span style="color: var(--text-muted);">Patient Name:</span> <strong>${this.data.patientName}</strong></div>
           <div><span style="color: var(--text-muted);">DOB:</span> <strong>${this.data.patientDob}</strong></div>
-          <div><span style="color: var(--text-muted);">Email:</span> <strong>${this.data.patientEmail}</strong></div>
+          <div><span style="color: var(--text-muted);">Verified Email:</span> <strong style="color: #166534;">✓ ${this.data.patientEmail}</strong></div>
           <div><span style="color: var(--text-muted);">Phone:</span> <strong>${this.data.patientPhone}</strong></div>
           <div style="grid-column: 1 / -1;"><span style="color: var(--text-muted);">Reason / Clinical Notes:</span> <em>${this.data.symptoms}</em></div>
         </div>
@@ -430,8 +686,12 @@ const BookingWizard = {
   async submitBooking() {
     const doc = HOSPITAL_DATA.doctors.find(d => d.id === this.data.doctorId) || {};
     const dept = HOSPITAL_DATA.departments.find(d => d.id === this.data.departmentId) || {};
+    const nextBtn = document.getElementById('bookNextBtn');
 
-    let refCode = 'DCH-' + Math.floor(100000 + Math.random() * 900000);
+    if (nextBtn) {
+      nextBtn.disabled = true;
+      nextBtn.textContent = 'Registering & Dispatching... ⏳';
+    }
 
     try {
       const res = await fetch('/api/appointments/book', {
@@ -446,100 +706,125 @@ const BookingWizard = {
           patient_name: this.data.patientName,
           patient_email: this.data.patientEmail,
           patient_phone: this.data.patientPhone,
-          reason: this.data.symptoms,
-          fee_aud: doc.fee || 220
+          patient_dob: this.data.patientDob,
+          medicare_num: this.data.medicareNum,
+          symptoms: this.data.symptoms,
+          fee_aud: doc.fee || 220,
+          verifiedToken: this.verifiedToken
         })
       });
 
       const json = await res.json();
-      if (!json.success) throw new Error(json.error);
-      refCode = json.referenceId || refCode;
+      if (!res.ok || !json.success) {
+        throw new Error(json.error || 'Failed to complete appointment registration.');
+      }
+
+      const refCode = json.referenceId;
+      const apptRecord = {
+        id: refCode,
+        patientName: this.data.patientName,
+        patientEmail: this.data.patientEmail,
+        patientPhone: this.data.patientPhone,
+        doctorName: doc.name || 'Specialist',
+        department: dept.name || 'General',
+        date: this.data.date,
+        time: this.data.timeSlot,
+        room: doc.room || 'Darwin City Hospital Specialist Suites',
+        fee: doc.fee || 220,
+        status: 'confirmed',
+        emailStatus: json.emailStatus
+      };
+
+      this.lastConfirmedAppointment = apptRecord;
+      this.renderConfirmationScreen(apptRecord);
+
+      this.currentStep = 7;
+      this.updateStepUI();
+      App.showToast(`✅ Appointment ${refCode} successfully confirmed!`, 'success');
     } catch (err) {
-      console.warn('Backend booking API warning, using secure client generator:', err.message);
+      App.showToast(`⚠️ Booking Error: ${err.message}`, 'error');
+      if (nextBtn) {
+        nextBtn.disabled = false;
+        nextBtn.textContent = 'Confirm & Register Appointment 🩺';
+      }
     }
+  },
 
-    const apptRecord = {
-      id: refCode,
-      patientName: this.data.patientName,
-      patientEmail: this.data.patientEmail,
-      patientPhone: this.data.patientPhone,
-      doctorName: doc.name || 'Specialist',
-      department: dept.name || 'General',
-      date: this.data.date,
-      time: this.data.timeSlot,
-      room: doc.room || 'Darwin City Hospital Specialist Suites',
-      fee: doc.fee || 220,
-      status: 'confirmed'
-    };
-
-    this.lastConfirmedAppointment = apptRecord;
-
-    // Render Step 7 Confirmation Pass
+  renderConfirmationScreen(apptRecord) {
     const confirmContainer = document.getElementById('bookingConfirmationContainer');
-    if (confirmContainer) {
-      confirmContainer.innerHTML = `
-        <div class="medical-pass-card" id="printableAppointmentSlip" style="border: 2px dashed #005B96; border-radius: var(--radius-lg); padding: 1.5rem; background: #fff; margin-bottom: 1.5rem;">
-          <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid var(--primary); padding-bottom: 0.75rem; margin-bottom: 1rem;">
-            <div>
-              <span style="font-size: 0.75rem; text-transform: uppercase; font-weight: 800; color: var(--primary);">Official Consultation Pass</span>
-              <h3 style="font-size: 1.3rem; font-weight: 800; color: var(--text-primary); margin: 0.2rem 0 0;">Darwin City Hospital</h3>
-              <div style="font-size: 0.78rem; color: var(--text-muted);">Rocklands Drive, Tiwi NT 0810, Darwin Australia</div>
-            </div>
-            <div style="text-align: right;">
-              <span class="badge badge-success">✓ Confirmed</span>
-              <div style="font-size: 1.1rem; font-weight: 800; color: var(--primary); margin-top: 0.2rem;">${refCode}</div>
-            </div>
-          </div>
+    if (!confirmContainer) return;
 
-          <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; font-size: 0.88rem; margin-bottom: 1rem;">
-            <div>
-              <div style="color: var(--text-muted); font-size: 0.75rem; font-weight: 700;">PATIENT NAME</div>
-              <div style="font-weight: 800; color: var(--text-primary); font-size: 1.05rem;">${this.data.patientName}</div>
-              <div style="color: var(--text-muted); font-size: 0.78rem;">${this.data.patientPhone} • DOB: ${this.data.patientDob}</div>
-            </div>
-            <div>
-              <div style="color: var(--text-muted); font-size: 0.75rem; font-weight: 700;">ATTENDING SPECIALIST</div>
-              <div style="font-weight: 700; color: var(--text-primary);">${doc.name || 'Specialist'}</div>
-              <div style="color: var(--secondary); font-size: 0.78rem; font-weight: 600;">${dept.name || ''}</div>
-            </div>
-            <div>
-              <div style="color: var(--text-muted); font-size: 0.75rem; font-weight: 700;">DATE & TIME (ACST)</div>
-              <div style="font-weight: 700; color: var(--text-primary);">${this.formatDateAU(this.data.date)} at ${this.data.timeSlot}</div>
-              <div style="font-size: 0.78rem; color: var(--primary);">In-Person Hospital Consultation</div>
-            </div>
-            <div>
-              <div style="color: var(--text-muted); font-size: 0.75rem; font-weight: 700;">CONSULTATION FEE</div>
-              <div style="font-weight: 800; font-size: 1.1rem; color: var(--text-primary);">$${doc.fee || 220} AUD</div>
-              <div style="color: var(--success); font-size: 0.78rem; font-weight: 600;">Medicare Rebate Eligible</div>
-            </div>
-          </div>
+    const emailStatus = apptRecord.emailStatus;
+    const isDispatched = emailStatus && emailStatus.dispatched;
 
-          <div style="background: var(--bg-alt); border-radius: var(--radius-sm); padding: 0.75rem; font-size: 0.8rem; color: var(--text-secondary); line-height: 1.4;">
-            📍 <strong>Clinical Location:</strong> ${doc.room || 'Specialist Outpatient Suites, Wing A'}<br>
-            * Please arrive 15 minutes before your consultation. Bring photo ID and Medicare or insurance card.
+    confirmContainer.innerHTML = `
+      <div class="medical-pass-card" id="printableAppointmentSlip" style="border: 2px dashed #005B96; border-radius: var(--radius-lg); padding: 1.5rem; background: #fff; margin-bottom: 1.5rem;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid var(--primary); padding-bottom: 0.75rem; margin-bottom: 1rem;">
+          <div>
+            <span style="font-size: 0.75rem; text-transform: uppercase; font-weight: 800; color: var(--primary);">Official Consultation Pass</span>
+            <h3 style="font-size: 1.3rem; font-weight: 800; color: var(--text-primary); margin: 0.2rem 0 0;">Darwin City Hospital</h3>
+            <div style="font-size: 0.78rem; color: var(--text-muted);">Rocklands Drive, Tiwi NT 0810, Darwin Australia</div>
+          </div>
+          <div style="text-align: right;">
+            <span class="badge badge-success">✓ Confirmed</span>
+            <div style="font-size: 1.1rem; font-weight: 800; color: var(--primary); margin-top: 0.2rem;">${apptRecord.id}</div>
           </div>
         </div>
 
-        <div style="display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap;">
-          <button type="button" class="btn btn-primary" onclick="BookingWizard.openInGmail()">
-            🚀 1-Click Save in Gmail
-          </button>
-          <button type="button" class="btn btn-outline" onclick="window.print()">
-            🖨️ Print Official Slip
-          </button>
-          <button type="button" class="btn btn-secondary" onclick="BookingWizard.downloadEmlFile()">
-            📥 Download .EML Pass
-          </button>
-          <button type="button" class="btn btn-outline" onclick="BookingWizard.goToPatientPortal()">
-            👤 View in Patient Portal
-          </button>
+        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; font-size: 0.88rem; margin-bottom: 1rem;">
+          <div>
+            <div style="color: var(--text-muted); font-size: 0.75rem; font-weight: 700;">PATIENT NAME</div>
+            <div style="font-weight: 800; color: var(--text-primary); font-size: 1.05rem;">${apptRecord.patientName}</div>
+            <div style="color: var(--text-muted); font-size: 0.78rem;">${apptRecord.patientPhone}</div>
+          </div>
+          <div>
+            <div style="color: var(--text-muted); font-size: 0.75rem; font-weight: 700;">ATTENDING SPECIALIST</div>
+            <div style="font-weight: 700; color: var(--text-primary);">${apptRecord.doctorName}</div>
+            <div style="color: var(--secondary); font-size: 0.78rem; font-weight: 600;">${apptRecord.department}</div>
+          </div>
+          <div>
+            <div style="color: var(--text-muted); font-size: 0.75rem; font-weight: 700;">DATE & TIME (ACST)</div>
+            <div style="font-weight: 700; color: var(--text-primary);">${this.formatDateAU(apptRecord.date)} at ${apptRecord.time}</div>
+            <div style="font-size: 0.78rem; color: var(--primary);">In-Person Consultation</div>
+          </div>
+          <div>
+            <div style="color: var(--text-muted); font-size: 0.75rem; font-weight: 700;">CONSULTATION FEE</div>
+            <div style="font-weight: 800; font-size: 1.1rem; color: var(--text-primary);">$${apptRecord.fee} AUD</div>
+            <div style="color: var(--success); font-size: 0.78rem; font-weight: 600;">Medicare Rebate Eligible</div>
+          </div>
         </div>
-      `;
-    }
 
-    this.currentStep = 7;
-    this.updateStepUI();
-    App.showToast(`✅ Appointment ${refCode} successfully confirmed!`, 'success');
+        <div style="background: ${isDispatched ? '#F0FDF4' : '#FFFBEB'}; border: 1px solid ${isDispatched ? '#86EFAC' : '#FDE68A'}; border-radius: var(--radius-sm); padding: 0.85rem; font-size: 0.82rem; margin-bottom: 0.85rem;">
+          ${isDispatched ? `
+            <div style="color: #166534; font-weight: 700; margin-bottom: 0.2rem;">📧 Confirmation Email Dispatched</div>
+            <div style="color: #166534;">A formal clinical consultation slip with arrival directions has been delivered to <strong>${apptRecord.patientEmail}</strong> via Gmail SMTP.</div>
+          ` : `
+            <div style="color: #92400E; font-weight: 700; margin-bottom: 0.2rem;">ℹ️ Appointment Stored in SQLite Database</div>
+            <div style="color: #92400E;">${emailStatus && emailStatus.info ? emailStatus.info : 'Gmail SMTP unconfigured in .env. Please configure SMTP_USER and SMTP_PASS for live email dispatch.'}</div>
+          `}
+        </div>
+
+        <div style="background: var(--bg-alt); border-radius: var(--radius-sm); padding: 0.75rem; font-size: 0.8rem; color: var(--text-secondary); line-height: 1.4;">
+          📍 <strong>Clinical Location:</strong> ${apptRecord.room}<br>
+          * Please arrive 15 minutes before your consultation. For cancellation or rescheduling, contact Outpatient Reception at (08) 8999 0000 at least 24 hours in advance.
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap;">
+        <button type="button" class="btn btn-primary" onclick="BookingWizard.openInGmail()">
+          🚀 1-Click Open in Gmail
+        </button>
+        <button type="button" class="btn btn-outline" onclick="window.print()">
+          🖨️ Print Official Slip
+        </button>
+        <button type="button" class="btn btn-secondary" onclick="BookingWizard.downloadEmlFile()">
+          📥 Download .EML Pass
+        </button>
+        <button type="button" class="btn btn-outline" onclick="BookingWizard.goToPatientPortal()">
+          👤 View in Patient Portal
+        </button>
+      </div>
+    `;
   },
 
   openInGmail() {

@@ -7,6 +7,10 @@ const App = {
   currentDoctorFilter: 'all',
   currentSearchQuery: '',
   fontSizeLevel: 100, // percentage
+  enquiryVerifiedEmail: '',
+  enquiryVerifiedToken: null,
+  enquiryOtpTimer: null,
+  enquiryOtpSeconds: 0,
 
   init() {
     this.renderDepartments();
@@ -63,56 +67,304 @@ const App = {
       });
     }
 
-    // Contact Form Submission (SQLite Backed)
-    const contactForm = document.getElementById('hospitalContactForm');
-    if (contactForm) {
-      contactForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const fullName = document.getElementById('contactFullName')?.value.trim();
-        const email = document.getElementById('contactEmail')?.value.trim();
-        const phone = document.getElementById('contactPhone')?.value.trim();
-        const departmentId = document.getElementById('contactDepartment')?.value || '';
-        const subject = document.getElementById('contactSubject')?.value.trim() || 'General Clinical Enquiry';
-        const message = document.getElementById('contactMessage')?.value.trim();
-
-        if (!fullName || fullName.length < 2) {
-          this.showToast('Please enter your full name (minimum 2 characters).', 'warning');
-          return;
-        }
-
-        if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-          this.showToast('Please enter a valid email address.', 'warning');
-          return;
-        }
-
-        if (!message || message.length < 10) {
-          this.showToast('Please describe your enquiry in at least 10 characters.', 'warning');
-          return;
-        }
-
-        try {
-          const res = await fetch('/api/contact', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ fullName, email, phone, departmentId, subject, message })
-          });
-          const json = await res.json();
-          if (json.success) {
-            this.showToast('Your medical enquiry has been registered! Our outpatient concierge will reply promptly.', 'success');
-            contactForm.reset();
-          } else {
-            throw new Error(json.error);
-          }
-        } catch (err) {
-          this.showToast('Thank you! Your enquiry has been received.', 'success');
-          contactForm.reset();
-        }
-      });
-    }
-
     // Dark/Light Mode Preference Init
     const savedTheme = localStorage.getItem('dch_theme') || 'light';
     document.documentElement.setAttribute('data-theme', savedTheme);
+  },
+
+  onEnquiryEmailChanged() {
+    const email = document.getElementById('contactEmail')?.value.trim().toLowerCase() || '';
+    if (this.enquiryVerifiedEmail && email !== this.enquiryVerifiedEmail) {
+      this.enquiryVerifiedToken = null;
+      this.enquiryVerifiedEmail = '';
+      const badge = document.getElementById('enquiryVerifiedBadge');
+      if (badge) badge.style.display = 'none';
+      const sendBtn = document.getElementById('enquirySendOtpBtn');
+      if (sendBtn) {
+        sendBtn.style.display = 'inline-flex';
+        sendBtn.disabled = false;
+        sendBtn.textContent = 'Send OTP 📨';
+      }
+      const box = document.getElementById('enquiryOtpBox');
+      if (box) box.style.display = 'none';
+    }
+  },
+
+  async sendEnquiryOtp(isResend = false) {
+    const email = document.getElementById('contactEmail')?.value.trim().toLowerCase() || '';
+    const feedback = document.getElementById('enquiryOtpFeedback');
+    const sendBtn = document.getElementById('enquirySendOtpBtn');
+    const box = document.getElementById('enquiryOtpBox');
+
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      this.showToast('Please enter a valid email address first.', 'warning');
+      return;
+    }
+
+    if (sendBtn) {
+      sendBtn.disabled = true;
+      sendBtn.textContent = 'Sending... ⏳';
+    }
+    if (feedback) {
+      feedback.style.color = '#005B96';
+      feedback.textContent = 'Connecting to hospital mail server...';
+    }
+
+    try {
+      const res = await fetch('/api/auth/send-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, purpose: 'enquiry' })
+      });
+      const data = await res.json();
+
+      if (!res.ok || !data.success) {
+        if (data.rateLimited) {
+          if (feedback) {
+            feedback.style.color = '#d97706';
+            feedback.textContent = data.error;
+          }
+          this.startEnquiryTimer(data.waitSeconds || 60);
+          return;
+        }
+
+        if (feedback) {
+          feedback.style.color = '#DC2626';
+          feedback.innerHTML = `⚠️ <strong>Error:</strong> ${data.error}`;
+        }
+        this.showToast(data.error, 'error');
+        if (sendBtn) {
+          sendBtn.disabled = false;
+          sendBtn.textContent = 'Send OTP 📨';
+        }
+        return;
+      }
+
+      if (box) box.style.display = 'block';
+      if (sendBtn) sendBtn.style.display = 'none';
+      if (feedback) {
+        feedback.style.color = '#166534';
+        feedback.textContent = `✓ 6-digit code dispatched to ${email}. Valid for 5 minutes.`;
+      }
+      this.showToast(`Verification code sent to ${email}`, 'success');
+      this.startEnquiryTimer(60);
+
+      const codeInput = document.getElementById('enquiryOtpCode');
+      if (codeInput) {
+        codeInput.value = '';
+        codeInput.focus();
+      }
+    } catch (err) {
+      if (feedback) {
+        feedback.style.color = '#DC2626';
+        feedback.textContent = 'Dispatch error: ' + err.message;
+      }
+      if (sendBtn) {
+        sendBtn.disabled = false;
+        sendBtn.textContent = 'Send OTP 📨';
+      }
+    }
+  },
+
+  startEnquiryTimer(seconds) {
+    if (this.enquiryOtpTimer) clearInterval(this.enquiryOtpTimer);
+    this.enquiryOtpSeconds = seconds;
+    const resendBtn = document.getElementById('enquiryResendOtpBtn');
+    const timerLabel = document.getElementById('enquiryResendTimer');
+
+    if (resendBtn) {
+      resendBtn.style.display = 'inline-flex';
+      resendBtn.disabled = true;
+    }
+    if (timerLabel) timerLabel.textContent = this.enquiryOtpSeconds;
+
+    this.enquiryOtpTimer = setInterval(() => {
+      this.enquiryOtpSeconds--;
+      if (timerLabel) timerLabel.textContent = this.enquiryOtpSeconds;
+      if (this.enquiryOtpSeconds <= 0) {
+        clearInterval(this.enquiryOtpTimer);
+        this.enquiryOtpTimer = null;
+        if (resendBtn) {
+          resendBtn.disabled = false;
+          resendBtn.innerHTML = 'Resend Code 🔄';
+        }
+      }
+    }, 1000);
+  },
+
+  async verifyEnquiryOtp() {
+    const email = document.getElementById('contactEmail')?.value.trim().toLowerCase() || '';
+    const code = document.getElementById('enquiryOtpCode')?.value.trim() || '';
+    const feedback = document.getElementById('enquiryOtpFeedback');
+    const verifyBtn = document.getElementById('enquiryVerifyOtpBtn');
+
+    if (!code || !/^\d{6}$/.test(code)) {
+      if (feedback) {
+        feedback.style.color = '#DC2626';
+        feedback.textContent = 'Please enter all 6 digits.';
+      }
+      return;
+    }
+
+    if (verifyBtn) {
+      verifyBtn.disabled = true;
+      verifyBtn.textContent = 'Verifying... ⏳';
+    }
+
+    try {
+      const res = await fetch('/api/auth/verify-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, purpose: 'enquiry', otp: code })
+      });
+      const data = await res.json();
+
+      if (!res.ok || !data.success) {
+        if (feedback) {
+          feedback.style.color = '#DC2626';
+          feedback.textContent = data.error || 'Verification failed.';
+        }
+        if (verifyBtn) {
+          verifyBtn.disabled = false;
+          verifyBtn.textContent = 'Verify Code ✓';
+        }
+        return;
+      }
+
+      this.enquiryVerifiedToken = data.verifiedToken;
+      this.enquiryVerifiedEmail = email;
+
+      if (this.enquiryOtpTimer) {
+        clearInterval(this.enquiryOtpTimer);
+        this.enquiryOtpTimer = null;
+      }
+
+      const box = document.getElementById('enquiryOtpBox');
+      if (box) box.style.display = 'none';
+
+      const sendBtn = document.getElementById('enquirySendOtpBtn');
+      if (sendBtn) sendBtn.style.display = 'none';
+
+      const badge = document.getElementById('enquiryVerifiedBadge');
+      const label = document.getElementById('enquiryVerifiedEmailLabel');
+      if (label) label.textContent = email;
+      if (badge) badge.style.display = 'flex';
+
+      this.showToast('✅ Email verified! You can now submit your enquiry.', 'success');
+    } catch (err) {
+      if (feedback) {
+        feedback.style.color = '#DC2626';
+        feedback.textContent = 'Error: ' + err.message;
+      }
+      if (verifyBtn) {
+        verifyBtn.disabled = false;
+        verifyBtn.textContent = 'Verify Code ✓';
+      }
+    }
+  },
+
+  async handleEnquirySubmit(event) {
+    if (event) event.preventDefault();
+    const fullName = document.getElementById('contactFullName')?.value.trim();
+    const email = document.getElementById('contactEmail')?.value.trim().toLowerCase();
+    const phone = document.getElementById('contactPhone')?.value.trim();
+    const category = document.getElementById('contactCategory')?.value || 'General Healthcare Enquiry';
+    const subject = document.getElementById('contactSubject')?.value.trim();
+    const message = document.getElementById('contactMessage')?.value.trim();
+    const submitBtn = document.getElementById('enquirySubmitBtn');
+
+    if (!fullName || fullName.length < 2) {
+      this.showToast('Please enter your full name (minimum 2 characters).', 'warning');
+      return;
+    }
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      this.showToast('Please enter a valid email address.', 'warning');
+      return;
+    }
+    if (!this.enquiryVerifiedToken || this.enquiryVerifiedEmail !== email) {
+      this.showToast('Email verification required. Click "Send OTP" and enter your verification code before submitting.', 'warning');
+      const box = document.getElementById('enquiryOtpBox');
+      if (box) {
+        box.style.display = 'block';
+        box.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+      return;
+    }
+    if (!subject || subject.length < 3) {
+      this.showToast('Please enter an enquiry subject.', 'warning');
+      return;
+    }
+    if (!message || message.length < 10) {
+      this.showToast('Please describe your enquiry in at least 10 characters.', 'warning');
+      return;
+    }
+
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Submitting & Dispatching... ⏳';
+    }
+
+    try {
+      const res = await fetch('/api/enquiries/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fullName,
+          email,
+          phone,
+          category,
+          subject,
+          message,
+          verifiedToken: this.enquiryVerifiedToken
+        })
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || 'Submission failed.');
+      }
+
+      // Display success receipt
+      const successBox = document.getElementById('enquirySuccessBox');
+      const refEl = document.getElementById('enquirySuccessRef');
+      const emailEl = document.getElementById('enquirySuccessEmail');
+      if (refEl) refEl.textContent = data.referenceId;
+      if (emailEl) emailEl.textContent = email;
+      if (successBox) {
+        successBox.style.display = 'block';
+        successBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+
+      // Reset state and fields
+      this.enquiryVerifiedToken = null;
+      this.enquiryVerifiedEmail = '';
+      const form = document.getElementById('hospitalContactForm');
+      if (form) {
+        document.getElementById('contactFullName').value = '';
+        document.getElementById('contactSubject').value = '';
+        document.getElementById('contactMessage').value = '';
+      }
+      const badge = document.getElementById('enquiryVerifiedBadge');
+      if (badge) badge.style.display = 'none';
+      const sendBtn = document.getElementById('enquirySendOtpBtn');
+      if (sendBtn) {
+        sendBtn.style.display = 'inline-flex';
+        sendBtn.disabled = false;
+        sendBtn.textContent = 'Send OTP 📨';
+      }
+
+      this.showToast(`✅ Enquiry [${data.referenceId}] successfully submitted!`, 'success');
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Submit Another Enquiry 📨';
+      }
+    } catch (err) {
+      this.showToast(`Submission Error: ${err.message}`, 'error');
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Submit Clinical Enquiry 📨';
+      }
+    }
   },
 
   // 1. Departments Rendering (All 14 Clinical Specialties)

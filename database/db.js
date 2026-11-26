@@ -219,6 +219,48 @@ function initializeSchema() {
       ip_address TEXT,
       timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
     );
+
+    -- 13. Email Verifications Table (6-digit OTP, 5-min expiry, hashed storage, attempt limiting)
+    CREATE TABLE IF NOT EXISTS email_verifications (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      email TEXT NOT NULL COLLATE NOCASE,
+      purpose TEXT NOT NULL, -- 'booking' or 'enquiry'
+      otp_hash TEXT NOT NULL,
+      salt TEXT NOT NULL,
+      expires_at INTEGER NOT NULL, -- Epoch ms
+      attempts INTEGER DEFAULT 0,
+      is_verified INTEGER DEFAULT 0,
+      verified_token TEXT,
+      last_sent_at INTEGER NOT NULL, -- Epoch ms
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+
+    -- 14. General Enquiries Table (Real enquiry tracking & admin response)
+    CREATE TABLE IF NOT EXISTS general_enquiries (
+      id TEXT PRIMARY KEY, -- e.g. ENQ-928174
+      full_name TEXT NOT NULL,
+      email TEXT NOT NULL COLLATE NOCASE,
+      phone TEXT,
+      enquiry_category TEXT NOT NULL,
+      subject TEXT NOT NULL,
+      message TEXT NOT NULL,
+      status TEXT CHECK(status IN ('new', 'in_progress', 'resolved')) DEFAULT 'new',
+      admin_response TEXT,
+      responded_at DATETIME,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+
+    -- 15. Email Delivery Status & Audit Logs
+    CREATE TABLE IF NOT EXISTS email_delivery_logs (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      recipient_email TEXT NOT NULL,
+      email_type TEXT NOT NULL, -- 'otp_verification', 'appointment_confirmation', 'enquiry_acknowledgement', 'admin_enquiry_alert', 'admin_response'
+      subject TEXT NOT NULL,
+      status TEXT CHECK(status IN ('sent', 'failed')) NOT NULL,
+      error_message TEXT,
+      reference_code TEXT,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
   `);
 }
 
@@ -1214,6 +1256,234 @@ const DarwinDB = {
     `);
     stmt.run(data.fullName, data.email, data.phone || '', data.departmentId || '', data.subject, data.message);
     return true;
+  },
+
+  // =========================================================================
+  // EMAIL VERIFICATION (OTP Security, 5-Min Expiry, 60s Resend, Attempt Limits)
+  // =========================================================================
+  saveOtpVerification: (email, purpose, otp) => {
+    const normalizedEmail = email.trim().toLowerCase();
+    const now = Date.now();
+
+    // Check rate limit: 60 seconds cooldown between OTP requests for the same email & purpose
+    const existing = db.prepare(`
+      SELECT * FROM email_verifications 
+      WHERE email = ? AND purpose = ? AND is_verified = 0 
+      ORDER BY id DESC LIMIT 1
+    `).get(normalizedEmail, purpose);
+
+    if (existing && (now - existing.last_sent_at) < 60000) {
+      const waitSeconds = Math.ceil((60000 - (now - existing.last_sent_at)) / 1000);
+      return {
+        success: false,
+        rateLimited: true,
+        waitSeconds,
+        error: `Please wait ${waitSeconds} seconds before requesting a new verification code.`
+      };
+    }
+
+    // Hash OTP using PBKDF2/scrypt with random salt
+    const salt = crypto.randomBytes(16).toString('hex');
+    const otpHash = crypto.scryptSync(otp.toString().trim(), salt, 32).toString('hex');
+    const expiresAt = now + (5 * 60 * 1000); // 5 minutes validity
+
+    // Invalidate prior unverified codes for this email and purpose
+    db.prepare(`
+      DELETE FROM email_verifications 
+      WHERE email = ? AND purpose = ? AND is_verified = 0
+    `).run(normalizedEmail, purpose);
+
+    // Insert new OTP verification record
+    const stmt = db.prepare(`
+      INSERT INTO email_verifications (email, purpose, otp_hash, salt, expires_at, attempts, is_verified, last_sent_at)
+      VALUES (?, ?, ?, ?, ?, 0, 0, ?)
+    `);
+    stmt.run(normalizedEmail, purpose, otpHash, salt, expiresAt, now);
+
+    return { success: true, expiresAt };
+  },
+
+  verifyOtpCode: (email, purpose, otp) => {
+    const normalizedEmail = email.trim().toLowerCase();
+    const now = Date.now();
+
+    const record = db.prepare(`
+      SELECT * FROM email_verifications 
+      WHERE email = ? AND purpose = ? AND is_verified = 0 
+      ORDER BY id DESC LIMIT 1
+    `).get(normalizedEmail, purpose);
+
+    if (!record) {
+      return { success: false, error: 'No active verification code found. Please request a new code.' };
+    }
+
+    if (record.attempts >= 5) {
+      return { success: false, error: 'Maximum verification attempts (5) exceeded. Please request a new code.' };
+    }
+
+    // Increment attempt counter
+    db.prepare('UPDATE email_verifications SET attempts = attempts + 1 WHERE id = ?').run(record.id);
+
+    // Check expiry
+    if (now > record.expires_at) {
+      return { success: false, error: 'Verification code has expired (5-minute validity). Please request a new code.' };
+    }
+
+    // Verify hash timing-safe
+    const testHash = crypto.scryptSync(otp.toString().trim(), record.salt, 32).toString('hex');
+    const isMatch = crypto.timingSafeEqual(Buffer.from(testHash, 'hex'), Buffer.from(record.otp_hash, 'hex'));
+
+    if (!isMatch) {
+      const remainingAttempts = Math.max(0, 4 - record.attempts);
+      return { 
+        success: false, 
+        error: `Incorrect verification code. ${remainingAttempts} attempt(s) remaining.` 
+      };
+    }
+
+    // Successful verification - generate single-use verified token
+    const verifiedToken = crypto.randomBytes(32).toString('hex');
+    db.prepare(`
+      UPDATE email_verifications 
+      SET is_verified = 1, verified_token = ? 
+      WHERE id = ?
+    `).run(verifiedToken, record.id);
+
+    return { success: true, verifiedToken };
+  },
+
+  validateAndConsumeVerifiedToken: (email, purpose, token) => {
+    if (!token || typeof token !== 'string') return false;
+    const normalizedEmail = email.trim().toLowerCase();
+
+    const record = db.prepare(`
+      SELECT * FROM email_verifications 
+      WHERE email = ? AND purpose = ? AND verified_token = ? AND is_verified = 1
+    `).get(normalizedEmail, purpose, token.trim());
+
+    if (!record) return false;
+
+    // Single-use: Consume and invalidate token immediately
+    db.prepare('UPDATE email_verifications SET verified_token = NULL WHERE id = ?').run(record.id);
+    return true;
+  },
+
+  // =========================================================================
+  // GENERAL ENQUIRIES & ADMIN ACTIONS
+  // =========================================================================
+  createGeneralEnquiry: (data) => {
+    const id = 'ENQ-' + Math.floor(100000 + Math.random() * 900000);
+    const stmt = db.prepare(`
+      INSERT INTO general_enquiries (id, full_name, email, phone, enquiry_category, subject, message, status)
+      VALUES (?, ?, ?, ?, ?, ?, ?, 'new')
+    `);
+    stmt.run(
+      id,
+      data.fullName.trim(),
+      data.email.trim().toLowerCase(),
+      data.phone ? data.phone.trim() : '',
+      data.category || 'General Enquiry',
+      data.subject.trim(),
+      data.message.trim()
+    );
+
+    return {
+      id,
+      full_name: data.fullName.trim(),
+      email: data.email.trim().toLowerCase(),
+      phone: data.phone ? data.phone.trim() : '',
+      enquiry_category: data.category || 'General Enquiry',
+      subject: data.subject.trim(),
+      message: data.message.trim(),
+      status: 'new',
+      created_at: new Date().toISOString()
+    };
+  },
+
+  getAllGeneralEnquiries: (category = null, status = null) => {
+    let query = 'SELECT * FROM general_enquiries WHERE 1=1';
+    const params = [];
+
+    if (category && category !== 'all') {
+      query += ' AND enquiry_category = ?';
+      params.push(category);
+    }
+    if (status && status !== 'all') {
+      query += ' AND status = ?';
+      params.push(status);
+    }
+
+    query += ' ORDER BY created_at DESC';
+    return db.prepare(query).all(...params);
+  },
+
+  getGeneralEnquiryById: (id) => {
+    return db.prepare('SELECT * FROM general_enquiries WHERE id = ?').get(id);
+  },
+
+  updateGeneralEnquiryStatus: (id, status, adminResponse = null) => {
+    const now = new Date().toISOString();
+    if (adminResponse) {
+      db.prepare(`
+        UPDATE general_enquiries 
+        SET status = ?, admin_response = ?, responded_at = ? 
+        WHERE id = ?
+      `).run(status, adminResponse, now, id);
+    } else {
+      db.prepare(`
+        UPDATE general_enquiries 
+        SET status = ? 
+        WHERE id = ?
+      `).run(status, id);
+    }
+    return db.prepare('SELECT * FROM general_enquiries WHERE id = ?').get(id);
+  },
+
+  // =========================================================================
+  // EMAIL DELIVERY LOGS
+  // =========================================================================
+  logEmailDelivery: (recipientEmail, emailType, subject, status, errorMessage = null, referenceCode = null) => {
+    try {
+      const stmt = db.prepare(`
+        INSERT INTO email_delivery_logs (recipient_email, email_type, subject, status, error_message, reference_code)
+        VALUES (?, ?, ?, ?, ?, ?)
+      `);
+      stmt.run(recipientEmail, emailType, subject, status, errorMessage, referenceCode);
+    } catch (e) {
+      console.error('[Darwin DB] Failed to log email delivery:', e.message);
+    }
+  },
+
+  getEmailDeliveryLogs: (limit = 50) => {
+    return db.prepare(`
+      SELECT * FROM email_delivery_logs 
+      ORDER BY id DESC LIMIT ?
+    `).all(limit);
+  },
+
+  // Admin Appointments List with search and status filtering
+  getAllAppointmentsFiltered: (status = null, search = null) => {
+    let query = `
+      SELECT a.*, d.name as doctor_name, dept.name as department_name, d.room as doctor_room
+      FROM appointments a
+      JOIN doctors d ON a.doctor_id = d.id
+      JOIN departments dept ON a.department_id = dept.id
+      WHERE 1=1
+    `;
+    const params = [];
+
+    if (status && status !== 'all') {
+      query += ' AND a.status = ?';
+      params.push(status);
+    }
+    if (search && search.trim()) {
+      const term = `%${search.trim()}%`;
+      query += ' AND (a.id LIKE ? OR a.patient_name LIKE ? OR a.patient_email LIKE ? OR d.name LIKE ?)';
+      params.push(term, term, term, term);
+    }
+
+    query += ' ORDER BY a.appointment_date DESC, a.time_slot ASC';
+    return db.prepare(query).all(...params);
   }
 };
 

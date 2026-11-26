@@ -189,33 +189,115 @@ const HospitalAdmin = {
     });
   },
 
+  async loadFilteredAppointments() {
+    const search = document.getElementById('adminApptSearch')?.value || '';
+    const status = document.getElementById('adminApptStatusFilter')?.value || 'all';
+    const tableBody = document.getElementById('adminRecentApptsTable');
+
+    if (tableBody) {
+      tableBody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 1.5rem;">Loading clinical records...</td></tr>`;
+    }
+
+    try {
+      const res = await fetch(`/api/admin/appointments?status=${encodeURIComponent(status)}&search=${encodeURIComponent(search)}`);
+      const json = await res.json();
+      if (!json.success) throw new Error(json.error);
+      this.renderRecentAppointments(json.data);
+    } catch (err) {
+      console.error('[Admin] Error fetching filtered appointments:', err);
+      if (tableBody) {
+        tableBody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--emergency); padding: 1.5rem;">Failed to load appointments: ${err.message}</td></tr>`;
+      }
+    }
+  },
+
   renderRecentAppointments(appts = []) {
     const tableBody = document.getElementById('adminRecentApptsTable');
     if (!tableBody) return;
 
     if (!appts || appts.length === 0) {
-      tableBody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 1.5rem;">No appointments registered yet.</td></tr>`;
+      tableBody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 1.5rem;">No appointments found matching this filter.</td></tr>`;
       return;
     }
 
     tableBody.innerHTML = appts.map(a => `
-      <tr>
-        <td style="font-weight: 700; color: var(--primary);">${a.id}</td>
-        <td><strong>${a.patient_name}</strong><br><span style="font-size: 0.75rem; color: var(--text-muted);">${a.patient_phone}</span></td>
-        <td>${a.doctor_name || 'Specialist'}<br><span style="font-size: 0.75rem; color: var(--text-muted);">${a.department_name}</span></td>
-        <td>${a.appointment_date} at ${a.time_slot}</td>
-        <td>
-          <span class="badge ${a.status === 'confirmed' ? 'badge-success' : a.status === 'cancelled' ? 'badge-danger' : 'badge-warning'}">
+      <tr style="border-bottom: 1px solid var(--border);">
+        <td style="font-weight: 800; color: var(--primary); padding: 0.75rem;">${a.id}</td>
+        <td style="padding: 0.75rem;">
+          <strong>${a.patient_name}</strong><br>
+          <span style="font-size: 0.74rem; color: var(--text-muted);">📧 ${a.patient_email} • 📞 ${a.patient_phone}</span>
+        </td>
+        <td style="padding: 0.75rem;">
+          <strong>${a.doctor_name || 'Specialist'}</strong><br>
+          <span style="font-size: 0.74rem; color: var(--secondary); font-weight: 600;">${a.department_name}</span>
+        </td>
+        <td style="padding: 0.75rem;">
+          ${a.appointment_date} at <strong>${a.time_slot}</strong>
+        </td>
+        <td style="padding: 0.75rem;">
+          <span class="badge ${a.status === 'confirmed' ? 'badge-success' : a.status === 'cancelled' ? 'badge-danger' : a.status === 'completed' ? 'badge-primary' : 'badge-warning'}">
             ${a.status.toUpperCase()}
           </span>
         </td>
-        <td>
-          <button class="btn btn-outline" style="font-size: 0.75rem; padding: 0.25rem 0.5rem;" onclick="HospitalAdmin.openStatusModal('${a.id}', '${a.status}')">
-            Update Status
-          </button>
+        <td style="padding: 0.75rem;">
+          <div style="display: flex; gap: 0.35rem; flex-wrap: wrap;">
+            ${a.status !== 'confirmed' ? `
+              <button class="btn btn-outline" style="font-size: 0.72rem; padding: 0.25rem 0.5rem; color: #166534; border-color: #86EFAC;" onclick="HospitalAdmin.updateAppointmentStatus('${a.id}', 'confirmed')">
+                Approve ✓
+              </button>
+            ` : ''}
+            ${a.status !== 'completed' && a.status !== 'cancelled' ? `
+              <button class="btn btn-outline" style="font-size: 0.72rem; padding: 0.25rem 0.5rem; color: #005B96;" onclick="HospitalAdmin.updateAppointmentStatus('${a.id}', 'completed')">
+                Complete
+              </button>
+            ` : ''}
+            ${a.status !== 'cancelled' ? `
+              <button class="btn btn-outline" style="font-size: 0.72rem; padding: 0.25rem 0.5rem; color: #DC2626; border-color: #FCA5A5;" onclick="HospitalAdmin.updateAppointmentStatus('${a.id}', 'cancelled')">
+                Cancel
+              </button>
+            ` : ''}
+          </div>
         </td>
       </tr>
     `).join('');
+  },
+
+  async updateAppointmentStatus(apptId, newStatus) {
+    try {
+      const res = await fetch('/api/admin/appointments/update-status', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ appointmentId: apptId, status: newStatus })
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) throw new Error(data.error);
+
+      App.showToast(`Appointment ${apptId} status updated to ${newStatus}.`, 'success');
+      this.loadFilteredAppointments();
+      this.loadAdminDashboard();
+    } catch (err) {
+      App.showToast(`Failed to update status: ${err.message}`, 'error');
+    }
+  },
+
+  async loadEnquiriesList() {
+    const status = document.getElementById('adminEnquiryStatusFilter')?.value || 'all';
+    const listContainer = document.getElementById('adminEnquiriesList');
+    if (listContainer) {
+      listContainer.innerHTML = '<div style="color: var(--text-muted); font-size: 0.85rem; padding: 1rem 0;">Loading enquiries...</div>';
+    }
+
+    try {
+      const res = await fetch(`/api/admin/enquiries?status=${encodeURIComponent(status)}`);
+      const json = await res.json();
+      if (!json.success) throw new Error(json.error);
+      this.renderEnquiries(json.data);
+    } catch (err) {
+      console.error('[Admin] Error fetching enquiries:', err);
+      if (listContainer) {
+        listContainer.innerHTML = `<div style="color: var(--emergency); font-size: 0.85rem; padding: 1rem 0;">Failed to load enquiries: ${err.message}</div>`;
+      }
+    }
   },
 
   renderEnquiries(enquiries = []) {
@@ -223,45 +305,197 @@ const HospitalAdmin = {
     if (!list) return;
 
     if (!enquiries || enquiries.length === 0) {
-      list.innerHTML = `<div style="color: var(--text-muted); font-size: 0.85rem; padding: 1rem 0;">No active patient enquiries.</div>`;
+      list.innerHTML = `<div style="background: white; border: 1px solid var(--border); border-radius: var(--radius-md); padding: 2rem; text-align: center; color: var(--text-muted); font-size: 0.9rem;">No patient enquiries found in this category.</div>`;
       return;
     }
 
     list.innerHTML = enquiries.map(e => `
-      <div style="background: var(--bg-alt); border-radius: var(--radius-md); padding: 0.85rem; margin-bottom: 0.5rem;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
-          <strong style="font-size: 0.88rem; color: var(--text-primary);">${e.full_name}</strong>
-          <span style="font-size: 0.75rem; color: var(--text-muted);">${e.created_at ? e.created_at.split(' ')[0] : 'Today'}</span>
+      <div style="background: white; border: 1px solid var(--border); border-radius: var(--radius-md); padding: 1.25rem; margin-bottom: 1rem; box-shadow: var(--shadow-sm);">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem; flex-wrap: wrap; gap: 0.5rem;">
+          <div>
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+              <span style="font-weight: 800; color: #005B96; font-size: 0.95rem;">${e.id}</span>
+              <span class="badge ${e.status === 'resolved' ? 'badge-success' : e.status === 'in_progress' ? 'badge-warning' : 'badge-primary'}">
+                ${(e.status || 'new').toUpperCase()}
+              </span>
+              <span style="background: #F1F5F9; color: #475569; padding: 2px 8px; border-radius: 4px; font-size: 0.72rem; font-weight: 600;">
+                ${e.enquiry_category || 'General Enquiry'}
+              </span>
+            </div>
+            <strong style="font-size: 1rem; color: var(--text-primary); margin-top: 0.25rem; display: block;">${e.full_name}</strong>
+          </div>
+          <div style="font-size: 0.75rem; color: var(--text-muted);">
+            🕒 ${e.created_at || 'Recently'}
+          </div>
         </div>
-        <div style="font-size: 0.82rem; font-weight: 600; color: var(--primary); margin-bottom: 0.25rem;">${e.subject}</div>
-        <div style="font-size: 0.8rem; color: var(--text-secondary); line-height: 1.4;">"${e.message}"</div>
-        <div style="font-size: 0.74rem; color: var(--text-muted); margin-top: 0.4rem;">
-          📧 ${e.email} ${e.phone ? '• 📞 ' + e.phone : ''}
+
+        <div style="font-size: 0.88rem; font-weight: 700; color: var(--dark-navy); margin-bottom: 0.35rem;">
+          Subject: ${e.subject}
+        </div>
+        <div style="background: #F8FAFC; border-left: 3px solid #005B96; padding: 0.75rem 1rem; border-radius: 4px; font-size: 0.85rem; color: #334155; line-height: 1.5; margin-bottom: 0.75rem;">
+          "${e.message}"
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.78rem; color: var(--text-muted); flex-wrap: wrap; gap: 0.5rem;">
+          <div>
+            📧 <a href="mailto:${e.email}" style="color: var(--primary); font-weight: 600;">${e.email}</a>
+            ${e.phone ? ` • 📞 ${e.phone}` : ''}
+          </div>
+          <button class="btn btn-outline" style="font-size: 0.78rem; padding: 0.35rem 0.75rem;" onclick="HospitalAdmin.toggleReplyForm('${e.id}')">
+            💬 ${e.admin_response ? 'View / Update Reply' : 'Send Official Reply'}
+          </button>
+        </div>
+
+        <!-- Admin Reply Form (Toggled) -->
+        <div id="reply-box-${e.id}" style="display: ${e.admin_response ? 'block' : 'none'}; margin-top: 1rem; padding-top: 1rem; border-top: 1px dashed var(--border);">
+          ${e.admin_response ? `
+            <div style="background: #F0FDF4; border: 1px solid #86EFAC; border-radius: 6px; padding: 0.75rem; font-size: 0.82rem; margin-bottom: 0.75rem;">
+              <strong style="color: #166534;">Admin Response Sent:</strong>
+              <div style="color: #166534; margin-top: 0.25rem;">${e.admin_response}</div>
+              <div style="font-size: 0.72rem; color: #64748B; margin-top: 0.25rem;">Dispatched at: ${e.responded_at || 'Earlier'}</div>
+            </div>
+          ` : ''}
+          <label style="font-size: 0.8rem; font-weight: 700; color: var(--text-primary); display: block; margin-bottom: 0.35rem;">
+            Write Response to Patient (Will dispatch via Gmail SMTP):
+          </label>
+          <textarea id="reply-text-${e.id}" rows="3" placeholder="Enter clinical team response to patient..." style="width: 100%; padding: 0.65rem; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 0.85rem; margin-bottom: 0.5rem;"></textarea>
+          <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
+            <button type="button" class="btn btn-outline" style="font-size: 0.78rem; padding: 0.35rem 0.75rem;" onclick="HospitalAdmin.toggleReplyForm('${e.id}')">
+              Cancel
+            </button>
+            <button type="button" class="btn btn-primary" style="font-size: 0.78rem; padding: 0.35rem 0.9rem;" onclick="HospitalAdmin.sendEnquiryReply('${e.id}')">
+              Send Email Response ✉️
+            </button>
+          </div>
         </div>
       </div>
     `).join('');
   },
 
-  openStatusModal(apptId, currentStatus) {
-    const newStatus = prompt(`Update status for appointment [${apptId}]:\nEnter confirmed, pending, completed, or cancelled:`, currentStatus);
-    if (!newStatus) return;
+  toggleReplyForm(enquiryId) {
+    const box = document.getElementById(`reply-box-${enquiryId}`);
+    if (box) {
+      box.style.display = box.style.display === 'none' ? 'block' : 'none';
+    }
+  },
 
-    const valid = ['confirmed', 'pending', 'completed', 'cancelled'];
-    if (!valid.includes(newStatus.toLowerCase().trim())) {
-      alert('Invalid status. Please enter confirmed, pending, completed, or cancelled.');
+  async sendEnquiryReply(enquiryId) {
+    const textEl = document.getElementById(`reply-text-${enquiryId}`);
+    const message = textEl ? textEl.value.trim() : '';
+
+    if (!message || message.length < 5) {
+      App.showToast('Please write a message of at least 5 characters.', 'warning');
       return;
     }
 
-    fetch('/api/appointments/cancel', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ appointmentId: apptId })
-    }).then(() => {
-      App.showToast(`Updated appointment ${apptId} status.`, 'success');
-      HospitalAdmin.loadAdminDashboard();
-    }).catch(() => {
-      App.showToast('Failed to update status.', 'error');
-    });
+    try {
+      const res = await fetch('/api/admin/enquiries/respond', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ enquiryId, responseMessage: message, status: 'resolved' })
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) throw new Error(data.error);
+
+      App.showToast(`Response dispatched to customer for enquiry [${enquiryId}].`, 'success');
+      this.loadEnquiriesList();
+      this.loadEmailLogs();
+    } catch (err) {
+      App.showToast(`Failed to send response: ${err.message}`, 'error');
+    }
+  },
+
+  async loadEmailLogs() {
+    const tableBody = document.getElementById('adminEmailLogsTable');
+    if (tableBody) {
+      tableBody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 1.5rem;">Loading email logs...</td></tr>`;
+    }
+
+    try {
+      const res = await fetch('/api/admin/email-logs?limit=50');
+      const json = await res.json();
+      if (!json.success) throw new Error(json.error);
+
+      const logs = json.data || [];
+      if (logs.length === 0) {
+        if (tableBody) {
+          tableBody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 1.5rem;">No emails dispatched yet. Send an OTP or book an appointment to see audit logs.</td></tr>`;
+        }
+        return;
+      }
+
+      if (tableBody) {
+        tableBody.innerHTML = logs.map(l => {
+          const isSent = l.status === 'sent';
+          return `
+            <tr style="border-bottom: 1px solid var(--border);">
+              <td style="padding: 0.65rem 0.75rem; font-weight: 700; color: #005B96;">${l.recipient_email}</td>
+              <td style="padding: 0.65rem 0.75rem;">
+                <span style="background: #F1F5F9; color: #334155; padding: 2px 6px; border-radius: 4px; font-size: 0.72rem; font-family: monospace;">
+                  ${l.email_type}
+                </span>
+              </td>
+              <td style="padding: 0.65rem 0.75rem; max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                ${l.subject}
+              </td>
+              <td style="padding: 0.65rem 0.75rem;">
+                <span class="badge ${isSent ? 'badge-success' : 'badge-danger'}" title="${l.error_message || ''}">
+                  ${isSent ? '✓ SENT' : '✗ FAILED'}
+                </span>
+                ${l.error_message ? `<div style="font-size: 0.7rem; color: #DC2626; margin-top: 0.2rem;">${l.error_message.slice(0, 45)}...</div>` : ''}
+              </td>
+              <td style="padding: 0.65rem 0.75rem; font-weight: 600;">${l.reference_code || '-'}</td>
+              <td style="padding: 0.65rem 0.75rem; font-size: 0.75rem; color: var(--text-muted);">${l.created_at || 'Just now'}</td>
+            </tr>
+          `;
+        }).join('');
+      }
+    } catch (err) {
+      if (tableBody) {
+        tableBody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--emergency); padding: 1.5rem;">Failed to load logs: ${err.message}</td></tr>`;
+      }
+    }
+  },
+
+  async loadSmtpStatus() {
+    const card = document.getElementById('adminSmtpStatusCard');
+    if (!card) return;
+
+    try {
+      const res = await fetch('/api/smtp/status');
+      const data = await res.json();
+
+      if (data.configured) {
+        card.innerHTML = `
+          <div style="background: #F0FDF4; border: 1.5px solid #86EFAC; border-radius: var(--radius-md); padding: 1.25rem;">
+            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+              <span style="font-size: 1.3rem;">🟢</span>
+              <strong style="color: #166534; font-size: 1.05rem;">Gmail SMTP is Configured & Operational</strong>
+            </div>
+            <div style="font-size: 0.85rem; color: #166534; line-height: 1.6;">
+              • <strong>Host:</strong> ${data.host}:${data.port}<br>
+              • <strong>Authenticated User:</strong> ${data.user}<br>
+              • <strong>Admin Notifications:</strong> ${data.adminEmail}<br>
+              • <strong>Dispatch Mode:</strong> Real TLS/STARTTLS to live inboxes
+            </div>
+          </div>
+        `;
+      } else {
+        card.innerHTML = `
+          <div style="background: #FFFBEB; border: 1.5px solid #FDE68A; border-radius: var(--radius-md); padding: 1.25rem;">
+            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+              <span style="font-size: 1.3rem;">⚠️</span>
+              <strong style="color: #92400E; font-size: 1.05rem;">Gmail SMTP Credentials Missing (.env)</strong>
+            </div>
+            <div style="font-size: 0.85rem; color: #92400E; line-height: 1.6;">
+              Verification codes and appointment confirmations cannot be dispatched until a valid Gmail address and 16-character Google App Password are provided in the <code>.env</code> file. See step-by-step instructions below.
+            </div>
+          </div>
+        `;
+      }
+    } catch (err) {
+      card.innerHTML = `<div style="color: var(--emergency);">Failed to check SMTP status: ${err.message}</div>`;
+    }
   },
 
   bindAdminEvents() {
@@ -274,6 +508,16 @@ const HospitalAdmin = {
         document.querySelectorAll('.admin-view-pane').forEach(p => {
           p.style.display = p.id === `admin-view-${targetView}` ? 'block' : 'none';
         });
+
+        if (targetView === 'appointments') {
+          HospitalAdmin.loadFilteredAppointments();
+        } else if (targetView === 'enquiries') {
+          HospitalAdmin.loadEnquiriesList();
+        } else if (targetView === 'email-logs') {
+          HospitalAdmin.loadEmailLogs();
+        } else if (targetView === 'smtp-config') {
+          HospitalAdmin.loadSmtpStatus();
+        }
       });
     });
   }
