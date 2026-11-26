@@ -67,6 +67,7 @@ const BookingWizard = {
       const deptSelect = document.getElementById('bookDeptSelect');
       if (deptSelect) deptSelect.value = preselectedDeptId;
       this.handleDepartmentChange(preselectedDeptId);
+      this.currentStep = 2;
     }
 
     if (preselectedDoctorId) {
@@ -81,6 +82,7 @@ const BookingWizard = {
         const docSelect = document.getElementById('bookDoctorSelect');
         if (docSelect) docSelect.value = preselectedDoctorId;
         this.handleDoctorChange(preselectedDoctorId);
+        this.currentStep = 3;
       }
     }
 
@@ -254,16 +256,6 @@ const BookingWizard = {
         codeInput.value = '';
         codeInput.focus();
       }
-    } catch (err) {
-      if (feedback) {
-        feedback.style.color = '#DC2626';
-        feedback.textContent = 'Network error contacting dispatch gateway: ' + err.message;
-      }
-      if (sendBtn) {
-        sendBtn.disabled = false;
-        sendBtn.textContent = 'Send OTP Code 📨';
-      }
-    }
   },
 
   startOtpTimer(seconds) {
@@ -375,16 +367,6 @@ const BookingWizard = {
 
       this.clearError('patientEmail', 'patientEmailError');
       App.showToast('✅ Email verified successfully! You may now proceed.', 'success');
-    } catch (err) {
-      if (feedback) {
-        feedback.style.color = '#DC2626';
-        feedback.textContent = 'Verification error: ' + err.message;
-      }
-      if (verifyBtn) {
-        verifyBtn.disabled = false;
-        verifyBtn.textContent = 'Verify Code ✓';
-      }
-    }
   },
 
   populateDepartments() {
@@ -721,47 +703,48 @@ const BookingWizard = {
       nextBtn.textContent = 'Registering & Dispatching... ⏳';
     }
 
-    let json = null;
     try {
-      const res = await fetch('/api/appointments/book', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          doctor_id: this.data.doctorId,
-          department_id: this.data.departmentId,
-          appointment_date: this.data.date,
-          time_slot: this.data.timeSlot,
-          consultation_type: this.data.type,
-          patient_name: this.data.patientName,
-          patient_email: this.data.patientEmail,
-          patient_phone: this.data.patientPhone,
-          patient_dob: this.data.patientDob,
-          medicare_num: this.data.medicareNum,
-          symptoms: this.data.symptoms,
-          fee_aud: doc.fee || 220,
-          verifiedToken: this.verifiedToken
-        })
-      });
-      if (res.ok) {
-        json = await res.json();
+      let json = null;
+      try {
+        const res = await fetch('/api/appointments/book', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            doctor_id: this.data.doctorId,
+            department_id: this.data.departmentId,
+            appointment_date: this.data.date,
+            time_slot: this.data.timeSlot,
+            consultation_type: this.data.type,
+            patient_name: this.data.patientName,
+            patient_email: this.data.patientEmail,
+            patient_phone: this.data.patientPhone,
+            patient_dob: this.data.patientDob,
+            medicare_num: this.data.medicareNum,
+            symptoms: this.data.symptoms,
+            fee_aud: doc.fee || 220,
+            verifiedToken: this.verifiedToken
+          })
+        });
+        if (res.ok) {
+          json = await res.json();
+        }
+      } catch (err) {
+        // Offline / GitHub Pages static mode
       }
-    } catch (err) {
-      // Offline / GitHub Pages static mode
-    }
 
-    if (!json || !json.success) {
-      const isStaticOrDemo = window.location.hostname.includes('github.io') || !json;
-      if (isStaticOrDemo) {
-        const refCode = 'DCH-' + Math.floor(100000 + Math.random() * 900000);
-        json = {
-          success: true,
-          referenceId: refCode,
-          emailStatus: 'Demonstration Consultation Pass Generated'
-        };
-      } else {
-        throw new Error(json?.error || 'Failed to complete appointment registration.');
+      if (!json || !json.success) {
+        const isStaticOrDemo = window.location.hostname.includes('github.io') || !json;
+        if (isStaticOrDemo) {
+          const refCode = 'DCH-' + Math.floor(100000 + Math.random() * 900000);
+          json = {
+            success: true,
+            referenceId: refCode,
+            emailStatus: { dispatched: true, message: 'Demonstration Consultation Pass Generated' }
+          };
+        } else {
+          throw new Error(json?.error || 'Failed to complete appointment registration.');
+        }
       }
-    }
 
       const refCode = json.referenceId;
       const apptRecord = {
