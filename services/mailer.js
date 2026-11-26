@@ -7,18 +7,29 @@
 require('dotenv').config();
 const nodemailer = require('nodemailer');
 
+function getConfig() {
+  const user = (process.env.SMTP_USER || '').trim();
+  const rawPass = (process.env.SMTP_PASS || '').trim();
+  const pass = rawPass.replace(/\s+/g, ''); // Automatically strip spaces from Google 16-char code
+  const host = (process.env.SMTP_HOST || 'smtp.gmail.com').trim();
+  const port = parseInt(process.env.SMTP_PORT || '587', 10);
+  const secure = port === 465;
+  const adminEmail = (process.env.ADMIN_EMAIL || user || 'admin@darwinhospital.gov.au').trim();
+
+  return { host, port, secure, user, pass, adminEmail };
+}
+
 const SMTP_CONFIG = {
-  host: process.env.SMTP_HOST || 'smtp.gmail.com',
-  port: parseInt(process.env.SMTP_PORT || '587', 10),
-  secure: parseInt(process.env.SMTP_PORT || '587', 10) === 465,
-  user: process.env.SMTP_USER || '',
-  pass: process.env.SMTP_PASS || '',
-  adminEmail: process.env.ADMIN_EMAIL || process.env.SMTP_USER || 'admin@darwinhospital.gov.au'
+  get host() { return getConfig().host; },
+  get port() { return getConfig().port; },
+  get secure() { return getConfig().secure; },
+  get user() { return getConfig().user; },
+  get pass() { return getConfig().pass; },
+  get adminEmail() { return getConfig().adminEmail; }
 };
 
 function isSmtpConfigured() {
-  const user = SMTP_CONFIG.user ? SMTP_CONFIG.user.trim() : '';
-  const pass = SMTP_CONFIG.pass ? SMTP_CONFIG.pass.trim() : '';
+  const { user, pass } = getConfig();
   if (!user || !pass) return false;
   if (user === 'your-email@gmail.com' || pass === 'your-google-app-password') return false;
   if (user.includes('example.com') || pass.includes('your-')) return false;
@@ -32,13 +43,14 @@ function getTransporter() {
     );
   }
 
+  const config = getConfig();
   return nodemailer.createTransport({
-    host: SMTP_CONFIG.host,
-    port: SMTP_CONFIG.port,
-    secure: SMTP_CONFIG.secure,
+    host: config.host,
+    port: config.port,
+    secure: config.secure,
     auth: {
-      user: SMTP_CONFIG.user,
-      pass: SMTP_CONFIG.pass
+      user: config.user,
+      pass: config.pass
     },
     tls: {
       rejectUnauthorized: false
