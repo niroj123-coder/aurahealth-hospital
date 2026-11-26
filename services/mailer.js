@@ -402,10 +402,107 @@ async function sendAdminResponseEmail(enquiry, responseMessage) {
   });
 }
 
+/**
+ * Send New Appointment Notification to Hospital Administration Email
+ */
+async function sendAdminNewAppointmentAlertEmail(appt) {
+  if (!isSmtpConfigured()) return Promise.resolve(null);
+
+  const transporter = getTransporter();
+  const adminTarget = SMTP_CONFIG.adminEmail || SMTP_CONFIG.user;
+
+  const htmlBody = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <style>
+        body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #F4F8FB; margin: 0; padding: 20px; color: #0F172A; }
+        .email-container { max-width: 600px; margin: 0 auto; background: #FFFFFF; border-radius: 12px; overflow: hidden; border: 1px solid #E2E8F0; }
+        .header { background: #0F172A; color: #FFFFFF; padding: 20px; text-align: center; }
+        .header h2 { margin: 0; font-size: 19px; }
+        .content { padding: 24px; font-size: 14px; line-height: 1.6; color: #334155; }
+        .card { background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 8px; padding: 16px; margin: 16px 0; }
+        .row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #E2E8F0; font-size: 13px; }
+        .row:last-child { border-bottom: none; }
+        .label { color: #64748B; font-weight: 600; }
+        .value { color: #0F172A; font-weight: 700; text-align: right; }
+        .footer { background: #F8FAFC; padding: 14px; text-align: center; font-size: 11px; color: #64748B; border-top: 1px solid #E2E8F0; }
+      </style>
+    </head>
+    <body>
+      <div class="email-container">
+        <div class="header">
+          <h2>🏥 [Hospital Notice] New Patient Appointment</h2>
+          <p style="margin: 4px 0 0; font-size: 12px; color: #94A3B8;">Darwin City Hospital Clinical Administration</p>
+        </div>
+        <div class="content">
+          <p style="margin-top: 0;">A new patient consultation has been officially scheduled:</p>
+
+          <div class="card">
+            <div class="row">
+              <span class="label">Appointment Ref:</span>
+              <span class="value" style="color: #005B96;">${appt.id}</span>
+            </div>
+            <div class="row">
+              <span class="label">Patient Name:</span>
+              <span class="value">${appt.patient_name}</span>
+            </div>
+            <div class="row">
+              <span class="label">Patient Email:</span>
+              <span class="value">${appt.patient_email}</span>
+            </div>
+            <div class="row">
+              <span class="label">Patient Phone:</span>
+              <span class="value">${appt.patient_phone || 'Not provided'}</span>
+            </div>
+            <div class="row">
+              <span class="label">Attending Doctor:</span>
+              <span class="value">${appt.doctor_name}</span>
+            </div>
+            <div class="row">
+              <span class="label">Medical Department:</span>
+              <span class="value" style="color: #009688;">${appt.department_name}</span>
+            </div>
+            <div class="row">
+              <span class="label">Schedule (ACST):</span>
+              <span class="value">${appt.appointment_date} at ${appt.time_slot}</span>
+            </div>
+            <div class="row">
+              <span class="label">Clinical Room:</span>
+              <span class="value">${appt.doctor_room || 'Wing A, Specialist Suites'}</span>
+            </div>
+            <div class="row">
+              <span class="label">Consultation Fee:</span>
+              <span class="value">$${appt.fee_aud || 220} AUD</span>
+            </div>
+          </div>
+
+          <p style="font-size: 12px; color: #64748B;">
+            This appointment has been saved to the hospital database and can be reviewed or managed in the Admin Console under <em>Manage Appointments</em>.
+          </p>
+        </div>
+        <div class="footer">
+          Darwin City Hospital Internal Dispatch • Rocklands Drive, Tiwi NT 0810
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+
+  return transporter.sendMail({
+    from: `"Darwin Hospital Dispatch" <${SMTP_CONFIG.user}>`,
+    to: adminTarget,
+    subject: `🏥 [Hospital Notice] New Appointment: ${appt.patient_name} with ${appt.doctor_name} [Ref: ${appt.id}]`,
+    html: htmlBody
+  });
+}
+
 module.exports = {
   isSmtpConfigured,
   sendVerificationOtpEmail,
   sendAppointmentConfirmationEmail,
+  sendAdminNewAppointmentAlertEmail,
   sendEnquiryAcknowledgementEmail,
   sendAdminEnquiryAlertEmail,
   sendAdminResponseEmail,

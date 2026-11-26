@@ -311,6 +311,7 @@ const server = http.createServer(async (req, res) => {
       let emailMessage = 'Confirmation email dispatched.';
       try {
         if (Mailer.isSmtpConfigured()) {
+          // 1. Send Confirmation Email to Client (Patient)
           await Mailer.sendAppointmentConfirmationEmail(apptEmailData);
           emailDispatched = true;
           DarwinDB.logEmailDelivery(
@@ -321,6 +322,21 @@ const server = http.createServer(async (req, res) => {
             null,
             refCode
           );
+
+          // 2. Send Alert Email to Hospital Gmail (Admin / Clinical Concierge)
+          try {
+            await Mailer.sendAdminNewAppointmentAlertEmail(apptEmailData);
+            DarwinDB.logEmailDelivery(
+              Mailer.SMTP_CONFIG.adminEmail || Mailer.SMTP_CONFIG.user,
+              'admin_appointment_alert',
+              `🏥 [Hospital Notice] New Appointment: ${apptEmailData.patient_name} [Ref: ${refCode}]`,
+              'sent',
+              null,
+              refCode
+            );
+          } catch (adminEmailErr) {
+            console.error('[Darwin Mailer] Hospital alert email error:', adminEmailErr.message);
+          }
         } else {
           emailMessage = 'Gmail SMTP credentials are not configured in .env. Email delivery was skipped.';
           DarwinDB.logEmailDelivery(
