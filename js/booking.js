@@ -461,14 +461,14 @@ const BookingWizard = {
     ];
 
     slotsContainer.innerHTML = `
-      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 0.6rem; margin-top: 0.5rem;">
+      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 95px), 1fr)); gap: 0.5rem; margin-top: 0.5rem;">
         ${allSlots.map(slot => {
           const isBooked = bookedSlots.includes(slot);
           const isSelected = this.data.timeSlot === slot;
           return `
             <button type="button" 
               class="slot-btn ${isBooked ? 'disabled' : ''} ${isSelected ? 'selected' : ''}" 
-              style="padding: 0.5rem 0.25rem; font-size: 0.8rem; font-weight: 600; border-radius: var(--radius-sm); border: 1px solid ${isSelected ? 'var(--primary)' : 'var(--border)'}; background: ${isBooked ? '#e2e8f0' : isSelected ? 'var(--primary)' : 'white'}; color: ${isBooked ? '#94a3b8' : isSelected ? 'white' : 'var(--text-primary)'}; cursor: ${isBooked ? 'not-allowed' : 'pointer'};"
+              style="padding: 0.5rem 0.25rem; min-height: 44px; font-size: 0.8rem; font-weight: 600; border-radius: var(--radius-sm); border: 1px solid ${isSelected ? 'var(--primary)' : 'var(--border)'}; background: ${isBooked ? '#e2e8f0' : isSelected ? 'var(--primary)' : 'white'}; color: ${isBooked ? '#94a3b8' : isSelected ? 'white' : 'var(--text-primary)'}; cursor: ${isBooked ? 'not-allowed' : 'pointer'}; display: flex; align-items: center; justify-content: center;"
               ${isBooked ? 'disabled title="Slot already reserved"' : `onclick="BookingWizard.selectSlot('${slot}')"`}>
               ${slot} ${isBooked ? '🔒' : ''}
             </button>

@@ -48,17 +48,39 @@ const App = {
       }
       if (e.key === 'Escape') {
         App.closeAllModals();
+        App.closeMobileDrawer();
       }
     });
 
-    // Mobile nav toggle
+    // Mobile navigation drawer toggle & close handlers
     const mobileBtn = document.getElementById('mobileMenuBtn');
-    const mobileDrawer = document.getElementById('mobileNavDrawer');
-    if (mobileBtn && mobileDrawer) {
-      mobileBtn.addEventListener('click', () => {
-        mobileDrawer.style.display = mobileDrawer.style.display === 'block' ? 'none' : 'block';
+    if (mobileBtn) {
+      mobileBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        App.toggleMobileDrawer();
       });
     }
+
+    const mobileCloseBtn = document.getElementById('mobileDrawerCloseBtn');
+    if (mobileCloseBtn) {
+      mobileCloseBtn.addEventListener('click', () => {
+        App.closeMobileDrawer();
+      });
+    }
+
+    const mobileBackdrop = document.getElementById('mobileNavBackdrop');
+    if (mobileBackdrop) {
+      mobileBackdrop.addEventListener('click', () => {
+        App.closeMobileDrawer();
+      });
+    }
+
+    // Auto-close mobile drawer when window resizes to desktop width
+    window.addEventListener('resize', () => {
+      if (window.innerWidth >= 1024) {
+        App.closeMobileDrawer();
+      }
+    });
 
     // Doctor filters
     const searchInput = document.getElementById('doctorSearchInput');
@@ -978,8 +1000,34 @@ const App = {
     this.showToast(`Theme switched to ${next} mode`, 'info');
   },
 
-  // 10. Modal and Dropdown Management
+  // 10. Modal, Drawer and Dropdown Management
+  openMobileDrawer() {
+    const drawer = document.getElementById('mobileNavDrawer');
+    const backdrop = document.getElementById('mobileNavBackdrop');
+    if (drawer) drawer.classList.add('open');
+    if (backdrop) backdrop.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  },
+
+  closeMobileDrawer() {
+    const drawer = document.getElementById('mobileNavDrawer');
+    const backdrop = document.getElementById('mobileNavBackdrop');
+    if (drawer) drawer.classList.remove('open');
+    if (backdrop) backdrop.classList.remove('open');
+    document.body.style.overflow = '';
+  },
+
+  toggleMobileDrawer() {
+    const drawer = document.getElementById('mobileNavDrawer');
+    if (drawer && drawer.classList.contains('open')) {
+      this.closeMobileDrawer();
+    } else {
+      this.openMobileDrawer();
+    }
+  },
+
   closeAllModals() {
+    this.closeMobileDrawer();
     document.querySelectorAll('.modal-overlay, .modal-backdrop').forEach(m => {
       m.classList.remove('active');
     });
@@ -1113,6 +1161,9 @@ const App = {
 
     const langSelect = document.getElementById('globalLangSelector');
     if (langSelect && langSelect.value !== lang) langSelect.value = lang;
+
+    const mobileLangSelect = document.getElementById('mobileLangSelector');
+    if (mobileLangSelect && mobileLangSelect.value !== lang) mobileLangSelect.value = lang;
 
     if (notify) {
       this.showToast(`Language set to ${lang === 'ne' ? 'नेपाली (Nepali)' : lang === 'hi' ? 'हिन्दी (Hindi)' : 'English (AU)'}`, 'info');

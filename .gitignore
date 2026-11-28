@@ -12,7 +12,9 @@ package-lock.json
 Thumbs.db
 desktop.ini
 
-# SQLite Database
+# Backup folders
+_backup_responsive/
+
 *.db
 *.db-journal
 *.db-wal
@@ -23,4 +25,8 @@ desktop.ini
 .idea/
 *.sublime-project
 *.sublime-workspace
+
+# Test artifacts
+tests/chrome_test_profile/
+tests/screenshots/
 

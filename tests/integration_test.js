@@ -132,8 +132,7 @@ async function runTests() {
     const validVerify = DarwinDB.verifyOtpCode(testEmail3, 'booking', '112233');
 
     // Use dynamic date and slot to allow repeat test runs without slot collision
-    const randomDay = Math.floor(10 + Math.random() * 18);
-    const bookingDate = `2027-01-${String(randomDay).padStart(2, '0')}`;
+    const bookingDate = new Date(Date.now() + 86400000 * (100 + Math.floor(Math.random() * 800))).toISOString().split('T')[0];
     const slots = ['09:00 AM', '09:30 AM', '10:00 AM', '10:30 AM', '11:00 AM', '02:00 PM', '02:30 PM'];
     const bookingSlot = slots[Math.floor(Math.random() * slots.length)];
 

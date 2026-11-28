@@ -21,7 +21,7 @@
   <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
 
   <!-- Stylesheet with Cache Busting -->
-  <link rel="stylesheet" href="css/styles.css?v=2026.11.26.3">
+  <link rel="stylesheet" href="css/styles.css?v=2026.11.28.1">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23005B96'><path d='M12 2L4 5v6.09c0 5.05 3.41 9.76 8 10.91 4.59-1.15 8-5.86 8-10.91V5l-8-3zm1 14h-2v-3H8v-2h3V8h2v3h3v2h-3v3z'/></svg>">
 </head>
 <body>
@@ -31,39 +31,39 @@
        ========================================================================= -->
   <aside class="top-emergency-bar">
     <div class="container top-bar-inner">
-      <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
+      <div style="display: flex; align-items: center; gap: 0.65rem; flex-wrap: wrap;">
         <span class="emergency-call-badge">
           <span>🚨 Australian Emergency: Dial 000</span>
         </span>
-        <span style="opacity: 0.95; font-size: 0.8rem;" id="topSubBarNote">
+        <span class="top-bar-note" style="opacity: 0.95; font-size: 0.8rem;" id="topSubBarNote">
           🏥 Level-1 Regional Trauma Centre NT • 24/7 Resuscitation Ready
         </span>
-        <span style="background: rgba(255,255,255,0.15); padding: 0.15rem 0.5rem; border-radius: 4px; font-size: 0.72rem; font-weight: 600;">
+        <span class="top-bar-demo-badge" style="background: rgba(255,255,255,0.15); padding: 0.15rem 0.5rem; border-radius: 4px; font-size: 0.72rem; font-weight: 600;">
           Portfolio Demonstration Project
         </span>
       </div>
 
-      <div style="display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap;">
+      <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
         <!-- Language Switcher -->
         <div style="display: flex; align-items: center; gap: 0.25rem;">
           <span style="font-size: 0.8rem; opacity: 0.9;">🌐</span>
-          <select id="globalLangSelector" onchange="App.setLanguage(this.value)" aria-label="Select Language" style="background: rgba(255,255,255,0.18); color: #fff; border: 1px solid rgba(255,255,255,0.35); border-radius: 4px; padding: 0.2rem 0.5rem; font-size: 0.74rem; font-weight: 600; cursor: pointer; outline: none;">
+          <select id="globalLangSelector" onchange="App.setLanguage(this.value)" aria-label="Select Language" style="background: rgba(255,255,255,0.18); color: #fff; border: 1px solid rgba(255,255,255,0.35); border-radius: 4px; padding: 0.2rem 0.45rem; font-size: 0.74rem; font-weight: 600; cursor: pointer; outline: none;">
             <option value="en" style="color: #0F172A;">English (AU)</option>
             <option value="ne" style="color: #0F172A;">नेपाली (Nepali)</option>
             <option value="hi" style="color: #0F172A;">हिन्दी (Hindi)</option>
           </select>
         </div>
 
-        <button type="button" class="top-bar-btn" onclick="App.openLiveQueueModal()" title="Live Wait Times & Clinic Queue">⏱️ Wait Times</button>
-        <button type="button" class="top-bar-btn" onclick="App.openTelehealthModal()" title="Virtual Telehealth Consultation">📹 Telehealth</button>
+        <button type="button" class="top-bar-btn top-bar-note" onclick="App.openLiveQueueModal()" title="Live Wait Times & Clinic Queue">⏱️ Wait Times</button>
+        <button type="button" class="top-bar-btn top-bar-note" onclick="App.openTelehealthModal()" title="Virtual Telehealth Consultation">📹 Telehealth</button>
 
         <a href="tel:0889990000" class="top-bar-btn" style="text-decoration: none;">
           📞 (08) 8999 0000
         </a>
 
-        <div style="display: flex; align-items: center; gap: 0.25rem;">
-          <button type="button" class="top-bar-btn" style="padding: 0.2rem 0.45rem;" onclick="App.adjustFontSize(-5)" title="Decrease Font Size">A-</button>
-          <button type="button" class="top-bar-btn" style="padding: 0.2rem 0.45rem;" onclick="App.adjustFontSize(5)" title="Increase Font Size">A+</button>
+        <div class="top-bar-font-sizer" style="display: flex; align-items: center; gap: 0.2rem;">
+          <button type="button" class="top-bar-btn" style="padding: 0.2rem 0.4rem;" onclick="App.adjustFontSize(-5)" title="Decrease Font Size">A-</button>
+          <button type="button" class="top-bar-btn" style="padding: 0.2rem 0.4rem;" onclick="App.adjustFontSize(5)" title="Increase Font Size">A+</button>
           <button type="button" class="top-bar-btn" onclick="App.toggleTheme()" title="Toggle Dark/Light Mode">🌓 Theme</button>
         </div>
       </div>
@@ -73,21 +73,21 @@
   <!-- =========================================================================
        2. Sticky Navigation Header with Professional Dropdowns
        ========================================================================= -->
-  <header class="site-header" style="position: sticky; top: 0; background: var(--bg-surface); z-index: 100; box-shadow: var(--shadow-sm); border-bottom: 1px solid var(--border);">
-    <div class="container header-inner" style="display: flex; align-items: center; justify-content: space-between; padding: 0.65rem 1rem;">
+  <header class="site-header">
+    <div class="container header-inner">
       <!-- Hospital Logo -->
-      <a href="#home" class="brand-logo" style="display: flex; align-items: center; gap: 0.75rem; text-decoration: none; flex-shrink: 0; min-width: 250px;">
-        <div style="background: var(--primary); color: white; width: 42px; height: 42px; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: 800; box-shadow: 0 4px 10px rgba(0, 91, 150, 0.3); flex-shrink: 0;">
+      <a href="#home" class="brand-logo" aria-label="Darwin City Hospital Homepage">
+        <div class="brand-icon-wrapper">
           +
         </div>
-        <div style="white-space: nowrap;">
-          <span style="font-size: 1.25rem; font-weight: 800; color: var(--dark-navy); letter-spacing: -0.5px; display: block; line-height: 1.1; white-space: nowrap;" id="navHospitalTitle">Darwin City Hospital</span>
-          <span style="font-size: 0.72rem; color: var(--secondary); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap;" id="navHospitalSubtitle">Northern Territory • Australia</span>
+        <div class="brand-text-wrap">
+          <span class="brand-title" id="navHospitalTitle">Darwin City Hospital</span>
+          <span class="brand-text-sub" id="navHospitalSubtitle">Northern Territory • Australia</span>
         </div>
       </a>
 
       <!-- Desktop Nav Links with Dropdowns -->
-      <nav class="main-nav" style="display: flex; gap: 1rem; font-size: 0.88rem; font-weight: 600; align-items: center; white-space: nowrap;">
+      <nav class="main-nav" aria-label="Desktop Navigation">
         <a href="#home" class="nav-link" id="navLinkHome">Home</a>
         <a href="#about" class="nav-link" id="navLinkAbout">About Us</a>
 
@@ -124,46 +124,102 @@
       </nav>
 
       <!-- Action Buttons -->
-      <div style="display: flex; align-items: center; gap: 0.45rem; flex-shrink: 0;">
-        <button type="button" class="btn btn-outline" style="padding: 0.45rem 0.65rem; font-size: 0.8rem;" onclick="App.openSearchModal()" title="Search clinical services (Ctrl+K)">
-          <span>🔍</span>
-          <span style="font-size: 0.68rem; color: var(--text-muted); background: var(--bg-alt); padding: 0.1rem 0.35rem; border-radius: 4px; margin-left: 0.2rem;">Ctrl+K</span>
-        </button>
+      <div class="header-actions">
+        <!-- Desktop Quick Actions -->
+        <div class="header-desktop-actions">
+          <button type="button" class="btn btn-outline" style="padding: 0.45rem 0.65rem; font-size: 0.8rem;" onclick="App.openSearchModal()" title="Search clinical services (Ctrl+K)">
+            <span>🔍</span>
+            <span style="font-size: 0.68rem; color: var(--text-muted); background: var(--bg-alt); padding: 0.1rem 0.35rem; border-radius: 4px; margin-left: 0.2rem;">Ctrl+K</span>
+          </button>
 
-        <button type="button" class="btn btn-outline" style="font-size: 0.82rem; padding: 0.45rem 0.75rem;" onclick="App.openCheckinModal()" title="Digital Appointment Check-in">
-          🎫 Check In
-        </button>
+          <button type="button" class="btn btn-outline" style="font-size: 0.82rem; padding: 0.45rem 0.75rem;" onclick="App.openCheckinModal()" title="Digital Appointment Check-in">
+            🎫 Check In
+          </button>
 
-        <button type="button" class="btn btn-secondary" id="portalAuthNavBtn" style="font-size: 0.82rem; padding: 0.45rem 0.8rem;" onclick="PatientPortal.openLoginModal()">
-          👤 Portal Login
-        </button>
+          <button type="button" class="btn btn-secondary" id="portalAuthNavBtn" style="font-size: 0.82rem; padding: 0.45rem 0.8rem;" onclick="PatientPortal.openLoginModal()">
+            👤 Portal Login
+          </button>
+        </div>
 
-        <button type="button" class="btn btn-primary" style="font-size: 0.82rem; padding: 0.45rem 0.95rem; font-weight: 700;" onclick="BookingWizard.open()">
+        <!-- Primary CTA: Always Accessible -->
+        <button type="button" class="btn btn-primary header-book-btn" id="headerBookBtn" onclick="BookingWizard.open()">
           📅 Book Appointment
         </button>
 
-        <button type="button" class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Toggle navigation" style="background: none; border: 1px solid var(--border); padding: 0.4rem 0.6rem; border-radius: var(--radius-sm); font-size: 1.2rem; cursor: pointer;">
+        <!-- Mobile Menu Toggle Button (>= 44x44px touch target) -->
+        <button type="button" class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Open mobile navigation menu">
           ☰
         </button>
       </div>
     </div>
   </header>
 
-  <!-- Mobile Drawer -->
-  <div id="mobileNavDrawer" style="display: none; position: fixed; top: 110px; left: 0; right: 0; background: var(--bg-surface); z-index: 99; padding: 1.5rem; border-bottom: 2px solid var(--primary); box-shadow: var(--shadow-xl);">
-    <div style="display: flex; flex-direction: column; gap: 1rem; font-weight: 700; font-size: 1rem;">
-      <a href="#home" onclick="document.getElementById('mobileNavDrawer').style.display='none'">🏠 Home</a>
-      <a href="#about" onclick="document.getElementById('mobileNavDrawer').style.display='none'">🏥 About Us</a>
-      <a href="#departments" onclick="document.getElementById('mobileNavDrawer').style.display='none'">🩺 14 Medical Departments</a>
-      <a href="#doctors" onclick="document.getElementById('mobileNavDrawer').style.display='none'">👨‍⚕️ Specialist Doctors Directory</a>
-      <a href="#emergency-info" onclick="document.getElementById('mobileNavDrawer').style.display='none'" style="color: var(--emergency);">🚨 Emergency Services (000)</a>
-      <a href="#visitors" onclick="document.getElementById('mobileNavDrawer').style.display='none'">👥 Patient & Visitors Guide</a>
-      <a href="#patient-portal" onclick="document.getElementById('mobileNavDrawer').style.display='none'">👤 Patient & Doctor Portal</a>
-      <a href="#health-news" onclick="document.getElementById('mobileNavDrawer').style.display='none'">📰 Health Information Blog</a>
-      <a href="#contact" onclick="document.getElementById('mobileNavDrawer').style.display='none'">📍 Location & Contact Us</a>
-      <button class="btn btn-primary" style="margin-top: 0.5rem;" onclick="document.getElementById('mobileNavDrawer').style.display='none'; BookingWizard.open()">
-        📅 Book Appointment Now
-      </button>
+  <!-- Mobile Off-Canvas Drawer & Backdrop -->
+  <div id="mobileNavBackdrop" class="mobile-nav-backdrop" onclick="App.closeMobileDrawer()"></div>
+  <div id="mobileNavDrawer" class="mobile-nav-drawer" aria-label="Mobile Navigation" role="dialog" aria-modal="true">
+    <div class="mobile-drawer-header">
+      <div class="brand-logo" style="gap: 0.5rem;">
+        <div class="brand-icon-wrapper" style="width: 36px; height: 36px; font-size: 1.2rem;">+</div>
+        <div>
+          <span style="font-weight: 800; font-size: 1.1rem; color: var(--dark-navy); display: block; line-height: 1.1;">Darwin Hospital</span>
+          <span style="font-size: 0.65rem; color: var(--secondary); font-weight: 700; text-transform: uppercase;">Top End Australia</span>
+        </div>
+      </div>
+      <button type="button" class="mobile-drawer-close" id="mobileDrawerCloseBtn" onclick="App.closeMobileDrawer()" aria-label="Close navigation menu">✕</button>
+    </div>
+
+    <div class="mobile-drawer-body">
+      <!-- Quick Action Buttons on Mobile -->
+      <div class="mobile-drawer-actions">
+        <button type="button" class="btn btn-primary" style="width: 100%; justify-content: center; font-weight: 700; padding: 0.75rem;" onclick="App.closeMobileDrawer(); BookingWizard.open()">
+          📅 Book Appointment
+        </button>
+        <div class="mobile-drawer-row">
+          <button type="button" class="btn btn-outline" style="justify-content: center; padding: 0.55rem; font-size: 0.85rem;" onclick="App.closeMobileDrawer(); App.openCheckinModal()">
+            🎫 Check In
+          </button>
+          <button type="button" class="btn btn-secondary" style="justify-content: center; padding: 0.55rem; font-size: 0.85rem;" onclick="App.closeMobileDrawer(); PatientPortal.openLoginModal()">
+            👤 Portal Login
+          </button>
+        </div>
+      </div>
+
+      <!-- Navigation Links -->
+      <nav class="mobile-nav-group">
+        <a href="#home" class="mobile-nav-link" onclick="App.closeMobileDrawer()">🏠 Home</a>
+        <a href="#about" class="mobile-nav-link" onclick="App.closeMobileDrawer()">🏥 About Us</a>
+        
+        <span class="mobile-nav-group-title">Clinical Care & Departments</span>
+        <a href="#departments" class="mobile-nav-link sub" onclick="App.closeMobileDrawer()">🩺 14 Specialist Departments</a>
+        <a href="#facilities" class="mobile-nav-link sub" onclick="App.closeMobileDrawer()">🏥 Hospital Facilities</a>
+        <a href="javascript:void(0)" class="mobile-nav-link sub" onclick="App.closeMobileDrawer(); App.openTelehealthModal()">📹 Telehealth Consultation</a>
+        <a href="#emergency-info" class="mobile-nav-link sub emergency" onclick="App.closeMobileDrawer()">🚨 Emergency Trauma (000)</a>
+
+        <span class="mobile-nav-group-title">Specialists & Portals</span>
+        <a href="#doctors" class="mobile-nav-link" onclick="App.closeMobileDrawer()">👨‍⚕️ Specialist Doctors Directory</a>
+        <a href="javascript:void(0)" class="mobile-nav-link sub" onclick="App.closeMobileDrawer(); App.openLiveQueueModal()">⏱️ Live Wait Times & Queue</a>
+        <a href="#visitors" class="mobile-nav-link sub" onclick="App.closeMobileDrawer()">👥 Patient & Visitors Guide</a>
+        <a href="#patient-portal" class="mobile-nav-link sub" onclick="App.closeMobileDrawer()">👤 Patient Portal & Records</a>
+
+        <span class="mobile-nav-group-title">Information & Contact</span>
+        <a href="#health-news" class="mobile-nav-link" onclick="App.closeMobileDrawer()">📰 Health News Blog</a>
+        <a href="#contact" class="mobile-nav-link" onclick="App.closeMobileDrawer()">📍 Contact Us & Location</a>
+      </nav>
+
+      <!-- Footer Utilities -->
+      <div class="mobile-drawer-footer">
+        <div class="mobile-drawer-lang-theme">
+          <select id="mobileLangSelector" onchange="App.setLanguage(this.value); App.closeMobileDrawer()" aria-label="Select Language" style="flex: 1; padding: 0.55rem; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 0.85rem; background: var(--bg-surface); color: var(--text-primary); font-weight: 600;">
+            <option value="en">🌐 English (AU)</option>
+            <option value="ne">नेपाली (Nepali)</option>
+            <option value="hi">हिन्दी (Hindi)</option>
+          </select>
+          <button type="button" class="btn btn-outline" style="padding: 0.55rem 0.8rem; font-size: 0.85rem;" onclick="App.toggleTheme()">🌓 Theme</button>
+        </div>
+        <a href="tel:000" class="btn btn-emergency" style="width: 100%; justify-content: center; text-decoration: none; font-weight: 700; padding: 0.75rem;">
+          🚨 Australian Emergency: Dial 000
+        </a>
+      </div>
     </div>
   </div>
 
@@ -468,7 +524,7 @@
         </div>
 
         <!-- Departments Grid -->
-        <div id="departmentsGrid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(310px, 1fr)); gap: 1.5rem;">
+        <div id="departmentsGrid" class="responsive-grid-depts">
           <!-- Dynamically populated by App.renderDepartments() -->
         </div>
       </div>
@@ -492,11 +548,11 @@
         </div>
 
         <!-- Filter Controls -->
-        <div style="display: flex; gap: 0.75rem; justify-content: center; margin-bottom: 2.5rem; flex-wrap: wrap;">
-          <div style="position: relative; min-width: 260px;">
+        <div class="doctor-filter-toolbar" style="display: flex; gap: 0.75rem; justify-content: center; margin-bottom: 2.5rem; flex-wrap: wrap;">
+          <div style="position: relative; flex: 1 1 240px; max-width: 320px; min-width: 200px;">
             <input type="text" id="doctorSearchInput" placeholder="Search doctor by name, specialty, or credentials..." style="width: 100%; padding: 0.75rem 1rem; border: 1px solid var(--border); border-radius: var(--radius-md); font-size: 0.9rem; outline: none;">
           </div>
-          <select id="doctorDeptFilter" style="padding: 0.75rem 1rem; border: 1px solid var(--border); border-radius: var(--radius-md); font-size: 0.9rem; background: white; outline: none;">
+          <select id="doctorDeptFilter" style="padding: 0.75rem 1rem; border: 1px solid var(--border); border-radius: var(--radius-md); font-size: 0.9rem; background: white; outline: none; flex: 1 1 200px; min-width: 180px;">
             <option value="all">All Departments (14)</option>
             <option value="cardiology">Cardiology & Heart Health</option>
             <option value="neurology">Neurology & Stroke Unit</option>
@@ -515,7 +571,7 @@
           </select>
 
           <!-- Language Filter -->
-          <select id="doctorLangFilter" style="padding: 0.75rem 1rem; border: 1px solid var(--border); border-radius: var(--radius-md); font-size: 0.9rem; background: white; outline: none;">
+          <select id="doctorLangFilter" style="padding: 0.75rem 1rem; border: 1px solid var(--border); border-radius: var(--radius-md); font-size: 0.9rem; background: white; outline: none; flex: 1 1 160px; min-width: 150px;">
             <option value="all">🌐 All Languages</option>
             <option value="english">English</option>
             <option value="nepali">Nepali (नेपाली)</option>
@@ -526,7 +582,7 @@
           </select>
 
           <!-- Experience Filter -->
-          <select id="doctorExpFilter" style="padding: 0.75rem 1rem; border: 1px solid var(--border); border-radius: var(--radius-md); font-size: 0.9rem; background: white; outline: none;">
+          <select id="doctorExpFilter" style="padding: 0.75rem 1rem; border: 1px solid var(--border); border-radius: var(--radius-md); font-size: 0.9rem; background: white; outline: none; flex: 1 1 160px; min-width: 150px;">
             <option value="all">🎖️ Any Experience</option>
             <option value="10">10+ Years Experience</option>
             <option value="15">15+ Years Experience</option>
@@ -535,7 +591,7 @@
         </div>
 
         <!-- Doctors Grid -->
-        <div id="doctorsGrid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); gap: 1.5rem;">
+        <div id="doctorsGrid" class="responsive-grid-doctors">
           <!-- Dynamically populated by App.renderDoctors() -->
         </div>
       </div>
@@ -551,7 +607,7 @@
           <p style="color: var(--text-muted); font-size: 0.95rem;">Delivering international standards of clinical excellence</p>
         </div>
 
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;">
+        <div id="facilitiesGrid" class="responsive-grid-facilities">
           <div style="background: white; border-radius: var(--radius-md); padding: 1.5rem; border: 1px solid var(--border);">
             <div style="font-size: 2rem; margin-bottom: 0.5rem;">👨‍⚕️</div>
             <h4 style="font-size: 1.1rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.5rem;">Experienced Healthcare Professionals</h4>
@@ -1164,7 +1220,7 @@ ADMIN_EMAIL=your-admin-email@gmail.com</pre>
          17. Contact Us Section (SQLite Stored Form)
          ======================================================================= -->
     <section class="section-padding" id="contact" style="padding: 4.5rem 1rem; background: #fff;">
-      <div class="container" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 3rem;">
+      <div class="container responsive-grid-contact">
         <div>
           <span style="font-size: 0.82rem; text-transform: uppercase; font-weight: 800; color: var(--primary); letter-spacing: 1px;">
             Get In Touch
@@ -1445,7 +1501,7 @@ ADMIN_EMAIL=your-admin-email@gmail.com</pre>
             <div class="field-error" id="patientNameError" style="color: var(--emergency); font-size: 0.78rem;"></div>
           </div>
 
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 0.75rem;">
+          <div class="form-grid-2col">
             <div>
               <label style="font-size: 0.85rem; font-weight: 600; display: block; margin-bottom: 0.25rem;">Phone Number *</label>
               <input type="tel" id="patientPhone" required placeholder="+61 412 663 7298" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 0.9rem;">
@@ -1453,9 +1509,9 @@ ADMIN_EMAIL=your-admin-email@gmail.com</pre>
             </div>
             <div>
               <label style="font-size: 0.85rem; font-weight: 600; display: block; margin-bottom: 0.25rem;">Email Address (For Verification & Confirmation) *</label>
-              <div style="display: flex; gap: 0.5rem;">
-                <input type="email" id="patientEmail" required placeholder="nirojkhattri33@gmail.com" oninput="BookingWizard.onEmailInputChanged()" style="flex: 1; padding: 0.75rem; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 0.9rem;">
-                <button type="button" class="btn btn-secondary" id="bookSendOtpBtn" style="white-space: nowrap; font-size: 0.8rem; padding: 0.65rem 0.85rem;" onclick="BookingWizard.sendVerificationOtp()">
+              <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                <input type="email" id="patientEmail" required placeholder="nirojkhattri33@gmail.com" oninput="BookingWizard.onEmailInputChanged()" style="flex: 1 1 180px; min-width: 0; padding: 0.75rem; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 0.9rem;">
+                <button type="button" class="btn btn-secondary" id="bookSendOtpBtn" style="white-space: nowrap; font-size: 0.8rem; padding: 0.65rem 0.85rem; min-height: 44px;" onclick="BookingWizard.sendVerificationOtp()">
                   Send OTP Code 📨
                 </button>
               </div>
@@ -1468,10 +1524,10 @@ ADMIN_EMAIL=your-admin-email@gmail.com</pre>
                 </div>
                 <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
                   <input type="text" id="bookingOtpCode" maxlength="6" placeholder="000000" style="width: 130px; text-align: center; font-family: monospace; font-size: 1.15rem; font-weight: 800; letter-spacing: 4px; padding: 0.5rem; border: 1px solid var(--border); border-radius: var(--radius-sm); background: white;">
-                  <button type="button" class="btn btn-primary" id="bookVerifyOtpBtn" style="font-size: 0.82rem; padding: 0.55rem 0.9rem;" onclick="BookingWizard.verifyOtpCode()">
+                  <button type="button" class="btn btn-primary" id="bookVerifyOtpBtn" style="font-size: 0.82rem; padding: 0.55rem 0.9rem; min-height: 40px;" onclick="BookingWizard.verifyOtpCode()">
                     Verify Code ✓
                   </button>
-                  <button type="button" class="btn btn-outline" id="bookResendOtpBtn" style="font-size: 0.78rem; padding: 0.55rem 0.75rem; display: none;" onclick="BookingWizard.sendVerificationOtp(true)">
+                  <button type="button" class="btn btn-outline" id="bookResendOtpBtn" style="font-size: 0.78rem; padding: 0.55rem 0.75rem; min-height: 40px; display: none;" onclick="BookingWizard.sendVerificationOtp(true)">
                     Resend Code (<span id="bookResendTimer">60</span>s)
                   </button>
                 </div>
@@ -1486,7 +1542,7 @@ ADMIN_EMAIL=your-admin-email@gmail.com</pre>
             </div>
           </div>
 
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 0.75rem;">
+          <div class="form-grid-2col">
             <div>
               <label style="font-size: 0.85rem; font-weight: 600; display: block; margin-bottom: 0.25rem;">Date of Birth *</label>
               <input type="date" id="patientDob" required style="width: 100%; padding: 0.75rem; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 0.9rem;">
